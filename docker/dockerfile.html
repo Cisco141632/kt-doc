@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3. Build your own image · Docker learning path</title>
+  <title>Build your own image · Docker learning path</title>
   <link rel="stylesheet" href="assets/style.css">
   <script src="assets/app.js"></script>
   <script src="assets/widgets.js" defer></script>
@@ -35,7 +35,7 @@ flowchart LR
 
     <section id="app">
       <h2>The sample app</h2>
-      <p>This repository contains a small web app in the folder <code>docker/examples/hello-docker</code>. You will use it in this module and the next two. It is one Python file and a list of dependencies:</p>
+      <p>This repository contains a small web app in the folder <code>docker/examples/hello-docker</code>. You will use it in this module and the ones that follow. It is one Python file and a list of dependencies:</p>
       <pre data-lang="python" data-title="app.py (shortened)">import os
 import socket
 
@@ -121,6 +121,10 @@ $ docker exec hello whoami
 appuser
 $ docker rm -f hello</pre>
       <p><b>Same image, different behaviour.</b> This is how one image is used for development, testing and production.</p>
+      <div class="callout">
+        <span class="callout-title">Changed the code and nothing happened?</span>
+        <p>Building again gives you a new <b>image</b>. It does not change a container that is already running. The next module, <a href="rebuild.html">Change, build, run</a>, takes this apart step by step.</p>
+      </div>
     </section>
 
     <section id="layers">

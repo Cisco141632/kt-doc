@@ -1,6 +1,6 @@
 # Docker learning path
 
-A static, plain-language Docker course: nine pages of lessons, interactive diagrams, a practice lab that checks typed commands, and quizzes. No build step and no server code.
+A static, plain-language Docker course: eleven pages of lessons, interactive diagrams, a practice lab that checks typed commands, and quizzes. No build step and no server code.
 
 Live site (GitHub Pages): https://cisco141632.github.io/kt-doc/docker/
 
@@ -18,17 +18,21 @@ Diagrams are drawn with Mermaid, which is loaded from a CDN, so they need an int
 
 ## Pages
 
+In reading order. The order, the numbering in the sidebar and the previous/next buttons all come from the `MODULES` list in `assets/app.js`.
+
 | File | Module |
 | --- | --- |
-| `index.html` | 1. What is Docker? |
-| `commands.html` | 2. Everyday commands |
-| `dockerfile.html` | 3. Build your own image |
-| `storage-network.html` | 4. Data & networking |
-| `compose.html` | 5. Docker Compose |
-| `real-world.html` | 6. Real-world issues |
-| `practice.html` | 7. Practice lab |
-| `quiz.html` | 8. Quiz |
-| `cheatsheet.html` | 9. Cheat sheet |
+| `index.html` | What is Docker? |
+| `commands.html` | Everyday commands |
+| `dockerfile.html` | Build your own image |
+| `rebuild.html` | Change, build, run |
+| `storage-network.html` | Data & networking |
+| `compose.html` | Docker Compose |
+| `pipeline.html` | From laptop to production |
+| `real-world.html` | Real-world issues |
+| `practice.html` | Practice lab |
+| `quiz.html` | Quiz |
+| `cheatsheet.html` | Cheat sheet |
 
 ## How it is put together
 
@@ -36,15 +40,15 @@ Diagrams are drawn with Mermaid, which is loaded from a CDN, so they need an int
 | --- | --- |
 | `assets/style.css` | All styling, light and dark theme |
 | `assets/app.js` | Navigation (the `MODULES` list), theme, copy buttons, Mermaid, steppers, tabs |
-| `assets/widgets.js` | The three interactive diagrams: container lifecycle, build cache, port mapping |
+| `assets/widgets.js` | The interactive diagrams: container lifecycle, build cache, port mapping, code/image/container |
 | `assets/exercises.js` | The exercise bank (type the command, fill in the blank, scenario) |
 | `assets/practice.js` | Renders the exercises and checks the answers |
 | `assets/quiz.js` | The quiz questions and the quiz screen |
-| `examples/hello-docker/` | The sample app used in modules 3 to 5 |
+| `examples/hello-docker/` | The sample app used from "Build your own image" onwards |
 
 ## Change or extend it
 
-- **Add a page:** copy an existing page, set `<body data-module="my-id">`, and add one line to `MODULES` in `assets/app.js`. The sidebar, the page number and the previous/next buttons follow from that list.
+- **Add a page:** copy an existing page, set `<body data-module="my-id">`, and add one line to `MODULES` in `assets/app.js`. Do not write module numbers in the text; refer to other pages by name, so nothing has to be renumbered.
 - **Add an exercise:** add an object to `assets/exercises.js`. The comment at the top of that file explains the three kinds. An exercise appears on its module page and in the practice lab.
 - **Add a quiz question:** add an object to a test in `assets/quiz.js`. The first option is the correct one; options are shuffled when shown.
 - **Add a diagram:** put Mermaid text inside `<pre class="mermaid">`. Write `<br/>` as `&lt;br/&gt;`.

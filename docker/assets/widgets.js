@@ -1,4 +1,4 @@
-/* Docker learning path — the three interactive diagrams.
+/* Docker learning path — the interactive diagrams.
    Each one starts itself only if its container element is on the page. */
 (function () {
   'use strict';
@@ -200,9 +200,84 @@
     render();
   }
 
+  /* ---------- 4. Code, image, container: what actually changes (rebuild.html) ---------- */
+
+  function initRebuildSim() {
+    const el = document.getElementById('rebuild-sim');
+    if (!el) return;
+
+    const start = () => ({ code: 1, image: 1, container: 1, old: 0, log: [] });
+    let s = start();
+
+    el.innerHTML = `
+      <span class="widget-title">Try it · what actually changes?</span>
+      <div class="portmap" data-boxes></div>
+      <div class="widget-row" data-buttons></div>
+      <pre class="mini-term" aria-live="polite"></pre>
+      <p class="widget-note">Press "Edit the code" first, then try the other buttons in any order and watch which box changes.</p>`;
+    const boxes = el.querySelector('[data-boxes]');
+    const buttons = el.querySelector('[data-buttons]');
+    const term = el.querySelector('.mini-term');
+
+    const ACTIONS = [
+      { label: 'Edit the code', run() {
+        s.code += 1;
+        return [`(you save app.py: version ${s.code})`, 'Only the file on your machine changed. The image and the container are untouched.'];
+      } },
+      { label: 'docker build', run() {
+        if (s.image === s.code) return ['$ docker build -t hello-docker:1.0 .', 'Nothing changed since the last build. Every step is CACHED and the image is exactly the same one.'];
+        s.old += 1;
+        s.image = s.code;
+        return ['$ docker build -t hello-docker:1.0 .', `New image, built from version ${s.image}. The name hello-docker:1.0 now points to it. The old image stays on disk without a name. The running container was not touched.`];
+      } },
+      { label: 'docker restart', run() {
+        return ['$ docker restart hello', `The same container, started again. It still uses the image it was created from (version ${s.container}).`];
+      } },
+      { label: 'docker rm -f + docker run', run() {
+        const same = s.container === s.image;
+        s.container = s.image;
+        return ['$ docker rm -f hello && docker run -d --name hello hello-docker:1.0', same
+          ? 'A new container, but from the same image as before, so the app looks the same.'
+          : `A new container, created from the current image. The app now shows version ${s.container}.`];
+      } },
+      { label: 'Start over', run() { s = start(); return null; } },
+    ];
+
+    function box(title, text, fresh) {
+      return `<div class="box ${fresh ? 'is-fresh' : 'is-stale'}">${title}<b>${text}</b><span class="badge ${fresh ? 'ok' : 'warn'}">${fresh ? 'up to date' : 'outdated'}</span></div>`;
+    }
+
+    function render() {
+      boxes.innerHTML =
+        box('Your code (app.py)', `version ${s.code}`, true) +
+        '<span class="arrow" aria-hidden="true">→</span>' +
+        box('Image hello-docker:1.0', `built from version ${s.image}`, s.image === s.code) +
+        '<span class="arrow" aria-hidden="true">→</span>' +
+        box('Container hello', `running version ${s.container}`, s.container === s.code);
+      term.textContent = (s.log.length ? s.log.slice(-6).join('\n') : 'Everything is in sync: code, image and container are all version 1.')
+        + (s.old ? `\n\nOld images without a name on disk: ${s.old}` : '');
+      term.scrollTop = term.scrollHeight;
+    }
+
+    ACTIONS.forEach((action) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'btn btn-small';
+      button.textContent = action.label;
+      button.addEventListener('click', () => {
+        const lines = action.run();
+        if (lines) s.log.push(lines[0], '  → ' + lines[1]);
+        render();
+      });
+      buttons.appendChild(button);
+    });
+    render();
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     initLifecycle();
     initCacheSim();
     initPortMap();
+    initRebuildSim();
   });
 })();

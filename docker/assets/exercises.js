@@ -9,7 +9,7 @@
    "q", "hint", "why" and "options" are HTML. */
 window.DOCKER_EXERCISES = [
 
-  /* ---------- Module 1: What is Docker? ---------- */
+  /* ---------- What is Docker? ---------- */
   {
     id: 'b-version', module: 'index', type: 'command',
     q: 'Check which version of Docker is installed.',
@@ -58,7 +58,7 @@ window.DOCKER_EXERCISES = [
     why: 'A virtual machine boots a complete guest operating system. A container is only an isolated process on a kernel that is already running.',
   },
 
-  /* ---------- Module 2: Everyday commands ---------- */
+  /* ---------- Everyday commands ---------- */
   {
     id: 'c-ps', module: 'commands', type: 'command',
     q: 'List the containers that are running right now.',
@@ -182,7 +182,7 @@ window.DOCKER_EXERCISES = [
     why: 'These three options appear in almost every <code>docker run</code> you will type.',
   },
 
-  /* ---------- Module 3: Build your own image ---------- */
+  /* ---------- Build your own image ---------- */
   {
     id: 'd-build', module: 'dockerfile', type: 'command',
     q: 'Build an image from the Dockerfile in the current folder and name it <code>hello-docker:1.0</code>.',
@@ -264,7 +264,85 @@ window.DOCKER_EXERCISES = [
     why: 'Use this when a cached step hides a problem, for example an old <code>apt-get update</code>. Normally you want the cache.',
   },
 
-  /* ---------- Module 4: Data & networking ---------- */
+  /* ---------- Change, build, run ---------- */
+  {
+    id: 'x-build-what', module: 'rebuild', type: 'choice',
+    q: 'A container named <code>hello</code> has been running since yesterday. Today you edit <code>app.py</code> and run <code>docker build -t hello-docker:1.0 .</code> Which code does the container serve now?',
+    options: [
+      'The new code, because the image was rebuilt',
+      'The old code. The build made a new image and did not touch the container',
+      'Nothing: the container was stopped by the build',
+      'Both versions, in turn',
+    ],
+    correct: 1,
+    why: '<code>docker build</code> only makes images. A container keeps the image it was created from until you replace the container.',
+  },
+  {
+    id: 'x-recipe', module: 'rebuild', type: 'blank',
+    q: 'Fill in the three commands that make a code change visible.',
+    code: 'docker [[0]] -t hello-docker:1.0 .\ndocker [[1]] -f hello\ndocker [[2]] -d -p 8000:8000 --name hello hello-docker:1.0',
+    blanks: [{ a: ['build'] }, { a: ['rm'] }, { a: ['run'] }],
+    why: 'New snapshot, remove the container that runs the old snapshot, start a container from the new one.',
+  },
+  {
+    id: 'x-code-only', module: 'rebuild', type: 'choice',
+    q: 'You changed <code>app.py</code> and saved it. You have <b>not</b> run any Docker command. Did the image change?',
+    options: [
+      'Yes, images follow the files automatically',
+      'No. An image changes only when you build',
+      'Yes, but only its tag',
+      'Only if the container is running',
+    ],
+    correct: 1,
+    why: 'An image is a snapshot taken at build time. Saving a file changes the file and nothing else.',
+  },
+  {
+    id: 'x-same-image', module: 'rebuild', type: 'choice',
+    q: 'Which of these changes does <b>not</b> produce a different image when you build again?',
+    options: [
+      'Editing <code>app.py</code>',
+      'Adding a package to <code>requirements.txt</code>',
+      'Editing <code>.env</code>, which is listed in <code>.dockerignore</code>',
+      'Changing the <code>CMD</code> line in the Dockerfile',
+    ],
+    correct: 2,
+    why: 'A file in <code>.dockerignore</code> never reaches the build, so every step is still <code>CACHED</code> and the image ID stays the same.',
+  },
+  {
+    id: 'x-restart', module: 'rebuild', type: 'choice',
+    q: 'You built a new image. Will <code>docker restart hello</code> make the container use it?',
+    options: [
+      'Yes, restart always loads the newest image',
+      'No. Restart stops and starts the same container with the same image',
+      'Yes, if the tag is <code>latest</code>',
+      'Only after waiting ten seconds',
+    ],
+    correct: 1,
+    why: 'To use a new image you must create a new container: <code>docker rm -f hello</code>, then <code>docker run ...</code>',
+  },
+  {
+    id: 'x-three-runs', module: 'rebuild', type: 'blank',
+    q: 'Count the results.',
+    code: 'docker run -d nginx:alpine\ndocker run -d nginx:alpine\ndocker run -d nginx:alpine\n\nNumber of containers running: [[0]]\nNumber of images used:        [[1]]',
+    blanks: [{ a: ['3', 'three'], ci: true }, { a: ['1', 'one'], ci: true }],
+    why: 'Every <code>docker run</code> creates one more container. All three share the single image.',
+  },
+  {
+    id: 'x-images-a', module: 'rebuild', type: 'command',
+    q: 'List <b>all</b> images, including the old ones that lost their name after a rebuild.',
+    answer: 'docker images -a', also: ['docker image ls -a', 'docker image list -a'],
+    hint: 'The same "all" option as <code>docker ps</code>.',
+    why: 'Nameless old images are hidden by default. With <code>-a</code> they appear as <code>&lt;untagged&gt;</code> (older Docker versions print <code>&lt;none&gt;</code>).',
+  },
+  {
+    id: 'x-prune-dangling', module: 'rebuild', type: 'command',
+    q: 'Remove the old nameless (dangling) images that rebuilds left behind.',
+    answer: 'docker image prune',
+    hint: 'It is a <code>prune</code> command under <code>docker image</code>, with no extra options.',
+    why: 'Without <code>-a</code> this removes only dangling images, so images that still have a name are safe.',
+  },
+
+  /* ---------- Data & networking ---------- */
   {
     id: 's-vol-create', module: 'storage-network', type: 'command',
     q: 'Create a named volume called <code>notes</code>.',
@@ -345,7 +423,7 @@ window.DOCKER_EXERCISES = [
     why: 'This is the moment the data is really gone. Docker refuses if a container still uses the volume.',
   },
 
-  /* ---------- Module 5: Docker Compose ---------- */
+  /* ---------- Docker Compose ---------- */
   {
     id: 'm-up', module: 'compose', type: 'command',
     q: 'Start every service in <code>compose.yaml</code> in the background.',
@@ -431,7 +509,109 @@ window.DOCKER_EXERCISES = [
     why: '"Started" is not "ready": Postgres needs a few seconds. Add a <code>healthcheck</code> to <code>db</code> and use <code>condition: service_healthy</code>.',
   },
 
-  /* ---------- Module 6: Real-world issues ---------- */
+  {
+    id: 'm-what-applies', module: 'compose', type: 'choice',
+    q: 'You changed a value under <code>environment:</code> in <code>compose.yaml</code>. Which command applies it?',
+    options: [
+      '<code>docker compose restart</code>',
+      '<code>docker compose up -d</code>',
+      '<code>docker compose logs</code>',
+      'Nothing. It applies by itself',
+    ],
+    correct: 1,
+    why: '<code>up -d</code> notices that the configuration is different and replaces the container. <code>restart</code> does not read the file again.',
+  },
+  {
+    id: 'm-nothing-changed', module: 'compose', type: 'choice',
+    q: 'Nothing has changed since the last start. You run <code>docker compose up -d --build</code>. What happens to the running container?',
+    options: [
+      'It is replaced by a new one',
+      'It is restarted',
+      'Nothing. Compose prints <code>Running</code> and leaves it alone',
+      'It is stopped',
+    ],
+    correct: 2,
+    why: 'The build finds nothing new, the image is the same, so there is no reason to touch the container.',
+  },
+
+  /* ---------- From laptop to production ---------- */
+  {
+    id: 'p-registry-run', module: 'pipeline', type: 'command',
+    q: 'Start a local registry from the image <code>registry:3</code>: in the background, named <code>registry</code>, host port <code>5000</code> to container port <code>5000</code>.',
+    answer: { head: 'docker run', opts: ['-d', '-p 5000:5000', '--name registry'], tail: 'registry:3' },
+    why: 'A registry is itself just a container. This one is enough to practise push and pull without any account.',
+  },
+  {
+    id: 'p-tag', module: 'pipeline', type: 'command',
+    q: 'Give the image <code>hello-docker:1.0</code> the name it needs for the registry at <code>localhost:5000</code>, keeping the repository name and the tag.',
+    answer: 'docker tag hello-docker:1.0 localhost:5000/hello-docker:1.0', also: ['docker image tag hello-docker:1.0 localhost:5000/hello-docker:1.0'],
+    hint: 'The registry address goes in front of the name: <code>ADDRESS/REPOSITORY:TAG</code>.',
+    why: 'Docker decides where to push from the first part of the image name.',
+  },
+  {
+    id: 'p-push', module: 'pipeline', type: 'command',
+    q: 'Upload <code>localhost:5000/hello-docker:1.0</code> to its registry.',
+    answer: 'docker push localhost:5000/hello-docker:1.0', also: ['docker image push localhost:5000/hello-docker:1.0'],
+    why: 'From now on any machine that can reach the registry can pull this exact version.',
+  },
+  {
+    id: 'p-pull', module: 'pipeline', type: 'command',
+    q: 'On the server, download version <code>1.1</code> of <code>localhost:5000/hello-docker</code> without starting it.',
+    answer: 'docker pull localhost:5000/hello-docker:1.1', also: ['docker image pull localhost:5000/hello-docker:1.1'],
+    why: 'Pulling first means the old version keeps running while the new one downloads.',
+  },
+  {
+    id: 'p-deploy', module: 'pipeline', type: 'blank',
+    q: 'Complete the deploy of version 1.4.2 on one server.',
+    code: 'docker [[0]] registry.example.com/team/api:1.4.2\ndocker [[1]] -f api\ndocker [[2]] -d --name api --restart unless-stopped registry.example.com/team/api:[[3]]',
+    blanks: [{ a: ['pull'] }, { a: ['rm'] }, { a: ['run'] }, { a: ['1.4.2'] }],
+    why: 'Pull the new image, remove the old container, run a new one from the new version.',
+  },
+  {
+    id: 'p-compose-deploy', module: 'pipeline', type: 'blank',
+    q: 'The server\'s <code>compose.yaml</code> says <code>image: registry.example.com/team/api:${APP_VERSION}</code>. You changed <code>APP_VERSION</code> in <code>.env</code>. Finish the deploy.',
+    code: 'docker compose [[0]]\ndocker compose [[1]] -d',
+    blanks: [{ a: ['pull'] }, { a: ['up'] }],
+    why: '<code>pull</code> downloads the new version. <code>up -d</code> sees that the image name changed and replaces the container.',
+  },
+  {
+    id: 'p-rollback', module: 'pipeline', type: 'choice',
+    q: 'Version <code>1.4.2</code> went live ten minutes ago and is throwing errors. Version <code>1.4.1</code> worked. What is the fastest safe fix?',
+    options: [
+      'Fix the bug on the server inside the running container',
+      'Start the container again from the image <code>1.4.1</code>',
+      'Rebuild <code>1.4.2</code> until it works',
+      'Delete all images and start from zero',
+    ],
+    correct: 1,
+    why: 'The old image is still in the registry under its own tag. A rollback is a deploy of the previous tag; the bug is fixed calmly afterwards.',
+  },
+  {
+    id: 'p-latest', module: 'pipeline', type: 'choice',
+    q: 'Why do teams avoid deploying the tag <code>latest</code> to production?',
+    options: [
+      'It is slower to download',
+      'Nobody can tell which version is running, and there is no previous tag to go back to',
+      'Docker does not allow it',
+      'It uses more disk space',
+    ],
+    correct: 1,
+    why: '<code>latest</code> is a name that keeps moving. A version number or commit ID is used once and always means the same image.',
+  },
+  {
+    id: 'p-same-image', module: 'pipeline', type: 'choice',
+    q: 'The same image runs in staging and in production. How does it connect to a different database in each place?',
+    options: [
+      'A different image is built for each environment',
+      'The database address is given from outside as an environment variable',
+      'Docker changes the code at start-up',
+      'It cannot; both must use the same database',
+    ],
+    correct: 1,
+    why: 'Configuration lives outside the image. If you must rebuild to change environment, something is baked in that should be a variable.',
+  },
+
+  /* ---------- Real-world issues ---------- */
   {
     id: 'r-disk', module: 'real-world', type: 'command',
     q: 'An alert says the server disk is 95% full. <b>Before deleting anything</b>, show what Docker is using the space for.',

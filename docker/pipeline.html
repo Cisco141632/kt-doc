@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>From laptop to production · Docker learning path</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/app.js"></script>
+  <script src="assets/exercises.js" defer></script>
+  <script src="assets/practice.js" defer></script>
+</head>
+<body data-module="pipeline">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="content">
+
+    <header class="page-head">
+      <h1>From laptop to production</h1>
+      <p class="lead">Your image works on your machine. How does it reach a real server, how do teams ship a new version every day without fear, and how do they go back when a version is bad?</p>
+    </header>
+
+    <section id="picture">
+      <h2>The big picture</h2>
+      <p>In a company nobody copies files to a server by hand. Code travels through a fixed path, and the thing that travels is <b>an image</b>.</p>
+      <figure class="diagram">
+        <pre class="mermaid">
+flowchart LR
+  DEV["Developer&lt;br/&gt;pushes code to Git"] --> CI["CI server&lt;br/&gt;tests, then docker build"]
+  CI -- "docker push" --> REG[("Registry&lt;br/&gt;stores every version")]
+  REG -- "docker pull" --> STG["Staging server&lt;br/&gt;runs version 1.4.2"]
+  REG -- "docker pull" --> PROD["Production server&lt;br/&gt;runs version 1.4.2"]
+        </pre>
+        <figcaption>One image is built once and then moves from place to place. It is never rebuilt on the way.</figcaption>
+      </figure>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Station</th><th>What happens there</th></tr>
+          <tr><td><b>Git</b></td><td class="wrap">The developer pushes code. This starts everything else automatically.</td></tr>
+          <tr><td><b>CI server</b></td><td class="wrap">A machine that runs the same commands on every push: run the tests, <code>docker build</code>, <code>docker push</code>. CI means "continuous integration". GitHub Actions, GitLab CI and Jenkins are examples.</td></tr>
+          <tr><td><b>Registry</b></td><td class="wrap">The warehouse. It keeps every version of the image, so any server can download any version at any time.</td></tr>
+          <tr><td><b>Servers</b></td><td class="wrap">They never build. They only <code>docker pull</code> a version and run it.</td></tr>
+        </table>
+      </div>
+      <div class="callout">
+        <span class="callout-title">Build once, run everywhere</span>
+        <p>The image that passed the tests is <b>the same file</b> that runs in production. Not a similar one built again later: the very same one. That is the promise of Docker from the first module, now applied to a whole company.</p>
+      </div>
+    </section>
+
+    <section id="versions">
+      <h2>Every build gets its own version</h2>
+      <p>In <a href="rebuild.html">Change, build, run</a> you saw the mess that one reused tag creates. In a pipeline the rule is strict: <b>a tag is used once and never moved.</b></p>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Tag style</th><th>Example</th><th>Good for</th></tr>
+          <tr><td class="wrap">Version number</td><td><code>hello-docker:1.4.2</code></td><td class="wrap">Releases that people talk about</td></tr>
+          <tr><td class="wrap">Git commit ID</td><td><code>hello-docker:a1b2c3d</code></td><td class="wrap">Automatic builds: you always know exactly which code is inside</td></tr>
+          <tr><td class="wrap"><code>latest</code></td><td><code>hello-docker:latest</code></td><td class="wrap">Nothing in production. Nobody can tell which version it is, and you cannot go back.</td></tr>
+        </table>
+      </div>
+      <p>The full name of an image also says <b>where</b> it lives. To push to a registry other than Docker Hub, the registry address goes in front:</p>
+      <pre data-lang="text" data-title="Full image name">registry.example.com / team / hello-docker : 1.4.2
+   where it lives       group    repository    version</pre>
+    </section>
+
+    <section id="lab">
+      <h2>Hands-on: your own registry</h2>
+      <p>You do not need an account to try this. A registry is itself just a container. Run one on your machine and send two versions of the sample app through it. Work in <code>docker/examples/hello-docker</code>.</p>
+      <p><b>Step 1.</b> Start a registry on port 5000.</p>
+      <pre data-lang="sh">docker run -d -p 5000:5000 --name registry registry:3</pre>
+      <p><b>Step 2.</b> Build version 1.0 and push it. The name starts with the registry address.</p>
+      <pre data-lang="sh">docker build -t localhost:5000/hello-docker:1.0 .
+docker push localhost:5000/hello-docker:1.0</pre>
+      <p><b>Step 3.</b> Change the code: in <code>app.py</code>, replace <code>from container</code> with <code>v1.1 from container</code>. Build and push it as a <b>new</b> version.</p>
+      <pre data-lang="sh">docker build -t localhost:5000/hello-docker:1.1 .
+docker push localhost:5000/hello-docker:1.1</pre>
+      <p><b>Step 4.</b> Ask the registry what it has.</p>
+      <pre data-lang="console">$ curl http://localhost:5000/v2/hello-docker/tags/list
+{"name":"hello-docker","tags":["1.0","1.1"]}</pre>
+      <p><b>Step 5.</b> Pretend to be a fresh server. Delete your local copies, then pull and run the new version.</p>
+      <pre data-lang="console">$ docker rmi localhost:5000/hello-docker:1.0 localhost:5000/hello-docker:1.1
+$ docker pull localhost:5000/hello-docker:1.1
+$ docker run -d --name hello -p 8000:8000 localhost:5000/hello-docker:1.1
+$ curl http://localhost:8000
+Hello v1.1 from container 78606510889f!</pre>
+      <p>That was a deploy. The "server" had no source code and no Dockerfile. It only pulled an image and ran it.</p>
+      <div class="callout tip">
+        <span class="callout-title">Port 5000 busy?</span>
+        <p>Use another host port, for example <code>-p 5001:5000</code>, and write <code>localhost:5001</code> everywhere. A registry on <code>localhost</code> works without a login or HTTPS. A real registry needs both: you run <code>docker login</code> first.</p>
+      </div>
+    </section>
+
+    <section id="deploy">
+      <h2>What a deploy really is</h2>
+      <p>However complicated the tooling looks, a deploy to one server is always the same few steps. Click through them.</p>
+      <div data-stepper>
+        <div class="step" data-label="Pull">
+          <h4>1. Pull the new image</h4>
+          <p><code>docker pull registry.example.com/team/hello-docker:1.4.2</code></p>
+          <p>The old version keeps running while the new image downloads. Only the layers that changed are downloaded, so this usually takes seconds.</p>
+        </div>
+        <div class="step" data-label="Remove old">
+          <h4>2. Remove the old container</h4>
+          <p><code>docker rm -f hello</code></p>
+          <p>The app is down from this moment. Data is safe, because it lives in a volume and not in the container.</p>
+        </div>
+        <div class="step" data-label="Run new">
+          <h4>3. Start a container from the new image</h4>
+          <p><code>docker run -d --name hello --restart unless-stopped -p 8000:8000 --env-file .env registry.example.com/team/hello-docker:1.4.2</code></p>
+          <p>The same name, the same ports, the same volume, the same configuration. Only the version at the end is different.</p>
+        </div>
+        <div class="step" data-label="Check">
+          <h4>4. Check that it is healthy</h4>
+          <p><code>docker ps</code>, <code>docker logs hello</code>, and a request to the health address of the app.</p>
+          <p>A deploy is not finished when the container starts. It is finished when the app answers correctly.</p>
+        </div>
+        <div class="step" data-label="Keep old image">
+          <h4>5. Keep the previous image for a while</h4>
+          <p>Do not delete version 1.4.1 at once. If 1.4.2 turns out to be bad in an hour, the old image is your way back.</p>
+        </div>
+      </div>
+      <h3>The same with Compose</h3>
+      <p>On a server, the Compose file uses <code>image</code> instead of <code>build</code>, with the version in a variable:</p>
+      <pre data-lang="yaml" data-title="compose.yaml on the server">services:
+  web:
+    image: localhost:5000/hello-docker:${APP_VERSION}
+    ports:
+      - "8000:8000"</pre>
+      <pre data-lang="text" data-title=".env on the server">APP_VERSION=1.1</pre>
+      <p>A deploy is then: change the number in <code>.env</code>, and run two commands.</p>
+      <pre data-lang="sh">docker compose pull
+docker compose up -d</pre>
+      <p>Compose sees that the image name changed and replaces the container. Services whose image did not change are left running.</p>
+    </section>
+
+    <section id="rollback">
+      <h2>Rollback: going back</h2>
+      <p>Version 1.1 is live and something is wrong. Because every version still exists in the registry under its own tag, going back is the same action as going forward, with the older number.</p>
+      <pre data-lang="console">$ docker rm -f hello
+$ docker run -d --name hello -p 8000:8000 localhost:5000/hello-docker:1.0
+$ curl http://localhost:8000
+Hello from container 46e76f9dd4ae!</pre>
+      <p>With Compose: set <code>APP_VERSION=1.0</code> in <code>.env</code> and run <code>docker compose up -d</code>.</p>
+      <div class="callout warn">
+        <span class="callout-title">What a rollback does not undo</span>
+        <p>A rollback changes the <b>code</b> that runs. It does not change the <b>data</b>. If version 1.1 altered the database, for example by renaming a column, the old code now meets a database it does not understand. This is why teams make database changes in small steps that both the old and the new version can live with.</p>
+      </div>
+      <p>Clean up the lab. The <code>-v</code> also removes the hidden volume in which the registry stored its images.</p>
+      <pre data-lang="sh">docker rm -f -v hello registry
+docker rmi localhost:5000/hello-docker:1.0 localhost:5000/hello-docker:1.1</pre>
+      <p>Then undo your edit in <code>app.py</code>.</p>
+    </section>
+
+    <section id="config">
+      <h2>One image, many environments</h2>
+      <p>If the same image runs in testing and in production, how can it talk to a test database in one place and the real database in the other? <b>Configuration comes from outside the image</b>, as environment variables given when the container starts.</p>
+      <div class="table-wrap">
+        <table>
+          <tr><th></th><th>Development</th><th>Staging</th><th>Production</th></tr>
+          <tr><td><b>Image</b></td><td class="wrap">Built on your machine</td><td><code>hello-docker:1.4.2</code></td><td><code>hello-docker:1.4.2</code> (the same)</td></tr>
+          <tr><td><b>Database address</b></td><td class="wrap">The <code>db</code> container</td><td class="wrap">The staging database</td><td class="wrap">The production database</td></tr>
+          <tr><td><b>Passwords and keys</b></td><td class="wrap">A local <code>.env</code> with test values</td><td class="wrap">From a secret manager</td><td class="wrap">From a secret manager</td></tr>
+          <tr><td><b>Source code</b></td><td class="wrap">Bind mount, live reload</td><td class="wrap">Inside the image</td><td class="wrap">Inside the image</td></tr>
+        </table>
+      </div>
+      <p>The rule: <b>if you have to rebuild the image to move it to another environment, something that should be configuration is baked into the image.</b> Take it out and pass it as a variable.</p>
+    </section>
+
+    <section id="ci">
+      <h2>What the CI server runs</h2>
+      <p>CI sounds complicated, but the Docker part of a CI job is three commands that you already know. The CI system only supplies the password and the version number.</p>
+      <pre data-lang="sh" data-title="The Docker part of a CI job"># 1. Log in to the registry. The password comes from the CI system's secret store.
+echo "$REGISTRY_PASSWORD" | docker login registry.example.com -u "$REGISTRY_USER" --password-stdin
+
+# 2. Build, tagged with the commit that is being built
+docker build -t registry.example.com/team/hello-docker:"$COMMIT_ID" .
+
+# 3. Push
+docker push registry.example.com/team/hello-docker:"$COMMIT_ID"</pre>
+      <p>Each CI product has its own file format around these commands. The commands themselves are the same everywhere.</p>
+      <div class="callout tip">
+        <span class="callout-title">Why not build on your laptop?</span>
+        <p>An image built by CI comes from code that is in Git, was tested, and was built on the right kind of processor. An image built on a laptop may contain changes that nobody else has, and may be built for the wrong processor. Laptops are for developing. CI is for building what gets shipped.</p>
+      </div>
+    </section>
+
+    <section id="beyond">
+      <h2>Beyond one server</h2>
+      <p>Everything so far runs on a single machine. That is enough for many internal tools and small products. It stops being enough when you need one of these:</p>
+      <ul>
+        <li><b>No downtime during deploys.</b> Step 2 above takes the app down for a moment.</li>
+        <li><b>More than one server</b>, because one is too small or because it must not be a single point of failure.</li>
+        <li><b>Automatic repair</b>: if a server dies at night, the containers should start somewhere else by themselves.</li>
+        <li><b>Scaling</b>: ten copies of the app during the day, two at night.</li>
+      </ul>
+      <p>The tools for this are called <b>orchestrators</b>. The best known is <b>Kubernetes</b>; cloud providers also offer simpler ones such as Amazon ECS and Google Cloud Run. They do not replace what you learned. They run the same images and use the same ideas under different names:</p>
+      <div class="table-wrap">
+        <table>
+          <tr><th>You know it as</th><th>Kubernetes calls it</th></tr>
+          <tr><td class="wrap">Image</td><td class="wrap">Image (exactly the same thing)</td></tr>
+          <tr><td class="wrap">Container</td><td class="wrap">A container inside a <b>Pod</b></td></tr>
+          <tr><td class="wrap">A service in <code>compose.yaml</code></td><td class="wrap">A <b>Deployment</b></td></tr>
+          <tr><td class="wrap">Reaching <code>db</code> by its name</td><td class="wrap">A <b>Service</b></td></tr>
+          <tr><td class="wrap">Published port</td><td class="wrap"><b>Service</b> and <b>Ingress</b></td></tr>
+          <tr><td class="wrap">Environment variables, <code>.env</code></td><td class="wrap"><b>ConfigMap</b> and <b>Secret</b></td></tr>
+          <tr><td class="wrap">Named volume</td><td class="wrap"><b>PersistentVolumeClaim</b></td></tr>
+          <tr><td class="wrap">Health check</td><td class="wrap"><b>Liveness</b> and <b>readiness probes</b></td></tr>
+        </table>
+      </div>
+      <p>Learn Docker and Compose well first. Everything in this course is used unchanged when you move on.</p>
+    </section>
+
+    <section id="practice">
+      <h2>Practice</h2>
+      <div data-exercises="pipeline"></div>
+    </section>
+
+    <section class="takeaways" id="takeaways">
+      <h2>Remember</h2>
+      <ul>
+        <li>Code goes to Git, CI builds an image, the registry stores it, servers pull and run it.</li>
+        <li>Build once. The same image moves through every environment.</li>
+        <li>Every build gets its own tag, and a tag is never reused. Never deploy <code>latest</code>.</li>
+        <li>A deploy is: pull, replace the container, check.</li>
+        <li>A rollback is a deploy of the previous tag. It does not roll back data.</li>
+        <li>Configuration and secrets come from outside the image.</li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

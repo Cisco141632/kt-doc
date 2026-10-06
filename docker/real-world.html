@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>6. Real-world issues · Docker learning path</title>
+  <title>Real-world issues · Docker learning path</title>
   <link rel="stylesheet" href="assets/style.css">
   <script src="assets/app.js"></script>
   <script src="assets/exercises.js" defer></script>
@@ -343,7 +343,7 @@ USER appuser</pre></dd>
             <dt>Why it happens</dt>
             <dd><code>COPY . .</code> comes before the install step, so any change breaks the cache from that line on. Or the CI machine starts empty and has no cache at all.</dd>
             <dt>Fix it</dt>
-            <dd>Copy the dependency list, install, and only then copy the code (<a href="dockerfile.html#layers">Module 3</a>). In CI, turn on the build cache feature of your CI system.</dd>
+            <dd>Copy the dependency list, install, and only then copy the code (see <a href="dockerfile.html#layers">Layers and the build cache</a>). In CI, turn on the build cache feature of your CI system.</dd>
           </dl>
         </div>
       </details>
@@ -369,10 +369,10 @@ USER appuser</pre></dd>
             <dt>What you see</dt>
             <dd>You saved the file and restarted the container. Nothing changed.</dd>
             <dt>Why it happens</dt>
-            <dd>An image is a snapshot taken at build time. Restarting a container starts the same snapshot again.</dd>
+            <dd>An image is a snapshot taken at build time. Restarting a container starts the same snapshot again. The whole chain is explained in <a href="rebuild.html">Change, build, run</a>.</dd>
             <dt>Fix it</dt>
             <dd><pre data-lang="sh">docker compose up -d --build</pre>
-              While developing, use a bind mount so that the container reads your files directly (<a href="compose.html#dev">Module 5</a>).</dd>
+              While developing, use a bind mount so that the container reads your files directly (see <a href="compose.html#dev">live code reload</a>).</dd>
           </dl>
         </div>
       </details>

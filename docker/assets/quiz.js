@@ -10,7 +10,7 @@
 
   const TESTS = [
     {
-      id: 'basics', title: 'Test 1 · Basics', module: 'index',
+      id: 'basics', title: 'Basics', module: 'index',
       questions: [
         { q: 'What is the difference between an image and a container?',
           options: ['An image is a read-only package; a container is a running instance of it', 'An image is running; a container is stored on disk', 'They are two names for the same thing', 'An image is for Linux; a container is for Windows'],
@@ -36,7 +36,7 @@
       ],
     },
     {
-      id: 'commands', title: 'Test 2 · Commands', module: 'commands',
+      id: 'commands', title: 'Commands', module: 'commands',
       questions: [
         { q: 'A container was started with <code>-p 9000:3000</code>. Which address do you open in the browser?',
           options: ['<code>localhost:9000</code>', '<code>localhost:3000</code>', 'Either one', '<code>localhost:80</code>'],
@@ -65,7 +65,7 @@
       ],
     },
     {
-      id: 'dockerfile', title: 'Test 3 · Dockerfile', module: 'dockerfile',
+      id: 'dockerfile', title: 'Dockerfile', module: 'dockerfile',
       questions: [
         { q: 'Why does a good Dockerfile copy <code>requirements.txt</code> and install dependencies <b>before</b> copying the rest of the code?',
           options: ['So the slow install layer stays cached when only the code changes', 'Because Docker requires alphabetical order', 'Because dependencies cannot be installed after the code is copied', 'To make the image larger'],
@@ -100,11 +100,43 @@
       ],
     },
     {
-      id: 'storage', title: 'Test 4 · Data & networking', module: 'storage-network',
+      id: 'rebuild', title: 'Change, build, run', module: 'rebuild',
+      questions: [
+        { q: 'What does <code>docker build</code> create?',
+          options: ['An image, and never a container', 'A container, and never an image', 'An image and a running container', 'A volume'],
+          why: 'Containers are created only by <code>docker run</code> (or by Compose).' },
+        { q: 'A container is running. You change the code and build a new image under the same name. What does the container serve?',
+          options: ['The old code, until the container is replaced', 'The new code at once', 'The new code after about ten seconds', 'An error page'],
+          why: 'A container keeps the image it was created from for its whole life.' },
+        { q: 'You run <code>docker build</code> twice and change nothing in between. What is the result of the second build?',
+          options: ['The same image with the same ID; every step is <code>CACHED</code>', 'A second, different image', 'An error, because the tag exists', 'A new container'],
+          why: 'A build produces a different image only when something that goes into the image is different.' },
+        { q: 'You edited a source file but ran no Docker command. Has the image changed?',
+          options: ['No. An image only changes when you build', 'Yes, automatically', 'Yes, but only the top layer', 'Only if a container is running'],
+          why: 'An image is a snapshot taken at build time.' },
+        { q: 'After a rebuild, will <code>docker restart hello</code> make the container use the new image?',
+          options: ['No. It restarts the same container with the same image', 'Yes, always', 'Yes, if the tag is the same', 'Only on Linux'],
+          why: 'You need a new container: <code>docker rm -f hello</code>, then <code>docker run ...</code>' },
+        { q: 'You run <code>docker run -d nginx:alpine</code> three times. What do you have?',
+          options: ['Three containers that share one image', 'One container, restarted three times', 'Three images', 'An error on the second run'],
+          why: 'Every <code>docker run</code> creates one more container.' },
+        { q: 'You rebuild with the same tag. What happens to the previous image?',
+          options: ['It stays on disk without a name (a dangling image)', 'It is deleted automatically', 'It is merged into the new image', 'It is pushed to the registry'],
+          why: 'This is how disks fill up. <code>docker image prune</code> removes these leftovers.' },
+        { q: 'Which change gives the <b>same</b> image when you build again?',
+          options: ['Editing a file that is listed in <code>.dockerignore</code>', 'Editing <code>app.py</code>', 'Editing <code>requirements.txt</code>', 'Changing a <code>RUN</code> line in the Dockerfile'],
+          why: 'Ignored files never reach the build, so nothing is different.' },
+        { q: 'What is the shortest correct way to make a code change live without Compose?',
+          options: ['Build, remove the old container, run a new one', 'Build, then restart the container', 'Restart the container twice', 'Pull the image again'],
+          why: 'Snapshot, remove, start: three steps, every time.' },
+      ],
+    },
+    {
+      id: 'storage', title: 'Data & networking', module: 'storage-network',
       questions: [
         { q: 'A Postgres container runs without a volume. You remove it and start a new one. What about the data?',
-          options: ['It is gone', 'It is restored automatically', 'It is kept in the image', 'It moved to Docker Hub'],
-          why: 'Files written inside a container are deleted with the container.' },
+          options: ['The new container starts with an empty database', 'It is restored automatically', 'It is kept in the image', 'It moved to Docker Hub'],
+          why: 'A new container does not get the files of the old one. Only a named volume carries data from one container to the next.' },
         { q: 'Which storage should a production database use?',
           options: ['A named volume', 'No volume; the container is enough', 'A bind mount of the source code folder', 'The image itself'],
           why: 'A named volume is managed by Docker and survives the removal of containers.' },
@@ -129,7 +161,7 @@
       ],
     },
     {
-      id: 'compose', title: 'Test 5 · Compose', module: 'compose',
+      id: 'compose', title: 'Compose', module: 'compose',
       questions: [
         { q: 'What is the difference between <code>docker compose down</code> and <code>docker compose down -v</code>?',
           options: ['<code>-v</code> also deletes the named volumes, and with them the data', '<code>-v</code> only prints more details', '<code>-v</code> keeps the containers', 'There is no difference'],
@@ -137,6 +169,12 @@
         { q: 'With <code>depends_on: [db]</code> (short form), what is guaranteed before <code>web</code> starts?',
           options: ['Only that the <code>db</code> container has been started', 'That the database accepts connections', 'That the database is backed up', 'Nothing at all'],
           why: 'To wait for "ready", add a <code>healthcheck</code> and <code>condition: service_healthy</code>.' },
+        { q: 'You changed a value under <code>environment:</code> in <code>compose.yaml</code>. Which command applies it?',
+          options: ['<code>docker compose up -d</code>', '<code>docker compose restart</code>', '<code>docker compose ps</code>', 'None. It is applied automatically'],
+          why: '<code>up -d</code> sees the difference and replaces the container. <code>restart</code> does not read the file again.' },
+        { q: 'Nothing changed, and you run <code>docker compose up -d --build</code>. What happens to the running container?',
+          options: ['Nothing. Compose leaves it alone and prints <code>Running</code>', 'It is replaced', 'It is restarted', 'It is stopped'],
+          why: 'No new image and no new configuration means no reason to touch the container.' },
         { q: 'In a Compose project, how does the <code>web</code> service reach the <code>db</code> service?',
           options: ['By the service name: <code>db:5432</code>', 'By <code>localhost:5432</code>', 'By the IP address of your machine', 'It needs <code>ports</code> on <code>db</code> first'],
           why: 'Compose puts all services of a project on one private network with name lookup.' },
@@ -158,7 +196,36 @@
       ],
     },
     {
-      id: 'real', title: 'Test 6 · Real-world issues', module: 'real-world',
+      id: 'pipeline', title: 'From laptop to production', module: 'pipeline',
+      questions: [
+        { q: 'What is the job of the registry in a delivery pipeline?',
+          options: ['It stores every version of the image so that servers can pull them', 'It runs the tests', 'It runs the production containers', 'It stores the source code'],
+          why: 'CI pushes to it; servers pull from it.' },
+        { q: 'What does "build once, run everywhere" mean?',
+          options: ['The same tested image moves through every environment without being rebuilt', 'Every server builds its own image', 'An image may only be run once', 'The build happens on the production server'],
+          why: 'What ran in the tests is exactly what runs in production.' },
+        { q: 'Which is a good tag for an image that goes to production?',
+          options: ['A version number or Git commit ID, used only once', '<code>latest</code>', '<code>new</code>', 'No tag'],
+          why: 'A tag that never moves tells you exactly which code runs and gives you something to go back to.' },
+        { q: 'On a single server, what does a deploy consist of?',
+          options: ['Pull the new image, replace the container, check that it works', 'Copy the source code to the server and compile it', 'Reboot the server', 'Edit files inside the running container'],
+          why: 'The server needs no source code and no Dockerfile, only the image.' },
+        { q: 'How do you roll back a bad release?',
+          options: ['Run the container from the previous image tag', 'Delete the registry', 'Restart the broken container', 'Rebuild the same code again'],
+          why: 'A rollback is a deploy of the older version, which still exists in the registry.' },
+        { q: 'What does rolling back an image <b>not</b> undo?',
+          options: ['Changes the new version made to the database', 'The code that runs', 'The image the container uses', 'The version number'],
+          why: 'Code goes back, data does not. Database changes must be planned so that the old version can still work.' },
+        { q: 'Where should production images be built?',
+          options: ['On a CI server, from code that is in Git', 'On the laptop of whoever is free', 'On the production server', 'Inside a running container'],
+          why: 'CI builds are tested, repeatable and made for the right processor type.' },
+        { q: 'What does an orchestrator such as Kubernetes add on top of Docker?',
+          options: ['Running containers across many servers, with automatic repair, scaling and deploys without downtime', 'A faster <code>docker build</code>', 'A different image format', 'A replacement for the registry'],
+          why: 'It runs the same images; it manages where and how many.' },
+      ],
+    },
+    {
+      id: 'real', title: 'Real-world issues', module: 'real-world',
       questions: [
         { q: '<code>docker ps -a</code> shows <code>Exited (137)</code>. What most likely happened?',
           options: ['The process was killed, often because it ran out of memory', 'The app finished normally', 'The image was not found', 'The port was busy'],
@@ -193,6 +260,9 @@
       ],
     },
   ];
+
+  // Tests are numbered by their position, so adding one never means renumbering the rest.
+  TESTS.forEach((test, i) => { test.title = `Test ${i + 1} · ${test.title}`; });
 
   const root = document.getElementById('quiz');
   if (!root) return;

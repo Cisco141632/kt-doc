@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>5. Docker Compose · Docker learning path</title>
+  <title>Docker Compose · Docker learning path</title>
   <link rel="stylesheet" href="assets/style.css">
   <script src="assets/app.js"></script>
   <script src="assets/exercises.js" defer></script>
@@ -21,7 +21,7 @@
 
     <section id="why">
       <h2>Why Compose exists</h2>
-      <p>With what you know from Module 4, you can already run the sample app with a database. It takes five long commands, in the right order, and every teammate has to type them without a mistake:</p>
+      <p>With what you know from <a href="storage-network.html">Data &amp; networking</a>, you can already run the sample app with a database. It takes five long commands, in the right order, and every teammate has to type them without a mistake:</p>
       <pre data-lang="sh" data-title="Without Compose">docker network create hello-net
 docker volume create db_data
 docker run -d --name db --network hello-net \
@@ -171,6 +171,41 @@ hello-docker-web-1   hello-docker-web     "gunicorn --bind 0.0…"   web       1
           <tr><td><code>docker compose config</code></td><td class="wrap">Check the file and print it with all variables filled in</td></tr>
           <tr><td><code>docker compose pull</code></td><td class="wrap">Download newer versions of the images</td></tr>
         </table>
+      </div>
+    </section>
+
+    <section id="changes">
+      <h2>What picks up my change?</h2>
+      <p>You changed something and want it live. Which command is enough depends on <b>what</b> you changed. Every cell in this table was tested with the sample app.</p>
+      <div class="table-wrap">
+        <table>
+          <tr><th>You changed</th><th><code>restart</code></th><th><code>up -d</code></th><th><code>up -d --build</code></th></tr>
+          <tr><td class="wrap">Source code (copied into the image)</td><td><span class="badge danger">No</span></td><td class="wrap"><span class="badge danger">No</span> Compose reuses the image it already has</td><td class="wrap"><span class="badge ok">Yes</span> new image, container replaced</td></tr>
+          <tr><td class="wrap"><code>compose.yaml</code> (environment, ports, volumes)</td><td><span class="badge danger">No</span></td><td class="wrap"><span class="badge ok">Yes</span> container replaced</td><td><span class="badge ok">Yes</span></td></tr>
+          <tr><td class="wrap">A value in <code>.env</code> that <code>compose.yaml</code> uses</td><td><span class="badge danger">No</span></td><td class="wrap"><span class="badge ok">Yes</span> container replaced</td><td><span class="badge ok">Yes</span></td></tr>
+          <tr><td class="wrap">Nothing</td><td class="wrap">Same container, restarted</td><td class="wrap">Nothing happens</td><td class="wrap">Nothing is rebuilt, the container keeps running</td></tr>
+        </table>
+      </div>
+      <h3>How Compose decides</h3>
+      <p>On every <code>up</code>, Compose compares what is running with what the file and the image say now.</p>
+      <ul>
+        <li><b>They match:</b> Compose leaves the container alone and prints <code>Running</code>. It is not restarted and not replaced. It keeps the same container ID.</li>
+        <li><b>They differ:</b> Compose removes the old container and creates a new one. Named volumes are kept, so the data survives.</li>
+      </ul>
+      <pre data-lang="console">$ docker compose up -d
+ Container hello-docker-web-1  Running</pre>
+      <h3>Two questions that follow</h3>
+      <details class="reveal" open>
+        <summary>If the image did not change, what happens to the container?</summary>
+        <div><p>Nothing at all. Compose sees no difference and does not touch it. This is why running <code>docker compose up -d --build</code> again and again is harmless: when there is nothing new, nothing is rebuilt and nothing is restarted.</p></div>
+      </details>
+      <details class="reveal" open>
+        <summary>If only my code changed, is the image changed?</summary>
+        <div><p>Not until a build happens. Plain <code>docker compose up -d</code> builds an image only when none exists yet, which means only the first time. After that it reuses the old image, however much code you changed. With <code>--build</code>, Compose builds again; the changed file makes a new image, and because the image is now different, the container is replaced. The full story, with an experiment, is in <a href="rebuild.html">Change, build, run</a>.</p></div>
+      </details>
+      <div class="callout warn">
+        <span class="callout-title">restart applies nothing</span>
+        <p><code>docker compose restart</code> turns the same container off and on. It does not read <code>compose.yaml</code> again, does not read <code>.env</code> again, and does not look for a new image. Use it when an app is stuck, never to apply a change.</p>
       </div>
     </section>
 

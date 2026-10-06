@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Change, build, run · Docker learning path</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/app.js"></script>
+  <script src="assets/widgets.js" defer></script>
+  <script src="assets/exercises.js" defer></script>
+  <script src="assets/practice.js" defer></script>
+</head>
+<body data-module="rebuild">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="content">
+
+    <header class="page-head">
+      <h1>Change, build, run</h1>
+      <p class="lead">You changed something. What do you have to do before the running app shows it? This page answers the questions that everybody asks in their first week with Docker.</p>
+    </header>
+
+    <section id="three">
+      <h2>Three separate things</h2>
+      <p>The most common confusion in Docker comes from treating three different things as one.</p>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Thing</th><th>What it is</th><th>Changes when</th></tr>
+          <tr><td><b>Your code</b></td><td class="wrap">Files on your machine</td><td class="wrap">You save a file</td></tr>
+          <tr><td><b>The image</b></td><td class="wrap">A snapshot of those files, taken at build time</td><td class="wrap">You run <code>docker build</code>, and something that goes into the image is different</td></tr>
+          <tr><td><b>The container</b></td><td class="wrap">A running copy of one image</td><td class="wrap">Never. You replace it with a new container.</td></tr>
+        </table>
+      </div>
+      <figure class="diagram">
+        <pre class="mermaid">
+flowchart LR
+  A["Your code&lt;br/&gt;files on your machine"] -- "docker build&lt;br/&gt;you must run it" --> B["Image&lt;br/&gt;a snapshot"]
+  B -- "docker run&lt;br/&gt;you must run it" --> C["Container&lt;br/&gt;a running copy"]
+        </pre>
+        <figcaption>Nothing moves along an arrow by itself. A change travels to the right only when you run the command.</figcaption>
+      </figure>
+      <div class="callout analogy">
+        <span class="callout-title">Think of it like this</span>
+        <p>An image is a <b>photograph</b> of your code. If you repaint the room afterwards, the photograph does not change: you have to take a new one (<code>docker build</code>). A container is a <b>print</b> of that photograph hanging on the wall. Taking a new photograph does not change the print that is already hanging: you have to hang a new print (<code>docker run</code>).</p>
+      </div>
+    </section>
+
+    <section id="sim">
+      <h2>See it move</h2>
+      <p>Each button is one action. Watch which of the three boxes changes, and which stay behind.</p>
+      <div class="widget" id="rebuild-sim"></div>
+    </section>
+
+    <section id="questions">
+      <h2>The questions everybody asks</h2>
+
+      <h3>If I build again, do I get a new container?</h3>
+      <p><b>No.</b> <code>docker build</code> only ever makes an <b>image</b>. Containers are made by <code>docker run</code>.</p>
+      <div class="table-wrap">
+        <table>
+          <tr><th>You do</th><th>What you get</th></tr>
+          <tr><td><code>docker build</code></td><td class="wrap">A new image, if something changed. No container is created or touched.</td></tr>
+          <tr><td><code>docker run</code></td><td class="wrap">A new container, every single time</td></tr>
+          <tr><td><code>docker start</code></td><td class="wrap">The same old container, started again</td></tr>
+          <tr><td><code>docker restart</code></td><td class="wrap">The same old container, stopped and started</td></tr>
+        </table>
+      </div>
+
+      <h3>If only my code changed, did the image change?</h3>
+      <p><b>Not yet.</b> An image never changes by itself. Saving a file changes the file and nothing else. The image changes when you <b>build</b>, and only if the file you changed is copied into the image.</p>
+
+      <h3>Does every build give a different image?</h3>
+      <p><b>No.</b> If nothing that goes into the image is different, every step says <code>CACHED</code> and you get exactly the same image, with the same ID. These results were measured with the sample app:</p>
+      <div class="table-wrap">
+        <table>
+          <tr><th>What you changed before building</th><th>Different image afterwards?</th><th>Why</th></tr>
+          <tr><td class="wrap">Nothing</td><td><span class="badge info">Same image</span></td><td class="wrap">All steps come from the cache</td></tr>
+          <tr><td class="wrap"><code>app.py</code></td><td><span class="badge ok">New image</span></td><td class="wrap"><code>COPY . .</code> brings in a different file, so that layer is new</td></tr>
+          <tr><td class="wrap"><code>requirements.txt</code></td><td><span class="badge ok">New image</span></td><td class="wrap">That <code>COPY</code> layer and the install layer after it are rebuilt</td></tr>
+          <tr><td class="wrap">An instruction in the <code>Dockerfile</code></td><td><span class="badge ok">New image</span></td><td class="wrap">The recipe itself is different</td></tr>
+          <tr><td class="wrap">A comment in the <code>Dockerfile</code></td><td><span class="badge info">Same image</span></td><td class="wrap">Comments are not instructions</td></tr>
+          <tr><td class="wrap">A file listed in <code>.dockerignore</code>, such as <code>.env</code></td><td><span class="badge info">Same image</span></td><td class="wrap">The file never reaches the build</td></tr>
+          <tr><td class="wrap"><code>compose.yaml</code></td><td><span class="badge info">Same image</span></td><td class="wrap">It describes how to run containers, not what is inside the image</td></tr>
+        </table>
+      </div>
+
+      <h3>I built a new image. Does my running container use it now?</h3>
+      <p><b>No.</b> A container keeps the image it was created from, for its whole life. To use the new image you need a new container.</p>
+
+      <h3>Will docker restart pick up the new image?</h3>
+      <p><b>No.</b> Restart stops and starts the <b>same</b> container. Same container, same image.</p>
+
+      <h3>What happens to the old image?</h3>
+      <p>It stays on disk. When you build again with the same name, the name moves to the new image and the old one is left <b>without a name</b>. This is called a <b>dangling image</b>. <code>docker images -a</code> lists it as <code>&lt;untagged&gt;</code> (older Docker versions print <code>&lt;none&gt;</code>). Every rebuild leaves one behind, which is how disks slowly fill up. Remove them with <code>docker image prune</code>.</p>
+
+      <h3>If I run the same image three times, do I get three containers?</h3>
+      <p><b>Yes.</b> Each <code>docker run</code> creates one more container. They share the image and do not share anything else.</p>
+    </section>
+
+    <section id="proof">
+      <h2>Prove it yourself</h2>
+      <p>Do not take any of this on trust. Run it in <code>docker/examples/hello-docker</code>. It takes five minutes, and after it you will never be confused by this again.</p>
+      <p><b>Step 1.</b> Build and run version 1.</p>
+      <pre data-lang="console">$ docker build -t hello-docker:1.0 .
+$ docker run -d -p 8000:8000 --name hello hello-docker:1.0
+$ curl http://localhost:8000
+Hello from container a074ece336d2!</pre>
+      <p><b>Step 2.</b> Open <code>app.py</code> and change <code>from container</code> to <code>(version 2) from container</code>. Save. Ask the app again:</p>
+      <pre data-lang="console">$ curl http://localhost:8000
+Hello from container a074ece336d2!</pre>
+      <p>Still the old text. You changed a file; the image and the container know nothing about it.</p>
+      <p><b>Step 3.</b> Build again, with the same name.</p>
+      <pre data-lang="console">$ docker build -t hello-docker:1.0 .
+$ curl http://localhost:8000
+Hello from container a074ece336d2!</pre>
+      <p>Still the old text, although a new image exists. Look at what the container is using:</p>
+      <pre data-lang="console">$ docker ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}'
+NAMES     IMAGE          STATUS
+hello     33f44ef87b4a   Up 2 minutes</pre>
+      <p>The IMAGE column no longer shows a name. It shows an ID, because the name <code>hello-docker:1.0</code> now belongs to the new image and this container still runs the old, nameless one.</p>
+      <p><b>Step 4.</b> Try a restart.</p>
+      <pre data-lang="console">$ docker restart hello
+$ curl http://localhost:8000
+Hello from container a074ece336d2!</pre>
+      <p>The same container ID, the same old text. Restarting did nothing for you.</p>
+      <p><b>Step 5.</b> Replace the container.</p>
+      <pre data-lang="console">$ docker rm -f hello
+$ docker run -d -p 8000:8000 --name hello hello-docker:1.0
+$ curl http://localhost:8000
+Hello (version 2) from container 74c919da6197!</pre>
+      <p>A new container ID, and at last the new text. Clean up with <code>docker rm -f hello</code>, and undo your edit in <code>app.py</code>.</p>
+    </section>
+
+    <section id="recipe">
+      <h2>The recipe to remember</h2>
+      <p>To make a code change visible, you always need the same three steps:</p>
+      <pre data-lang="sh"># 1. Take a new snapshot of the code
+docker build -t hello-docker:1.0 .
+
+# 2. Remove the container that runs the old snapshot
+docker rm -f hello
+
+# 3. Start a container from the new snapshot
+docker run -d -p 8000:8000 --name hello hello-docker:1.0</pre>
+      <p>Docker Compose does all three with one command, <code>docker compose up -d --build</code>, and is smart enough to skip the steps that are not needed. See <a href="compose.html#changes">What picks up my change?</a> in the Compose module.</p>
+      <div class="callout tip">
+        <span class="callout-title">A better habit: a new tag for every version</span>
+        <p>Reusing the tag <code>1.0</code> is what made step 3 confusing: one name, two different images. Give each build its own tag (<code>hello-docker:1.1</code>, <code>hello-docker:1.2</code>). Then every image keeps its name, you can see at a glance which version a container runs, and going back to the old version is one command. This is how real projects work, and it is the subject of <a href="pipeline.html">From laptop to production</a>.</p>
+      </div>
+      <div class="callout">
+        <span class="callout-title">While developing</span>
+        <p>Rebuilding for every saved line is slow. During development you can skip the image completely with a bind mount, so that the container reads your files directly. That is explained in <a href="storage-network.html#bind">Data &amp; networking</a> and <a href="compose.html#dev">Docker Compose</a>.</p>
+      </div>
+    </section>
+
+    <section id="practice">
+      <h2>Practice</h2>
+      <div data-exercises="rebuild"></div>
+    </section>
+
+    <section class="takeaways" id="takeaways">
+      <h2>Remember</h2>
+      <ul>
+        <li>Code, image and container are three separate things. A change moves from one to the next only when you run a command.</li>
+        <li><code>docker build</code> makes images. <code>docker run</code> makes containers. Neither does the other's job.</li>
+        <li>Code alone never changes an image. A build changes it only if the changed file goes into the image.</li>
+        <li>A container keeps the image it was created from. <code>restart</code> does not change that.</li>
+        <li>New code live = build, remove the old container, run a new one.</li>
+        <li>Rebuilding under the same name leaves a nameless old image behind.</li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

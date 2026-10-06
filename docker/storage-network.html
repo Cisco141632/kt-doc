@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>4. Data &amp; networking · Docker learning path</title>
+  <title>Data &amp; networking · Docker learning path</title>
   <link rel="stylesheet" href="assets/style.css">
   <script src="assets/app.js"></script>
   <script src="assets/widgets.js" defer></script>
@@ -22,7 +22,7 @@
 
     <section id="forget">
       <h2>Containers forget</h2>
-      <p>In the lab of Module 2 you changed a file inside a container, removed the container, and the change was gone. That is by design: a container is disposable. For a web server this is fine. For a database it would be a disaster.</p>
+      <p>In the lab of <a href="commands.html#lab">Everyday commands</a> you changed a file inside a container, removed the container, and the change was gone. That is by design: a container is disposable. For a web server this is fine. For a database it would be a disaster.</p>
       <figure class="diagram">
         <div class="compare">
           <div>
@@ -104,6 +104,10 @@ I survive</pre>
   -e POSTGRES_PASSWORD=secret \
   -v db_data:/var/lib/postgresql/data \
   postgres:17-alpine</pre>
+      <div class="callout">
+        <span class="callout-title">Anonymous volumes: the ones you did not ask for</span>
+        <p>Some images, Postgres among them, declare that their data folder must be a volume. If you run such an image <b>without</b> <code>-v</code>, Docker quietly creates a volume with a long random name. That is an <b>anonymous volume</b>. The next container gets a new, empty one, so for you the data is lost, while the old files stay on disk and take space. <code>docker rm</code> leaves them behind. Remove a container together with its anonymous volumes using <code>docker rm -f -v NAME</code>, and find leftovers with <code>docker volume ls -f dangling=true</code>.</p>
+      </div>
       <div class="callout tip">
         <span class="callout-title">Which path?</span>
         <p>The path on the right is where that program stores its data, and it is different for every image. Find it under "volumes" or "where to store data" on the image's Docker Hub page. Example: Postgres up to version 17 uses <code>/var/lib/postgresql/data</code>, and the Postgres 18 image moved it to <code>/var/lib/postgresql</code>. A wrong path fails silently: the container works, and the data is lost anyway.</p>
@@ -166,7 +170,7 @@ flowchart LR
 $ docker run -d --name labdb --network labnet -e POSTGRES_PASSWORD=secret postgres:17-alpine
 $ docker run --rm --network labnet postgres:17-alpine pg_isready -h labdb
 labdb:5432 - accepting connections</pre>
-      <p>If the answer is <code>no response</code>, wait a few seconds and run the last line again. The database container has started, but Postgres inside it is not ready yet. Remember this: it becomes important in Module 5.</p>
+      <p>If the answer is <code>no response</code>, wait a few seconds and run the last line again. The database container has started, but Postgres inside it is not ready yet. Remember this: it becomes important in the Docker Compose module.</p>
       <p>Clean up:</p>
       <pre data-lang="sh">docker rm -f labdb
 docker network rm labnet</pre>

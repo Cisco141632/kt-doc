@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2. Everyday commands · Docker learning path</title>
+  <title>Everyday commands · Docker learning path</title>
   <link rel="stylesheet" href="assets/style.css">
   <script src="assets/app.js"></script>
   <script src="assets/widgets.js" defer></script>
@@ -84,8 +84,8 @@ docker  volume     rm                  notes</pre>
           <tr><td><code>--env-file</code></td><td class="wrap">Read many variables from a file</td><td><code>--env-file .env</code></td></tr>
           <tr><td><code>-it</code></td><td class="wrap">Interactive terminal, for a shell</td><td><code>docker run -it alpine sh</code></td></tr>
           <tr><td><code>--rm</code></td><td class="wrap">Delete the container when it exits</td><td><code>docker run --rm alpine date</code></td></tr>
-          <tr><td><code>-v</code></td><td class="wrap">Attach storage (<a href="storage-network.html">Module 4</a>)</td><td><code>-v db_data:/var/lib/postgresql/data</code></td></tr>
-          <tr><td><code>--network</code></td><td class="wrap">Join a network (<a href="storage-network.html">Module 4</a>)</td><td><code>--network labnet</code></td></tr>
+          <tr><td><code>-v</code></td><td class="wrap">Attach storage (see <a href="storage-network.html">Data &amp; networking</a>)</td><td><code>-v db_data:/var/lib/postgresql/data</code></td></tr>
+          <tr><td><code>--network</code></td><td class="wrap">Join a network (see <a href="storage-network.html">Data &amp; networking</a>)</td><td><code>--network labnet</code></td></tr>
           <tr><td><code>--restart</code></td><td class="wrap">Restart automatically after a crash or reboot</td><td><code>--restart unless-stopped</code></td></tr>
         </table>
       </div>
@@ -98,6 +98,10 @@ docker run --rm -it alpine sh
 
 # One command, then the container is gone. Prints the date inside the container.
 docker run --rm alpine date</pre>
+      <div class="callout">
+        <span class="callout-title">Every run is a new container</span>
+        <p>Run the same command three times and you have three containers. <code>docker run</code> never reuses an old container, and <code>docker build</code> never creates one. What happens when you change your code and build again is the subject of <a href="rebuild.html">Change, build, run</a>.</p>
+      </div>
     </section>
 
     <section id="states">
@@ -204,7 +208,7 @@ docker ps -a</pre><p><code>docker ps</code> does not show it. <code>docker ps -a
           <details class="reveal"><summary>Answer</summary><div><pre data-lang="sh">docker start lab</pre><p><b>Yes.</b> Stopping keeps the files of the container.</p></div></details></li>
         <li>Remove it and run a new container with the same command as in step 1. Is your change still there?
           <details class="reveal"><summary>Answer</summary><div><pre data-lang="sh">docker rm -f lab
-docker run -d -p 8081:80 --name lab nginx:alpine</pre><p><b>No.</b> You see "Welcome to nginx!" again. A new container starts fresh from the image. Keeping data across containers is the job of volumes, in <a href="storage-network.html">Module 4</a>. Clean up with <code>docker rm -f lab</code>.</p></div></details></li>
+docker run -d -p 8081:80 --name lab nginx:alpine</pre><p><b>No.</b> You see "Welcome to nginx!" again. A new container starts fresh from the image. Keeping data across containers is the job of volumes, in <a href="storage-network.html">Data &amp; networking</a>. Clean up with <code>docker rm -f lab</code>.</p></div></details></li>
       </ol>
     </section>
 

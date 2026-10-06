@@ -5,7 +5,7 @@ from flask import Flask
 
 app = Flask(__name__)
 
-# Set by compose.yaml in Module 5. Without it the app runs with no database.
+# Set by compose.yaml. Without it the app runs with no database.
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 

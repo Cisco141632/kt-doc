@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>9. Cheat sheet · Docker learning path</title>
+  <title>Cheat sheet · Docker learning path</title>
   <link rel="stylesheet" href="assets/style.css">
   <script src="assets/app.js"></script>
 </head>
@@ -124,6 +124,36 @@ CMD ["gunicorn", "--bind", "0.0.0.0:8000", "app:app"]</pre>
           <tr><td class="wrap">Stop and remove, keep data</td><td><code>docker compose down</code></td></tr>
           <tr><td class="wrap">Stop and remove, <b>delete data</b></td><td><code>docker compose down -v</code></td></tr>
           <tr><td class="wrap">Check the file</td><td><code>docker compose config</code></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="changes">
+      <h2>What picks up my change?</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>I changed</th><th>Do this</th></tr>
+          <tr><td class="wrap">Code, plain Docker</td><td class="wrap"><code>docker build -t app:1.1 .</code> → <code>docker rm -f app</code> → <code>docker run ... app:1.1</code></td></tr>
+          <tr><td class="wrap">Code, with Compose</td><td><code>docker compose up -d --build</code></td></tr>
+          <tr><td class="wrap"><code>compose.yaml</code> or <code>.env</code></td><td><code>docker compose up -d</code></td></tr>
+          <tr><td class="wrap">Nothing; the app is just stuck</td><td><code>docker compose restart web</code></td></tr>
+        </table>
+      </div>
+      <p><code>build</code> makes images and never a container. <code>restart</code> applies no change at all. A container keeps the image it was created from.</p>
+    </section>
+
+    <section id="ship">
+      <h2>Registry and deploy</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>I want to</th><th>Command</th></tr>
+          <tr><td class="wrap">Name an image for a registry</td><td><code>docker tag app:1.0 registry.example.com/team/app:1.0</code></td></tr>
+          <tr><td class="wrap">Log in to a registry</td><td><code>docker login registry.example.com</code></td></tr>
+          <tr><td class="wrap">Upload / download a version</td><td><code>docker push IMAGE:TAG</code> · <code>docker pull IMAGE:TAG</code></td></tr>
+          <tr><td class="wrap">Deploy a new version with Compose</td><td><code>docker compose pull</code> then <code>docker compose up -d</code></td></tr>
+          <tr><td class="wrap">Roll back</td><td class="wrap">Deploy the previous tag again</td></tr>
+          <tr><td class="wrap">See old nameless images</td><td><code>docker images -a</code></td></tr>
+          <tr><td class="wrap">Remove a container with its anonymous volumes</td><td><code>docker rm -f -v NAME</code></td></tr>
         </table>
       </div>
     </section>

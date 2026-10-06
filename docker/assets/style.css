@@ -263,7 +263,7 @@ pre.mermaid.mermaid-failed::before { content: "Diagram could not load (it needs 
 .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin: 12px 0; font-size: 0.86rem; }
 .facts div { padding: 8px 10px; border-radius: 8px; background: var(--surface-2); }
 .facts b { display: block; }
-.mini-term { margin: 0; max-height: 170px; min-height: 60px; font-size: 0.8rem; }
+.mini-term { margin: 0; max-height: 230px; min-height: 60px; font-size: 0.8rem; white-space: pre-wrap; }
 
 .layers { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
 .layer-row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); font-size: 0.84rem; }
@@ -282,6 +282,9 @@ pre.mermaid.mermaid-failed::before { content: "Diagram could not load (it needs 
 .portmap .box { flex: 1 1 150px; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); text-align: center; font-size: 0.86rem; }
 .portmap .box b { display: block; font-family: var(--mono); font-size: 1rem; color: var(--accent); }
 .portmap .arrow { align-self: center; color: var(--muted); font-size: 1.2rem; }
+.portmap .box.is-fresh { border-color: var(--ok); background: var(--ok-soft); }
+.portmap .box.is-stale { border-color: var(--warn); background: var(--warn-soft); }
+.portmap .box .badge { margin-top: 6px; }
 
 /* ---------- Exercises ---------- */
 
