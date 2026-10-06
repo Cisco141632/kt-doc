@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>5. Docker Compose · Docker learning path</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/app.js"></script>
+  <script src="assets/exercises.js" defer></script>
+  <script src="assets/practice.js" defer></script>
+</head>
+<body data-module="compose">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="content">
+
+    <header class="page-head">
+      <h1>Docker Compose</h1>
+      <p class="lead">Real applications are several containers that belong together: an app, a database, perhaps a cache. Compose describes all of them in one file and starts them with one command.</p>
+    </header>
+
+    <section id="why">
+      <h2>Why Compose exists</h2>
+      <p>With what you know from Module 4, you can already run the sample app with a database. It takes five long commands, in the right order, and every teammate has to type them without a mistake:</p>
+      <pre data-lang="sh" data-title="Without Compose">docker network create hello-net
+docker volume create db_data
+docker run -d --name db --network hello-net \
+  -e POSTGRES_PASSWORD=secret \
+  -v db_data:/var/lib/postgresql/data \
+  postgres:17-alpine
+docker build -t hello-docker:1.0 .
+docker run -d --name web --network hello-net -p 8000:8000 \
+  -e DATABASE_URL=postgresql://postgres:secret@db:5432/postgres \
+  hello-docker:1.0</pre>
+      <p>Compose moves all of that into a file that lives in Git next to the code:</p>
+      <pre data-lang="sh" data-title="With Compose">docker compose up -d</pre>
+      <div class="callout analogy">
+        <span class="callout-title">Think of it like this</span>
+        <p>Single <code>docker run</code> commands are like giving a taxi driver directions turn by turn. A Compose file is the address: you say where you want to end up, and Compose works out the steps.</p>
+      </div>
+    </section>
+
+    <section id="file">
+      <h2>The Compose file</h2>
+      <p>The file is called <code>compose.yaml</code> and sits in the project folder. This is the one from <code>docker/examples/hello-docker</code>:</p>
+      <pre data-lang="yaml" data-title="compose.yaml">services:
+  web:
+    build: .
+    ports:
+      - "8000:8000" # HOST:CONTAINER
+    environment:
+      GREETING: Hello
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/postgres
+    depends_on:
+      db:
+        condition: service_healthy # wait until the database answers
+
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data # named volume: data survives "down"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  db_data:</pre>
+      <figure class="diagram">
+        <pre class="mermaid">
+flowchart LR
+  U["Your browser"] -- "localhost:8000" --> W
+  subgraph proj["Compose project: its own private network"]
+    W["web&lt;br/&gt;built from the Dockerfile"] -- "db:5432" --> D["db&lt;br/&gt;postgres:17-alpine"]
+  end
+  D --- V[("db_data&lt;br/&gt;named volume")]
+        </pre>
+        <figcaption>What the file describes: two services on one network, one published port, one volume.</figcaption>
+      </figure>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Key</th><th>What it means</th><th>The docker run equivalent</th></tr>
+          <tr><td><code>services</code></td><td class="wrap">The containers of this application. Each name (<code>web</code>, <code>db</code>) is also its host name on the network.</td><td><code>--name</code></td></tr>
+          <tr><td><code>build: .</code></td><td class="wrap">Build the image from the Dockerfile in this folder</td><td><code>docker build .</code></td></tr>
+          <tr><td><code>image</code></td><td class="wrap">Use a ready-made image instead of building</td><td class="wrap">the image name</td></tr>
+          <tr><td><code>ports</code></td><td class="wrap">Publish ports, <code>HOST:CONTAINER</code>. Keep the quotes.</td><td><code>-p</code></td></tr>
+          <tr><td><code>environment</code></td><td class="wrap">Environment variables for the container</td><td><code>-e</code></td></tr>
+          <tr><td><code>volumes</code> (in a service)</td><td class="wrap">Attach a named volume or a bind mount</td><td><code>-v</code></td></tr>
+          <tr><td><code>depends_on</code></td><td class="wrap">Start order. With <code>condition: service_healthy</code>, wait for the health check.</td><td class="wrap">none: you did it by hand</td></tr>
+          <tr><td><code>healthcheck</code></td><td class="wrap">A command that tells Docker whether the service is really ready</td><td><code>--health-cmd</code></td></tr>
+          <tr><td><code>volumes</code> (at the bottom)</td><td class="wrap">Declares the named volumes that the services use</td><td><code>docker volume create</code></td></tr>
+        </table>
+      </div>
+      <div class="callout">
+        <span class="callout-title">Where is the network?</span>
+        <p>You do not write one. Compose creates a private network for every project and connects all services to it. That is why <code>web</code> can reach the database at the host name <code>db</code>, and why <code>db</code> needs no <code>ports</code> at all.</p>
+      </div>
+    </section>
+
+    <section id="run">
+      <h2>Run the stack</h2>
+      <pre data-lang="console">$ cd docker/examples/hello-docker
+$ cp .env.example .env
+$ docker compose up -d
+$ curl http://localhost:8000
+Hello from container fb18acde7e7c!
+Visits so far: 1
+$ curl http://localhost:8000
+Hello from container fb18acde7e7c!
+Visits so far: 2</pre>
+      <p>Every request is counted in Postgres. Look at what is running:</p>
+      <pre data-lang="console">$ docker compose ps
+NAME                 IMAGE                COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+hello-docker-db-1    postgres:17-alpine   "docker-entrypoint.s…"   db        12 seconds ago   Up 12 seconds (healthy)   5432/tcp
+hello-docker-web-1   hello-docker-web     "gunicorn --bind 0.0…"   web       12 seconds ago   Up 6 seconds              0.0.0.0:8000->8000/tcp</pre>
+      <p>Notice the PORTS column. <code>web</code> is published on your machine. <code>db</code> shows only <code>5432/tcp</code> with no arrow: it is reachable inside the project network and nowhere else.</p>
+
+      <h3>Click through: what "up" does</h3>
+      <div data-stepper>
+        <div class="step" data-label="Read file">
+          <h4>1. Read compose.yaml and .env</h4>
+          <p>Compose reads the file in the current folder and replaces every <code>${VARIABLE}</code> with the value from <code>.env</code>. The folder name becomes the project name, here <code>hello-docker</code>.</p>
+        </div>
+        <div class="step" data-label="Network">
+          <h4>2. Create the network</h4>
+          <p>A private network named <code>hello-docker_default</code> is created. Every service joins it.</p>
+        </div>
+        <div class="step" data-label="Volume">
+          <h4>3. Create the volume</h4>
+          <p>The named volume <code>hello-docker_db_data</code> is created, unless it already exists. If it exists, it is reused with all its data.</p>
+        </div>
+        <div class="step" data-label="Images">
+          <h4>4. Get the images</h4>
+          <p><code>db</code> has an <code>image</code>, so it is pulled. <code>web</code> has a <code>build</code>, so its image is built from the Dockerfile, but only the first time. Later you need <code>--build</code>.</p>
+        </div>
+        <div class="step" data-label="Start db">
+          <h4>5. Start the database</h4>
+          <p><code>web</code> depends on <code>db</code>, so <code>db</code> starts first.</p>
+        </div>
+        <div class="step" data-label="Wait healthy">
+          <h4>6. Wait until it is healthy</h4>
+          <p>Compose runs <code>pg_isready</code> every 5 seconds. Only when it succeeds is the service marked <b>healthy</b>. Without this, the app would start while Postgres is still booting, and crash.</p>
+        </div>
+        <div class="step" data-label="Start web">
+          <h4>7. Start the app</h4>
+          <p>Now <code>web</code> starts, connects to <code>db:5432</code>, and port 8000 is published on your machine.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="commands">
+      <h2>Compose commands</h2>
+      <p>Run them in the folder that contains <code>compose.yaml</code>. They only touch this project.</p>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Command</th><th>What it does</th></tr>
+          <tr><td><code>docker compose up -d</code></td><td class="wrap">Create and start everything in the background</td></tr>
+          <tr><td><code>docker compose up -d --build</code></td><td class="wrap">The same, but rebuild images first. Use it after you change code.</td></tr>
+          <tr><td><code>docker compose ps</code></td><td class="wrap">Show the services of this project and their health</td></tr>
+          <tr><td><code>docker compose logs -f</code></td><td class="wrap">Follow the logs of all services together</td></tr>
+          <tr><td><code>docker compose logs -f web</code></td><td class="wrap">Follow the logs of one service</td></tr>
+          <tr><td><code>docker compose exec web sh</code></td><td class="wrap">Open a shell in a running service</td></tr>
+          <tr><td><code>docker compose exec db psql -U postgres</code></td><td class="wrap">Run a program in a service, here the Postgres command line</td></tr>
+          <tr><td><code>docker compose restart web</code></td><td class="wrap">Restart one service</td></tr>
+          <tr><td><code>docker compose stop</code></td><td class="wrap">Stop the containers but keep them</td></tr>
+          <tr><td><code>docker compose down</code></td><td class="wrap">Stop and remove containers and network. <b>Volumes are kept.</b></td></tr>
+          <tr><td><code>docker compose down -v</code></td><td class="wrap">Also delete the named volumes. <b>The data is gone.</b></td></tr>
+          <tr><td><code>docker compose config</code></td><td class="wrap">Check the file and print it with all variables filled in</td></tr>
+          <tr><td><code>docker compose pull</code></td><td class="wrap">Download newer versions of the images</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="down">
+      <h2>stop, down, and down -v</h2>
+      <p>Three commands that sound alike and do very different things.</p>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Command</th><th>Containers</th><th>Network</th><th>Volumes (your data)</th></tr>
+          <tr><td><code>docker compose stop</code></td><td>Stopped, kept</td><td>Kept</td><td><span class="badge ok">Kept</span></td></tr>
+          <tr><td><code>docker compose down</code></td><td>Removed</td><td>Removed</td><td><span class="badge ok">Kept</span></td></tr>
+          <tr><td><code>docker compose down -v</code></td><td>Removed</td><td>Removed</td><td><span class="badge danger">Deleted</span></td></tr>
+        </table>
+      </div>
+      <p>Prove it with the visit counter:</p>
+      <pre data-lang="console">$ docker compose down
+$ docker compose up -d
+$ curl http://localhost:8000
+Hello from container 64302524246e!
+Visits so far: 4
+$ docker compose down -v
+$ docker compose up -d
+$ curl http://localhost:8000
+Hello from container bcf3bc1c0112!
+Visits so far: 1</pre>
+      <p>After <code>down</code> the container is new (a different ID) but the count continues, because the data is in the volume. After <code>down -v</code> the count starts again at 1.</p>
+      <div class="callout danger">
+        <span class="callout-title">On a server</span>
+        <p>Never type <code>down -v</code> on a production machine out of habit. It deletes the database of that project without asking.</p>
+      </div>
+    </section>
+
+    <section id="env">
+      <h2>Secrets and the .env file</h2>
+      <p>The password is not written in <code>compose.yaml</code>. The file says <code>${POSTGRES_PASSWORD}</code>, and Compose reads the value from a file named <code>.env</code> in the same folder.</p>
+      <pre data-lang="text" data-title=".env (never commit this file)">POSTGRES_PASSWORD=change-me</pre>
+      <ul>
+        <li><code>compose.yaml</code> goes into Git. It contains no secrets.</li>
+        <li><code>.env</code> is listed in <code>.gitignore</code> and stays on each machine.</li>
+        <li><code>.env.example</code> goes into Git with placeholder values, so a new teammate knows which variables to set.</li>
+        <li>Run <code>docker compose config</code> to see the file with the values filled in. If a variable is missing, Compose warns you there.</li>
+      </ul>
+      <div class="callout warn">
+        <span class="callout-title">Forgot to create .env?</span>
+        <p>Compose prints <code>The "POSTGRES_PASSWORD" variable is not set. Defaulting to a blank string</code>, the database refuses to start without a password, and <code>up</code> ends with <code>dependency failed to start</code>. Run <code>cp .env.example .env</code> and try again.</p>
+      </div>
+      <p>In production, teams usually go one step further and keep secrets in a secret manager instead of a file on the server.</p>
+    </section>
+
+    <section id="dev">
+      <h2>Live code reload while developing</h2>
+      <p>Rebuilding the image for every code change is slow. During development you can mount your source folder into the container with a bind mount. Put this in a second file named <code>compose.override.yaml</code>. Compose merges it on top of <code>compose.yaml</code> automatically.</p>
+      <pre data-lang="yaml" data-title="compose.override.yaml (development only)">services:
+  web:
+    volumes:
+      - .:/app
+    command: gunicorn --bind 0.0.0.0:8000 --reload app:app</pre>
+      <p>Now a saved change in <code>app.py</code> is active after a second. Keep this file out of production: there the image must contain the code, so that what you tested is exactly what runs.</p>
+      <div class="callout warn">
+        <span class="callout-title">"Permission denied: '/app'"?</span>
+        <p>With a bind mount the container sees your files with the permissions they have on your machine. The app runs as <code>appuser</code>, a different user from you. If your files are readable only by you, run <code>chmod -R a+rX .</code> in the project folder and start again.</p>
+      </div>
+    </section>
+
+    <section id="old">
+      <h2>If you read older tutorials</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Older tutorials say</th><th>Today</th></tr>
+          <tr><td><code>docker-compose up</code> (with a hyphen)</td><td class="wrap"><code>docker compose up</code> (with a space). The hyphen version was a separate tool and is retired.</td></tr>
+          <tr><td><code>version: '3.8'</code> at the top</td><td class="wrap">Not needed. Current Compose ignores it and prints a warning.</td></tr>
+          <tr><td><code>docker-compose.yml</code></td><td class="wrap"><code>compose.yaml</code> is the preferred name. The old name still works.</td></tr>
+          <tr><td><code>depends_on: [db]</code> only</td><td class="wrap">This waits for "started", not for "ready". Add a health check and <code>condition: service_healthy</code>.</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="practice">
+      <h2>Practice</h2>
+      <div data-exercises="compose"></div>
+    </section>
+
+    <section class="takeaways" id="takeaways">
+      <h2>Remember</h2>
+      <ul>
+        <li>Compose describes a whole application in <code>compose.yaml</code>. <code>docker compose up -d</code> starts it.</li>
+        <li>Services reach each other by service name. No network setup is needed.</li>
+        <li>After a code change: <code>docker compose up -d --build</code>.</li>
+        <li><code>down</code> keeps your data. <code>down -v</code> deletes it.</li>
+        <li>"Started" is not "ready": use a health check with <code>service_healthy</code>.</li>
+        <li>Secrets go in <code>.env</code>, and <code>.env</code> never goes into Git.</li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

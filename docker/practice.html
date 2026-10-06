@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>7. Practice lab · Docker learning path</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/app.js"></script>
+  <script src="assets/exercises.js" defer></script>
+  <script src="assets/practice.js" defer></script>
+</head>
+<body data-module="practice">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="content">
+
+    <header class="page-head">
+      <h1>Practice lab</h1>
+      <p class="lead">Reading is not knowing. Here are all the exercises of the course in one place: type the command, fill in the blank, or decide what to do in a real situation. Your answer is checked at once.</p>
+    </header>
+
+    <section id="rules">
+      <h2>How the checking works</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Kind</th><th>What you do</th><th>How it is checked</th></tr>
+          <tr><td><span class="badge info">Type the command</span></td><td class="wrap">Write the full command and press <kbd>Enter</kbd></td><td class="wrap">Options may be in any order. <code>-d -p</code>, <code>-dp</code> and <code>--detach --publish</code> all count. If you are wrong, you are told which piece is missing.</td></tr>
+          <tr><td><span class="badge info">Fill in the blank</span></td><td class="wrap">Complete a Dockerfile, a Compose file or a sentence</td><td class="wrap">Each blank turns green or red on its own</td></tr>
+          <tr><td><span class="badge info">Scenario</span></td><td class="wrap">Choose what you would do in a real situation</td><td class="wrap">One correct choice, with the reason</td></tr>
+        </table>
+      </div>
+      <div class="callout tip">
+        <span class="callout-title">Best way to use it</span>
+        <p>Keep a terminal open next to this page. After the checker says "Correct", run the command for real and look at what Docker answers. Use <b>Hint</b> before <b>Show answer</b>.</p>
+      </div>
+      <p>Nothing you type is sent anywhere. The check runs in your browser, and your progress is saved in this browser only.</p>
+    </section>
+
+    <section id="exercises">
+      <h2>All exercises</h2>
+      <div data-exercises="all"></div>
+      <noscript><p>The exercises need JavaScript.</p></noscript>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

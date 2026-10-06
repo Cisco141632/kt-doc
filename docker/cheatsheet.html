@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>9. Cheat sheet · Docker learning path</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/app.js"></script>
+</head>
+<body data-module="cheatsheet">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="content">
+
+    <header class="page-head">
+      <h1>Cheat sheet</h1>
+      <p class="lead">Everything from the course on one page, for the day you need a command quickly. Bookmark it. It also prints well.</p>
+    </header>
+
+    <section id="containers">
+      <h2>Containers</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>I want to</th><th>Command</th></tr>
+          <tr><td class="wrap">Run in the background with a port and a name</td><td><code>docker run -d -p 8080:80 --name web nginx:alpine</code></td></tr>
+          <tr><td class="wrap">Run with an environment variable</td><td><code>docker run -d -e KEY=value IMAGE</code></td></tr>
+          <tr><td class="wrap">Get a throw-away shell</td><td><code>docker run --rm -it alpine sh</code></td></tr>
+          <tr><td class="wrap">List running containers</td><td><code>docker ps</code></td></tr>
+          <tr><td class="wrap">List all containers</td><td><code>docker ps -a</code></td></tr>
+          <tr><td class="wrap">Stop / start / restart</td><td><code>docker stop web</code> · <code>docker start web</code> · <code>docker restart web</code></td></tr>
+          <tr><td class="wrap">Remove a stopped container</td><td><code>docker rm web</code></td></tr>
+          <tr><td class="wrap">Kill and remove in one step</td><td><code>docker rm -f web</code></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="debug">
+      <h2>Look inside</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>I want to</th><th>Command</th></tr>
+          <tr><td class="wrap">Read the logs</td><td><code>docker logs web</code></td></tr>
+          <tr><td class="wrap">Follow the last 50 log lines</td><td><code>docker logs -f --tail 50 web</code></td></tr>
+          <tr><td class="wrap">Open a shell in a running container</td><td><code>docker exec -it web sh</code></td></tr>
+          <tr><td class="wrap">Run one command inside</td><td><code>docker exec web whoami</code></td></tr>
+          <tr><td class="wrap">See all settings</td><td><code>docker inspect web</code></td></tr>
+          <tr><td class="wrap">See the exit code</td><td><code>docker inspect -f '{{.State.ExitCode}}' web</code></td></tr>
+          <tr><td class="wrap">See live CPU and memory</td><td><code>docker stats</code></td></tr>
+          <tr><td class="wrap">Copy a file out</td><td><code>docker cp web:/path/file .</code></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="images">
+      <h2>Images</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>I want to</th><th>Command</th></tr>
+          <tr><td class="wrap">Build from the Dockerfile in this folder</td><td><code>docker build -t app:1.0 .</code></td></tr>
+          <tr><td class="wrap">Build without the cache</td><td><code>docker build --no-cache -t app:1.0 .</code></td></tr>
+          <tr><td class="wrap">Build for Intel/AMD servers on an ARM Mac</td><td><code>docker build --platform linux/amd64 -t app:1.0 .</code></td></tr>
+          <tr><td class="wrap">List images</td><td><code>docker images</code></td></tr>
+          <tr><td class="wrap">See the layers and their size</td><td><code>docker history app:1.0</code></td></tr>
+          <tr><td class="wrap">Download / upload</td><td><code>docker pull IMAGE</code> · <code>docker push IMAGE</code></td></tr>
+          <tr><td class="wrap">Add another name to an image</td><td><code>docker tag app:1.0 account/app:1.0</code></td></tr>
+          <tr><td class="wrap">Delete an image</td><td><code>docker rmi app:1.0</code></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="dockerfile">
+      <h2>Dockerfile</h2>
+      <pre data-lang="dockerfile" data-title="Dockerfile template (Python)">FROM python:3.13-slim
+WORKDIR /app
+RUN useradd --create-home appuser
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY --chown=appuser:appuser . .
+USER appuser
+EXPOSE 8000
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "app:app"]</pre>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Instruction</th><th>One-line meaning</th></tr>
+          <tr><td><code>FROM</code></td><td class="wrap">Base image. Pin the version.</td></tr>
+          <tr><td><code>WORKDIR</code></td><td class="wrap">Folder for the next steps</td></tr>
+          <tr><td><code>COPY</code></td><td class="wrap">Bring files into the image</td></tr>
+          <tr><td><code>RUN</code></td><td class="wrap">Execute at <b>build</b> time</td></tr>
+          <tr><td><code>ENV</code></td><td class="wrap">Environment variable. Never a secret.</td></tr>
+          <tr><td><code>EXPOSE</code></td><td class="wrap">Document a port. Does not publish it.</td></tr>
+          <tr><td><code>USER</code></td><td class="wrap">Do not run as root</td></tr>
+          <tr><td><code>CMD</code></td><td class="wrap">Execute when the <b>container starts</b>. Use square brackets.</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="storage">
+      <h2>Volumes, ports, networks</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>I want to</th><th>Command</th></tr>
+          <tr><td class="wrap">Keep data in a named volume</td><td><code>-v db_data:/var/lib/postgresql/data</code></td></tr>
+          <tr><td class="wrap">Show a folder of my machine in the container</td><td><code>-v "$(pwd)/site:/usr/share/nginx/html"</code></td></tr>
+          <tr><td class="wrap">Publish a port (<code>HOST:CONTAINER</code>)</td><td><code>-p 8080:80</code></td></tr>
+          <tr><td class="wrap">Publish only on this machine</td><td><code>-p 127.0.0.1:8080:80</code></td></tr>
+          <tr><td class="wrap">List / create / delete volumes</td><td><code>docker volume ls</code> · <code>create NAME</code> · <code>rm NAME</code></td></tr>
+          <tr><td class="wrap">Create a network and join it</td><td><code>docker network create labnet</code> · <code>--network labnet</code></td></tr>
+          <tr><td class="wrap">Reach another container</td><td class="wrap">Use its name as the host: <code>db:5432</code></td></tr>
+          <tr><td class="wrap">Reach my machine from a container</td><td><code>host.docker.internal</code></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="compose">
+      <h2>Compose</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>I want to</th><th>Command</th></tr>
+          <tr><td class="wrap">Start everything</td><td><code>docker compose up -d</code></td></tr>
+          <tr><td class="wrap">Start after a code change</td><td><code>docker compose up -d --build</code></td></tr>
+          <tr><td class="wrap">See status and health</td><td><code>docker compose ps</code></td></tr>
+          <tr><td class="wrap">Follow logs</td><td><code>docker compose logs -f web</code></td></tr>
+          <tr><td class="wrap">Shell in a service</td><td><code>docker compose exec web sh</code></td></tr>
+          <tr><td class="wrap">Stop and remove, keep data</td><td><code>docker compose down</code></td></tr>
+          <tr><td class="wrap">Stop and remove, <b>delete data</b></td><td><code>docker compose down -v</code></td></tr>
+          <tr><td class="wrap">Check the file</td><td><code>docker compose config</code></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="cleanup">
+      <h2>Clean up</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>I want to</th><th>Command</th><th>Risk</th></tr>
+          <tr><td class="wrap">See what uses the space</td><td><code>docker system df</code></td><td><span class="badge ok">Safe</span></td></tr>
+          <tr><td class="wrap">Remove stopped containers</td><td><code>docker container prune</code></td><td><span class="badge ok">Low</span></td></tr>
+          <tr><td class="wrap">Remove unused images older than a week</td><td><code>docker image prune -a --filter "until=168h"</code></td><td><span class="badge warn">Medium</span></td></tr>
+          <tr><td class="wrap">Remove build cache</td><td><code>docker builder prune</code></td><td><span class="badge ok">Low</span></td></tr>
+          <tr><td class="wrap">Remove unused volumes</td><td><code>docker volume prune -a</code></td><td><span class="badge danger">Data loss</span></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="errors">
+      <h2>Error message → fix</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>You see</th><th>It means</th><th>Do this</th></tr>
+          <tr><td class="wrap"><code>permission denied while trying to connect to the Docker daemon socket</code></td><td class="wrap">Your Linux user may not use Docker</td><td class="wrap"><code>sudo usermod -aG docker $USER</code>, then log out and in</td></tr>
+          <tr><td class="wrap"><code>Cannot connect to the Docker daemon ... Is the docker daemon running?</code></td><td class="wrap">Docker is not started</td><td class="wrap">Start Docker Desktop, or <code>sudo systemctl start docker</code></td></tr>
+          <tr><td class="wrap"><code>Bind for 0.0.0.0:8080 failed: port is already allocated</code></td><td class="wrap">Something else uses that host port</td><td class="wrap">Choose another left number: <code>-p 8081:80</code></td></tr>
+          <tr><td class="wrap"><code>Conflict. The container name "/web" is already in use</code></td><td class="wrap">An old container has this name, perhaps a stopped one</td><td class="wrap"><code>docker rm web</code>, or choose another name</td></tr>
+          <tr><td class="wrap"><code>manifest for nginx:xyz not found: manifest unknown</code></td><td class="wrap">That tag does not exist</td><td class="wrap">Check the tag on Docker Hub</td></tr>
+          <tr><td class="wrap"><code>pull access denied ... repository does not exist or may require 'docker login'</code></td><td class="wrap">Typo in the image name, or a private image</td><td class="wrap">Check the name, or <code>docker login</code></td></tr>
+          <tr><td class="wrap"><code>exec: "bash": executable file not found in $PATH</code></td><td class="wrap">The image has no bash</td><td class="wrap">Use <code>sh</code></td></tr>
+          <tr><td class="wrap"><code>no space left on device</code></td><td class="wrap">The disk is full</td><td class="wrap"><code>docker system df</code>, then prune images and build cache</td></tr>
+          <tr><td class="wrap"><code>exec format error</code></td><td class="wrap">Image built for another processor type</td><td class="wrap">Build with <code>--platform linux/amd64</code></td></tr>
+          <tr><td class="wrap"><code>Permission denied: '/app/app.py'</code></td><td class="wrap">The non-root user cannot read the copied files</td><td class="wrap"><code>COPY --chown=appuser:appuser . .</code></td></tr>
+          <tr><td class="wrap"><code>403 Forbidden</code> from nginx with a bind mount</td><td class="wrap">The container user cannot read your folder</td><td class="wrap"><code>chmod -R a+rX site</code></td></tr>
+          <tr><td class="wrap"><code>connection refused</code> to <code>localhost</code> from inside a container</td><td class="wrap"><code>localhost</code> is the container itself</td><td class="wrap">Use the other container's name</td></tr>
+          <tr><td class="wrap"><code>The "X" variable is not set. Defaulting to a blank string</code></td><td class="wrap">Compose did not find the variable</td><td class="wrap">Create <code>.env</code> from <code>.env.example</code></td></tr>
+          <tr><td class="wrap"><code>dependency failed to start</code></td><td class="wrap">A service that others wait for crashed or never became healthy</td><td class="wrap"><code>docker compose logs db</code></td></tr>
+          <tr><td class="wrap"><code>open Dockerfile: no such file or directory</code>, but the file exists</td><td class="wrap">Wrong folder, or snap-installed Docker outside your home directory</td><td class="wrap"><code>cd</code> into the project; keep it under your home folder</td></tr>
+          <tr><td class="wrap">Site not reachable, no error</td><td class="wrap">Port not published, or the app listens on 127.0.0.1</td><td class="wrap">Add <code>-p</code>; make the app listen on <code>0.0.0.0</code></td></tr>
+          <tr><td class="wrap">Code change not visible</td><td class="wrap">The image is an old snapshot</td><td class="wrap"><code>docker compose up -d --build</code></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="glossary">
+      <h2>Glossary</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Word</th><th>Meaning</th></tr>
+          <tr><td><b>Image</b></td><td class="wrap">A read-only package of an app and everything it needs</td></tr>
+          <tr><td><b>Container</b></td><td class="wrap">A running instance of an image</td></tr>
+          <tr><td><b>Dockerfile</b></td><td class="wrap">The recipe for building an image</td></tr>
+          <tr><td><b>Registry</b></td><td class="wrap">A server that stores images, such as Docker Hub</td></tr>
+          <tr><td><b>Tag</b></td><td class="wrap">The label after the colon in an image name; usually a version</td></tr>
+          <tr><td><b>Layer</b></td><td class="wrap">The result of one Dockerfile instruction; layers are cached and shared</td></tr>
+          <tr><td><b>Build context</b></td><td class="wrap">The folder sent to the build; the dot in <code>docker build .</code></td></tr>
+          <tr><td><b>Daemon / Engine</b></td><td class="wrap">The background program that builds images and runs containers</td></tr>
+          <tr><td><b>Volume</b></td><td class="wrap">Storage managed by Docker that survives containers</td></tr>
+          <tr><td><b>Bind mount</b></td><td class="wrap">A folder of your machine made visible inside a container</td></tr>
+          <tr><td><b>Publish a port</b></td><td class="wrap">Forward a port of your machine to a port of a container</td></tr>
+          <tr><td><b>Service</b></td><td class="wrap">One entry under <code>services:</code> in a Compose file</td></tr>
+          <tr><td><b>Health check</b></td><td class="wrap">A command that tells Docker whether an app is really ready</td></tr>
+          <tr><td><b>Dangling image</b></td><td class="wrap">An old image with no name, left over after a rebuild</td></tr>
+          <tr><td><b>Multi-stage build</b></td><td class="wrap">A Dockerfile with several <code>FROM</code> lines, to keep build tools out of the final image</td></tr>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

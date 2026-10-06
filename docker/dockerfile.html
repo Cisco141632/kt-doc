@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3. Build your own image · Docker learning path</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/app.js"></script>
+  <script src="assets/widgets.js" defer></script>
+  <script src="assets/exercises.js" defer></script>
+  <script src="assets/practice.js" defer></script>
+</head>
+<body data-module="dockerfile">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="content">
+
+    <header class="page-head">
+      <h1>Build your own image</h1>
+      <p class="lead">Until now you ran images that other people made. Here you write a Dockerfile for a small app, build it, and learn the one idea that makes builds fast: layers.</p>
+    </header>
+
+    <section id="what">
+      <h2>What a Dockerfile is</h2>
+      <p>A <b>Dockerfile</b> is a text file named exactly <code>Dockerfile</code>, with no extension. Each line is one step of a recipe: start from this base, copy these files, run this command. <code>docker build</code> follows the steps from top to bottom and saves the result as an image.</p>
+      <figure class="diagram">
+        <pre class="mermaid">
+flowchart LR
+  A["Your project folder&lt;br/&gt;code + Dockerfile"] -- "docker build" --> B["Image&lt;br/&gt;hello-docker:1.0"]
+  B -- "docker run" --> C["Container&lt;br/&gt;your app, running"]
+        </pre>
+        <figcaption>Build once, then run the result anywhere Docker is installed.</figcaption>
+      </figure>
+    </section>
+
+    <section id="app">
+      <h2>The sample app</h2>
+      <p>This repository contains a small web app in the folder <code>docker/examples/hello-docker</code>. You will use it in this module and the next two. It is one Python file and a list of dependencies:</p>
+      <pre data-lang="python" data-title="app.py (shortened)">import os
+import socket
+
+from flask import Flask
+
+app = Flask(__name__)
+
+
+@app.get("/")
+def home():
+    greeting = os.environ.get("GREETING", "Hello")
+    return f"{greeting} from container {socket.gethostname()}!\n"</pre>
+      <pre data-lang="text" data-title="requirements.txt">flask==3.1.3
+gunicorn==26.2.0
+psycopg[binary]==3.3.6</pre>
+      <p>You do not need Python on your machine. That is the point: Docker brings it.</p>
+    </section>
+
+    <section id="first">
+      <h2>Your first Dockerfile, line by line</h2>
+      <pre data-lang="dockerfile" data-title="Dockerfile">FROM python:3.13-slim
+
+WORKDIR /app
+
+RUN useradd --create-home appuser
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY --chown=appuser:appuser . .
+
+USER appuser
+
+EXPOSE 8000
+
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--access-logfile", "-", "app:app"]</pre>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Line</th><th>What it does</th><th>Why</th></tr>
+          <tr><td><code>FROM python:3.13-slim</code></td><td class="wrap">Start from an official image that already contains Python</td><td class="wrap">You never start from zero. <code>slim</code> is a small variant, and the version is pinned.</td></tr>
+          <tr><td><code>WORKDIR /app</code></td><td class="wrap">Create <code>/app</code> and work inside it from now on</td><td class="wrap">Keeps your files out of the root folder of the image</td></tr>
+          <tr><td><code>RUN useradd ...</code></td><td class="wrap">Create a normal user at build time</td><td class="wrap">So the app does not have to run as root</td></tr>
+          <tr><td><code>COPY requirements.txt .</code></td><td class="wrap">Copy only the dependency list into the image</td><td class="wrap">So the next step can be cached. This is explained below.</td></tr>
+          <tr><td><code>RUN pip install ...</code></td><td class="wrap">Install the dependencies at build time</td><td class="wrap">The result is saved in the image. Containers start instantly.</td></tr>
+          <tr><td><code>COPY --chown=... . .</code></td><td class="wrap">Copy the rest of the project and make <code>appuser</code> the owner</td><td class="wrap">The user must be able to read the code</td></tr>
+          <tr><td><code>USER appuser</code></td><td class="wrap">Switch to the normal user</td><td class="wrap">If the app is attacked, the attacker is not root</td></tr>
+          <tr><td><code>EXPOSE 8000</code></td><td class="wrap">Document which port the app listens on</td><td class="wrap">Documentation only. You still need <code>-p</code> to publish it.</td></tr>
+          <tr><td><code>CMD [...]</code></td><td class="wrap">The program to start when a container starts</td><td class="wrap">It runs later, in the container, not during the build</td></tr>
+        </table>
+      </div>
+      <div class="callout">
+        <span class="callout-title">RUN or CMD?</span>
+        <p><code>RUN</code> happens <b>once, while the image is built</b>, and its result is stored in the image. <code>CMD</code> happens <b>every time a container starts</b>. Install with <code>RUN</code>. Start your app with <code>CMD</code>.</p>
+      </div>
+      <div class="callout warn">
+        <span class="callout-title">Why 0.0.0.0?</span>
+        <p>The app must listen on <code>0.0.0.0</code> (all addresses), not on <code>127.0.0.1</code>. Inside a container, <code>127.0.0.1</code> means "only this container", so nothing from outside could reach the app, even with <code>-p</code>.</p>
+      </div>
+    </section>
+
+    <section id="build">
+      <h2>Build it and run it</h2>
+      <pre data-lang="console">$ cd docker/examples/hello-docker
+$ docker build -t hello-docker:1.0 .
+$ docker run -d -p 8000:8000 --name hello hello-docker:1.0
+$ curl http://localhost:8000
+Hello from container 12b4691b7efd!</pre>
+      <p>You can also open <a href="http://localhost:8000">http://localhost:8000</a> in the browser. The strange name is the ID of the container, which is also its host name.</p>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Part</th><th>Meaning</th></tr>
+          <tr><td><code>docker build</code></td><td class="wrap">Build an image from a Dockerfile</td></tr>
+          <tr><td><code>-t hello-docker:1.0</code></td><td class="wrap">Name it <code>hello-docker</code> with the tag <code>1.0</code></td></tr>
+          <tr><td><code>.</code></td><td class="wrap">The <b>build context</b>: the folder whose files Docker may <code>COPY</code>. The dot means "this folder".</td></tr>
+        </table>
+      </div>
+      <p>Configuration without rebuilding: the app reads the variable <code>GREETING</code>, so you can change its behaviour when you start it.</p>
+      <pre data-lang="console">$ docker rm -f hello
+$ docker run -d -p 8000:8000 -e GREETING=Namaste --name hello hello-docker:1.0
+$ curl http://localhost:8000
+Namaste from container dd8267f902c3!
+$ docker exec hello whoami
+appuser
+$ docker rm -f hello</pre>
+      <p><b>Same image, different behaviour.</b> This is how one image is used for development, testing and production.</p>
+    </section>
+
+    <section id="layers">
+      <h2>Layers and the build cache</h2>
+      <p>This is the most useful idea in the whole module.</p>
+      <ul>
+        <li>Each instruction in a Dockerfile creates one <b>layer</b>. An image is a stack of layers.</li>
+        <li>Docker <b>remembers</b> every layer. If an instruction and its input files are the same as last time, Docker reuses the old layer and prints <code>CACHED</code>.</li>
+        <li><b>When one layer changes, every layer after it is rebuilt.</b></li>
+      </ul>
+      <p>So the rule for writing a Dockerfile is: <b>put what changes rarely at the top, and what changes often at the bottom.</b> Your dependencies change once a month. Your code changes every few minutes. That is why the Dockerfile copies <code>requirements.txt</code> and installs <i>before</i> it copies the code.</p>
+      <div class="widget" id="cache-sim"></div>
+      <p>Build the image a second time without changing anything, and you see it yourself:</p>
+      <pre data-lang="console">$ docker build -t hello-docker:1.0 .
+ => CACHED [2/6] WORKDIR /app
+ => CACHED [3/6] RUN useradd --create-home appuser
+ => CACHED [4/6] COPY requirements.txt .
+ => CACHED [5/6] RUN pip install --no-cache-dir -r requirements.txt
+ => CACHED [6/6] COPY --chown=appuser:appuser . .</pre>
+      <p>To see the layers of a finished image and how big each one is, use <code>docker history hello-docker:1.0</code>. For this app, the dependencies layer is about 37 MB on top of the Python base image.</p>
+    </section>
+
+    <section id="ignore">
+      <h2>.dockerignore: what stays out</h2>
+      <p><code>COPY . .</code> copies the whole folder. Some files must never go into an image: the Git history, local virtual environments, and above all files with secrets. List them in a file named <code>.dockerignore</code> next to the Dockerfile. It works like <code>.gitignore</code>.</p>
+      <pre data-lang="text" data-title=".dockerignore">.git
+.gitignore
+.env
+.env.example
+.venv/
+__pycache__/
+*.pyc
+Dockerfile
+.dockerignore
+compose.yaml</pre>
+      <p>You get faster builds, smaller images, and no passwords inside an image by accident.</p>
+    </section>
+
+    <section id="reference">
+      <h2>Instruction reference</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Instruction</th><th>What it does</th><th>Simple example</th></tr>
+          <tr><td><code>FROM</code></td><td class="wrap">The base image to start from. Always the first instruction.</td><td><code>FROM python:3.13-slim</code></td></tr>
+          <tr><td><code>WORKDIR</code></td><td class="wrap">Set (and create) the folder for the following steps</td><td><code>WORKDIR /app</code></td></tr>
+          <tr><td><code>COPY</code></td><td class="wrap">Copy files from your project into the image</td><td><code>COPY . .</code></td></tr>
+          <tr><td><code>RUN</code></td><td class="wrap">Run a command at build time and save the result</td><td><code>RUN pip install flask</code></td></tr>
+          <tr><td><code>ENV</code></td><td class="wrap">Set an environment variable for the build and the container</td><td><code>ENV TZ=UTC</code></td></tr>
+          <tr><td><code>ARG</code></td><td class="wrap">A variable that exists only during the build</td><td><code>ARG APP_VERSION=1.0</code></td></tr>
+          <tr><td><code>EXPOSE</code></td><td class="wrap">Document the port the app uses. Does not publish it.</td><td><code>EXPOSE 8000</code></td></tr>
+          <tr><td><code>USER</code></td><td class="wrap">Run the following steps and the container as this user</td><td><code>USER appuser</code></td></tr>
+          <tr><td><code>CMD</code></td><td class="wrap">Default command when a container starts. Can be replaced at <code>docker run</code>.</td><td><code>CMD ["python", "app.py"]</code></td></tr>
+          <tr><td><code>ENTRYPOINT</code></td><td class="wrap">A fixed program. <code>CMD</code> then only supplies its default arguments.</td><td><code>ENTRYPOINT ["gunicorn"]</code></td></tr>
+          <tr><td><code>HEALTHCHECK</code></td><td class="wrap">A command Docker runs regularly to see if the app is healthy. The image must contain the tool it uses, here <code>curl</code>.</td><td class="wrap"><code>HEALTHCHECK CMD curl -f http://localhost:8000/health</code></td></tr>
+          <tr><td><code>ADD</code></td><td class="wrap">Like <code>COPY</code>, but also unpacks archives and downloads URLs. Prefer <code>COPY</code>.</td><td><code>ADD app.tar.gz /app/</code></td></tr>
+        </table>
+      </div>
+      <div class="callout tip">
+        <span class="callout-title">Why the square brackets in CMD?</span>
+        <p><code>CMD ["gunicorn", "app:app"]</code> starts your program directly. When you run <code>docker stop</code>, the program receives the signal and shuts down cleanly, in less than a second for this app. The other spelling, <code>CMD gunicorn app:app</code>, starts a shell that starts your program. The stop signal then often does not reach the app, and Docker waits 10 seconds before killing it. Use the brackets.</p>
+      </div>
+    </section>
+
+    <section id="multistage">
+      <h2>Multi-stage builds</h2>
+      <p>To <b>build</b> an app you often need heavy tools: compilers, a full SDK, development dependencies. To <b>run</b> it, you need none of them. A multi-stage build uses two <code>FROM</code> lines in one Dockerfile. The first stage builds. The second stage starts clean and copies only the finished result. Everything else is thrown away.</p>
+      <figure class="diagram">
+        <pre class="mermaid">
+flowchart LR
+  subgraph s1["Stage 1: builder (thrown away)"]
+    A["Full toolchain&lt;br/&gt;compilers, dev dependencies"] --> B["Build output&lt;br/&gt;dist folder or one binary"]
+  end
+  subgraph s2["Stage 2: final image (what you ship)"]
+    D["Small base image&lt;br/&gt;plus only the build output"]
+  end
+  B -- "COPY --from=builder" --> D
+        </pre>
+        <figcaption>Only the second stage becomes your image. Smaller to download, and fewer tools for an attacker to use.</figcaption>
+      </figure>
+      <div data-tabs>
+        <div class="tab-panel" data-label="Node.js">
+          <h4>Node.js</h4>
+          <pre data-lang="dockerfile" data-title="Dockerfile (Node.js)"># Stage 1: build (has dev dependencies and build tools)
+FROM node:24-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# Stage 2: run (only what production needs)
+FROM node:24-alpine
+WORKDIR /app
+ENV NODE_ENV=production
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY --from=builder /app/dist ./dist
+USER node
+EXPOSE 3000
+CMD ["node", "dist/server.js"]</pre>
+          <p><code>npm ci</code> installs exactly the versions in <code>package-lock.json</code> and fails if that file is missing. That makes it the right choice for builds. <code>--omit=dev</code> leaves out development dependencies.</p>
+        </div>
+        <div class="tab-panel" data-label="Go">
+          <h4>Go</h4>
+          <pre data-lang="dockerfile" data-title="Dockerfile (Go)"># Stage 1: compile one self-contained binary
+FROM golang:1.26-alpine AS builder
+WORKDIR /app
+COPY go.* ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 go build -o /server .
+
+# Stage 2: tiny runtime image, no Go toolchain inside
+FROM alpine:3.23
+COPY --from=builder /server /server
+USER nobody
+EXPOSE 8080
+CMD ["/server"]</pre>
+          <p>The Go toolchain image is hundreds of megabytes. The final image is a few megabytes plus your binary. <code>CGO_ENABLED=0</code> produces a binary that needs no system libraries.</p>
+        </div>
+        <div class="tab-panel" data-label="Python">
+          <h4>Python</h4>
+          <pre data-lang="dockerfile" data-title="Dockerfile (Python, when a dependency needs a compiler)"># Stage 1: install dependencies into a virtual environment (compilers allowed here)
+FROM python:3.13-slim AS builder
+RUN apt-get update \
+    &amp;&amp; apt-get install -y --no-install-recommends build-essential \
+    &amp;&amp; rm -rf /var/lib/apt/lists/*
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Stage 2: copy only the finished virtual environment, no compilers
+FROM python:3.13-slim
+WORKDIR /app
+RUN useradd --create-home appuser
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+COPY --chown=appuser:appuser . .
+USER appuser
+EXPOSE 8000
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--access-logfile", "-", "app:app"]</pre>
+          <p><b>Be honest about when this helps.</b> Our sample app gains nothing from it: its dependencies install without a compiler, and both versions come out at about 155 MB. Use this pattern in Python only when a dependency must be compiled.</p>
+        </div>
+      </div>
+      <div class="callout">
+        <span class="callout-title">Every stage starts fresh</span>
+        <p>Each <code>FROM</code> begins a new, separate stage from its own base image. Nothing carries over: not the files, not <code>WORKDIR</code>, not <code>ENV</code>. That is why <code>WORKDIR /app</code> appears in both stages, and why you need <code>COPY --from=builder</code> to move files across.</p>
+      </div>
+    </section>
+
+    <section id="habits">
+      <h2>Good habits</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Do</th><th>Because</th></tr>
+          <tr><td class="wrap">Pin the base image: <code>python:3.13-slim</code>, not <code>python:latest</code></td><td class="wrap">Builds give the same result next month</td></tr>
+          <tr><td class="wrap">Choose a small base (<code>-slim</code>, <code>-alpine</code>)</td><td class="wrap">Faster downloads, fewer security holes</td></tr>
+          <tr><td class="wrap">Copy the dependency list and install before copying the code</td><td class="wrap">The slow install step stays cached</td></tr>
+          <tr><td class="wrap">Add a <code>.dockerignore</code></td><td class="wrap">Small build context, no secrets in the image</td></tr>
+          <tr><td class="wrap">Run as a normal user with <code>USER</code></td><td class="wrap">Limits the damage if the app is attacked</td></tr>
+          <tr><td class="wrap">Never put passwords in <code>ENV</code>, <code>ARG</code> or copied files</td><td class="wrap">Anyone with the image can read them</td></tr>
+          <tr><td class="wrap">One main process per container</td><td class="wrap">Easy to restart, scale and read logs</td></tr>
+          <tr><td class="wrap">Write <code>CMD</code> with square brackets</td><td class="wrap">Clean and fast shutdown</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="share">
+      <h2>Share your image</h2>
+      <p>To let a server or a teammate run your image, push it to a registry. The image name must start with your account or with the address of your company registry.</p>
+      <pre data-lang="sh">docker tag hello-docker:1.0 YOUR_ACCOUNT/hello-docker:1.0
+docker login
+docker push YOUR_ACCOUNT/hello-docker:1.0
+
+# On any other machine:
+docker run -d -p 8000:8000 YOUR_ACCOUNT/hello-docker:1.0</pre>
+      <p>Most companies use a private registry such as Amazon ECR, Google Artifact Registry, GitHub Container Registry or Harbor. The commands are the same; only the name in front changes.</p>
+    </section>
+
+    <section id="lab">
+      <h2>Hands-on lab</h2>
+      <ol>
+        <li>Build the image twice in a row. The second build should print <code>CACHED</code> on every step and finish in about a second.</li>
+        <li>Open <code>app.py</code> and change the word <code>from</code> in the greeting to <code>inside</code>. Build again. Which steps are rebuilt?
+          <details class="reveal"><summary>Answer</summary><div><p>Only the last step, <code>COPY --chown=appuser:appuser . .</code>. The <code>pip install</code> step stays <code>CACHED</code> because <code>requirements.txt</code> did not change.</p></div></details></li>
+        <li>Add a comment line such as <code># test</code> to <code>requirements.txt</code> and build again. What happens now?
+          <details class="reveal"><summary>Answer</summary><div><p>The file changed, so <code>COPY requirements.txt .</code> is rebuilt and so is everything after it, including the slow <code>pip install</code>. Remove the comment afterwards.</p></div></details></li>
+        <li>Run <code>docker history hello-docker:1.0</code>. Which layer is the largest that you created?
+          <details class="reveal"><summary>Answer</summary><div><p>The <code>RUN pip install</code> layer, about 37 MB. Your own code is under 1 kB.</p></div></details></li>
+      </ol>
+    </section>
+
+    <section id="practice">
+      <h2>Practice</h2>
+      <div data-exercises="dockerfile"></div>
+    </section>
+
+    <section class="takeaways" id="takeaways">
+      <h2>Remember</h2>
+      <ul>
+        <li>A Dockerfile is a recipe. <code>docker build -t name:tag .</code> turns it into an image.</li>
+        <li><code>RUN</code> runs at build time. <code>CMD</code> runs when the container starts.</li>
+        <li>Each instruction is a layer. A changed layer rebuilds everything below it, so put slow, stable steps first.</li>
+        <li><code>EXPOSE</code> documents a port. Only <code>-p</code> publishes it.</li>
+        <li>Multi-stage builds keep build tools out of the image you ship.</li>
+        <li>Pin versions, use <code>.dockerignore</code>, do not run as root, keep secrets out.</li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2. Everyday commands · Docker learning path</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/app.js"></script>
+  <script src="assets/widgets.js" defer></script>
+  <script src="assets/exercises.js" defer></script>
+  <script src="assets/practice.js" defer></script>
+</head>
+<body data-module="commands">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="content">
+
+    <header class="page-head">
+      <h1>Everyday commands</h1>
+      <p class="lead">About twenty commands cover almost all daily work. Each one is explained here with one small example, grouped by what you are trying to do.</p>
+    </header>
+
+    <section id="shape">
+      <h2>How a Docker command is built</h2>
+      <p>Every command has the same shape:</p>
+      <pre data-lang="text" data-title="Pattern">docker  &lt;object&gt;  &lt;action&gt;  [options]  [target]
+docker  container  ls       -a
+docker  image      pull                nginx:alpine
+docker  volume     rm                  notes</pre>
+      <p>The objects are <code>container</code>, <code>image</code>, <code>volume</code>, <code>network</code> and <code>system</code>. The most used commands also have a short form, which is what most people type:</p>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Short form</th><th>Long form</th></tr>
+          <tr><td><code>docker ps</code></td><td><code>docker container ls</code></td></tr>
+          <tr><td><code>docker run</code></td><td><code>docker container run</code></td></tr>
+          <tr><td><code>docker images</code></td><td><code>docker image ls</code></td></tr>
+          <tr><td><code>docker rmi</code></td><td><code>docker image rm</code></td></tr>
+          <tr><td><code>docker pull</code></td><td><code>docker image pull</code></td></tr>
+        </table>
+      </div>
+      <div class="callout tip">
+        <span class="callout-title">Stuck?</span>
+        <p>Add <code>--help</code> to any command: <code>docker run --help</code>, <code>docker volume --help</code>. The help text lists every option.</p>
+      </div>
+    </section>
+
+    <section id="images">
+      <h2>Work with images</h2>
+      <h3>Reading an image name</h3>
+      <pre data-lang="text" data-title="Image name">docker.io / library / postgres : 17-alpine
+ registry   namespace  repository   tag</pre>
+      <ul>
+        <li>You normally write only <code>postgres:17-alpine</code>. Docker fills in the registry (<code>docker.io</code>, which is Docker Hub) and the namespace <code>library</code> (official images).</li>
+        <li><b>No tag means <code>latest</code>.</b> <code>latest</code> is only a default label. It does not promise the newest version, and it points to a different image over time. For real projects, always write a version.</li>
+        <li><code>-alpine</code> = built on Alpine Linux, very small. <code>-slim</code> = a reduced Debian. No suffix = the full variant.</li>
+      </ul>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Command</th><th>What it does</th><th>Example</th></tr>
+          <tr><td><code>docker pull</code></td><td class="wrap">Download an image without running it</td><td><code>docker pull postgres:17-alpine</code></td></tr>
+          <tr><td><code>docker images</code></td><td class="wrap">List the images on your machine with their size</td><td><code>docker images</code></td></tr>
+          <tr><td><code>docker image inspect</code></td><td class="wrap">Show every detail of an image as JSON</td><td><code>docker image inspect nginx:alpine</code></td></tr>
+          <tr><td><code>docker history</code></td><td class="wrap">Show the layers of an image and their size</td><td><code>docker history nginx:alpine</code></td></tr>
+          <tr><td><code>docker rmi</code></td><td class="wrap">Delete an image (fails while a container uses it)</td><td><code>docker rmi nginx:alpine</code></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="run">
+      <h2>Run a container</h2>
+      <p><code>docker run</code> is the command you will type most. It creates a <b>new</b> container from an image and starts it.</p>
+      <pre data-lang="text" data-title="Pattern">docker run [options] IMAGE [command to run inside]</pre>
+      <div class="callout warn">
+        <span class="callout-title">The order matters</span>
+        <p>Options go <b>before</b> the image name. Everything <b>after</b> the image name is handed to the container as its command. <code>docker run nginx:alpine -d</code> does not run in the background: it tries to run a program called <code>-d</code> inside the container.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Option</th><th>What it does</th><th>Example</th></tr>
+          <tr><td><code>-d</code></td><td class="wrap">Run in the background (detached)</td><td><code>docker run -d nginx:alpine</code></td></tr>
+          <tr><td><code>-p HOST:CONT</code></td><td class="wrap">Publish a container port on your machine</td><td><code>-p 8080:80</code></td></tr>
+          <tr><td><code>--name</code></td><td class="wrap">Give the container a name</td><td><code>--name web</code></td></tr>
+          <tr><td><code>-e KEY=value</code></td><td class="wrap">Set an environment variable (configuration)</td><td><code>-e POSTGRES_PASSWORD=secret</code></td></tr>
+          <tr><td><code>--env-file</code></td><td class="wrap">Read many variables from a file</td><td><code>--env-file .env</code></td></tr>
+          <tr><td><code>-it</code></td><td class="wrap">Interactive terminal, for a shell</td><td><code>docker run -it alpine sh</code></td></tr>
+          <tr><td><code>--rm</code></td><td class="wrap">Delete the container when it exits</td><td><code>docker run --rm alpine date</code></td></tr>
+          <tr><td><code>-v</code></td><td class="wrap">Attach storage (<a href="storage-network.html">Module 4</a>)</td><td><code>-v db_data:/var/lib/postgresql/data</code></td></tr>
+          <tr><td><code>--network</code></td><td class="wrap">Join a network (<a href="storage-network.html">Module 4</a>)</td><td><code>--network labnet</code></td></tr>
+          <tr><td><code>--restart</code></td><td class="wrap">Restart automatically after a crash or reboot</td><td><code>--restart unless-stopped</code></td></tr>
+        </table>
+      </div>
+      <p>Three examples you can run now:</p>
+      <pre data-lang="sh"># A web server in the background, reachable at http://localhost:8080
+docker run -d -p 8080:80 --name web nginx:alpine
+
+# A throw-away Linux shell to look around. Type "exit" and it is deleted.
+docker run --rm -it alpine sh
+
+# One command, then the container is gone. Prints the date inside the container.
+docker run --rm alpine date</pre>
+    </section>
+
+    <section id="states">
+      <h2>The life of a container</h2>
+      <p>A container is always in one of a few states. The most important thing to remember: <b>stopping is not deleting.</b></p>
+      <figure class="diagram">
+        <pre class="mermaid">
+stateDiagram-v2
+  direction LR
+  [*] --> Created: docker create
+  [*] --> Running: docker run
+  Created --> Running: docker start
+  Running --> Paused: docker pause
+  Paused --> Running: docker unpause
+  Running --> Exited: docker stop
+  Exited --> Running: docker start
+  Exited --> [*]: docker rm
+        </pre>
+        <figcaption>The states of a container and the command that moves it from one to the next.</figcaption>
+      </figure>
+      <div class="widget" id="lifecycle"></div>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Command</th><th>What it does</th><th>Example</th></tr>
+          <tr><td><code>docker ps</code></td><td class="wrap">List running containers</td><td><code>docker ps</code></td></tr>
+          <tr><td><code>docker ps -a</code></td><td class="wrap">List all containers, also stopped ones</td><td><code>docker ps -a</code></td></tr>
+          <tr><td><code>docker stop</code></td><td class="wrap">Ask the app to shut down (about 10 seconds grace, then it is killed)</td><td><code>docker stop web</code></td></tr>
+          <tr><td><code>docker start</code></td><td class="wrap">Start a stopped container again, with the same files</td><td><code>docker start web</code></td></tr>
+          <tr><td><code>docker restart</code></td><td class="wrap">Stop, then start</td><td><code>docker restart web</code></td></tr>
+          <tr><td><code>docker rm</code></td><td class="wrap">Delete a stopped container and its files</td><td><code>docker rm web</code></td></tr>
+          <tr><td><code>docker rm -f</code></td><td class="wrap">Kill and delete a running container in one step</td><td><code>docker rm -f web</code></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="inside">
+      <h2>Look inside a container</h2>
+      <p>When something does not work, these are the commands that tell you why. Always start with the logs.</p>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Command</th><th>What it does</th><th>Example</th></tr>
+          <tr><td><code>docker logs</code></td><td class="wrap">Print what the app wrote to its output</td><td><code>docker logs web</code></td></tr>
+          <tr><td><code>docker logs -f</code></td><td class="wrap">Keep following new lines (<kbd>Ctrl</kbd>+<kbd>C</kbd> to stop watching)</td><td><code>docker logs -f --tail 50 web</code></td></tr>
+          <tr><td><code>docker exec -it</code></td><td class="wrap">Open a shell in a running container</td><td><code>docker exec -it web sh</code></td></tr>
+          <tr><td><code>docker exec</code></td><td class="wrap">Run one command in a running container</td><td><code>docker exec web ls /etc/nginx</code></td></tr>
+          <tr><td><code>docker inspect</code></td><td class="wrap">Show all settings as JSON: ports, mounts, environment, state</td><td><code>docker inspect web</code></td></tr>
+          <tr><td><code>docker stats</code></td><td class="wrap">Live CPU and memory use per container</td><td><code>docker stats</code></td></tr>
+          <tr><td><code>docker top</code></td><td class="wrap">Processes running in a container</td><td><code>docker top web</code></td></tr>
+          <tr><td><code>docker cp</code></td><td class="wrap">Copy a file out of (or into) a container</td><td><code>docker cp web:/etc/nginx/nginx.conf .</code></td></tr>
+        </table>
+      </div>
+      <div class="callout">
+        <span class="callout-title">run or exec?</span>
+        <p><code>docker run</code> creates a <b>new</b> container. <code>docker exec</code> runs a command inside a container that <b>already exists and is running</b>. To look inside your app, you want <code>exec</code>.</p>
+      </div>
+      <div class="callout tip">
+        <span class="callout-title">sh or bash?</span>
+        <p>Small images such as Alpine do not include <code>bash</code>. If you see <code>exec: "bash": executable file not found in $PATH</code>, use <code>sh</code> instead.</p>
+      </div>
+    </section>
+
+    <section id="cleanup">
+      <h2>Clean up safely</h2>
+      <p>Docker never deletes anything by itself. Old images, stopped containers and build cache pile up until the disk is full. First look, then delete.</p>
+      <pre data-lang="console">$ docker system df
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          12        10        6.1GB     1.2GB (19%)
+Containers      14        12        310MB     40MB (12%)
+Local Volumes   9         8         2.4GB     120MB (5%)
+Build Cache     45        0         1.8GB     1.8GB</pre>
+      <p>The numbers above are only an example. <b>Reclaimable</b> is what you could get back.</p>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Command</th><th>What it removes</th><th>Risk</th></tr>
+          <tr><td><code>docker system df</code></td><td class="wrap">Nothing. It only shows disk usage.</td><td><span class="badge ok">Safe</span></td></tr>
+          <tr><td><code>docker container prune</code></td><td class="wrap">All stopped containers</td><td><span class="badge ok">Low</span></td></tr>
+          <tr><td><code>docker image prune</code></td><td class="wrap">Dangling images: old, nameless leftovers from rebuilds</td><td><span class="badge ok">Low</span></td></tr>
+          <tr><td><code>docker builder prune</code></td><td class="wrap">Unused build cache. The next build is slower.</td><td><span class="badge ok">Low</span></td></tr>
+          <tr><td><code>docker system prune</code></td><td class="wrap">Stopped containers, unused networks, dangling images, unused build cache</td><td><span class="badge warn">Medium</span></td></tr>
+          <tr><td><code>docker image prune -a</code></td><td class="wrap">Every image that no container uses. They must be downloaded again later.</td><td><span class="badge warn">Medium</span></td></tr>
+          <tr><td><code>docker system prune -a --volumes</code></td><td class="wrap">All of the above, plus all unused images and unused anonymous volumes</td><td><span class="badge danger">High</span></td></tr>
+          <tr><td><code>docker volume prune -a</code></td><td class="wrap">Every volume no container uses, including named ones. <b>This is where databases are lost.</b></td><td><span class="badge danger">High</span></td></tr>
+        </table>
+      </div>
+      <div class="callout danger">
+        <span class="callout-title">Prune works on the whole machine</span>
+        <p>A prune command does not know about "your project". It removes unused things from <b>every</b> project on that machine. A database that happens to be stopped counts as unused. Read the list Docker shows before you answer <code>y</code>, and on a shared server, ask first.</p>
+      </div>
+    </section>
+
+    <section id="lab">
+      <h2>Hands-on lab</h2>
+      <p>Do these in your terminal. Each step has the answer hidden below it. The last two steps show the most important behaviour in this module.</p>
+      <ol>
+        <li>Start <code>nginx:alpine</code> in the background, named <code>lab</code>, on host port <code>8081</code>, and open it in the browser.
+          <details class="reveal"><summary>Answer</summary><div><pre data-lang="sh">docker run -d -p 8081:80 --name lab nginx:alpine</pre><p>Then open <code>http://localhost:8081</code>.</p></div></details></li>
+        <li>Change the home page from inside the container, then refresh the browser.
+          <details class="reveal"><summary>Answer</summary><div><pre data-lang="sh">docker exec lab sh -c 'echo "Hello from inside" > /usr/share/nginx/html/index.html'</pre><p>The page now says <b>Hello from inside</b>.</p></div></details></li>
+        <li>Stop the container. Is it listed by <code>docker ps</code>? By <code>docker ps -a</code>?
+          <details class="reveal"><summary>Answer</summary><div><pre data-lang="sh">docker stop lab
+docker ps
+docker ps -a</pre><p><code>docker ps</code> does not show it. <code>docker ps -a</code> shows it with the status <code>Exited (0)</code>. It still exists.</p></div></details></li>
+        <li>Start it again and refresh. Is your change still there?
+          <details class="reveal"><summary>Answer</summary><div><pre data-lang="sh">docker start lab</pre><p><b>Yes.</b> Stopping keeps the files of the container.</p></div></details></li>
+        <li>Remove it and run a new container with the same command as in step 1. Is your change still there?
+          <details class="reveal"><summary>Answer</summary><div><pre data-lang="sh">docker rm -f lab
+docker run -d -p 8081:80 --name lab nginx:alpine</pre><p><b>No.</b> You see "Welcome to nginx!" again. A new container starts fresh from the image. Keeping data across containers is the job of volumes, in <a href="storage-network.html">Module 4</a>. Clean up with <code>docker rm -f lab</code>.</p></div></details></li>
+      </ol>
+    </section>
+
+    <section id="practice">
+      <h2>Practice</h2>
+      <p>Type each command from memory. If you are wrong, the checker tells you which piece is missing.</p>
+      <div data-exercises="commands"></div>
+    </section>
+
+    <section class="takeaways" id="takeaways">
+      <h2>Remember</h2>
+      <ul>
+        <li>The pattern is <code>docker &lt;object&gt; &lt;action&gt;</code>. Options go before the image name.</li>
+        <li><code>run</code> creates a new container. <code>start</code> restarts an old one. <code>exec</code> works inside a running one.</li>
+        <li><code>stop</code> keeps the container and its files. Only <code>rm</code> deletes them.</li>
+        <li>When something is wrong: <code>docker ps -a</code>, then <code>docker logs NAME</code>.</li>
+        <li>Run <code>docker system df</code> before any <code>prune</code>, and never prune volumes without thinking.</li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

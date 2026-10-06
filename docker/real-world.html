@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>6. Real-world issues · Docker learning path</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/app.js"></script>
+  <script src="assets/exercises.js" defer></script>
+  <script src="assets/practice.js" defer></script>
+</head>
+<body data-module="real-world">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="content">
+
+    <header class="page-head">
+      <h1>Real-world issues</h1>
+      <p class="lead">Tutorials show the happy path. This page collects the problems that teams actually meet when Docker runs real systems: what you see, why it happens, how to fix it, and how to stop it from coming back.</p>
+    </header>
+
+    <section id="method">
+      <h2>First, a method</h2>
+      <p>Most Docker problems are solved by the same four questions, in this order. Learn the order and you will rarely be stuck.</p>
+      <figure class="diagram">
+        <pre class="mermaid">
+flowchart TD
+  A["Something is not working"] --> B{{"Is the container listed&lt;br/&gt;by docker ps?"}}
+  B -- "No" --> C["docker ps -a&lt;br/&gt;read the exit code"]
+  C --> D["docker logs NAME&lt;br/&gt;read the last error"]
+  B -- "Yes" --> E{{"Does docker logs&lt;br/&gt;show errors?"}}
+  E -- "Yes" --> F["Fix the app or its&lt;br/&gt;configuration"]
+  E -- "No" --> G{{"Is the port published?&lt;br/&gt;Look at the PORTS column"}}
+  G -- "No" --> H["Add -p HOST:CONTAINER"]
+  G -- "Yes" --> I["The app listens on 127.0.0.1&lt;br/&gt;Make it listen on 0.0.0.0"]
+        </pre>
+        <figcaption>Is it running? What do the logs say? Is the port published? Is the app listening on the right address?</figcaption>
+      </figure>
+      <h3>Exit codes worth knowing</h3>
+      <p><code>docker ps -a</code> shows a status such as <code>Exited (137)</code>. The number tells you a lot.</p>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Code</th><th>Meaning</th><th>Usual cause</th></tr>
+          <tr><td><code>0</code></td><td class="wrap">Finished normally</td><td class="wrap">The main program ended. For a server, that means the wrong command was started.</td></tr>
+          <tr><td><code>1</code></td><td class="wrap">Application error</td><td class="wrap">An exception at startup, a missing variable, a wrong setting. Read the logs.</td></tr>
+          <tr><td><code>126</code></td><td class="wrap">Command cannot be executed</td><td class="wrap">A script without execute permission</td></tr>
+          <tr><td><code>127</code></td><td class="wrap">Command not found</td><td class="wrap">A typo in <code>CMD</code>, or the program is not in the image</td></tr>
+          <tr><td><code>137</code></td><td class="wrap">Killed (128 + signal 9)</td><td class="wrap">Out of memory, or <code>docker kill</code></td></tr>
+          <tr><td><code>143</code></td><td class="wrap">Terminated (128 + signal 15)</td><td class="wrap">A normal <code>docker stop</code>. Usually not a problem.</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="disk">
+      <h2>Disk and logs</h2>
+
+      <details class="issue" open>
+        <summary><b>The server disk is full</b><span class="badge danger">Very common</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>What you see</dt>
+            <dd><code>no space left on device</code>. Builds fail, the database refuses to write, containers will not start.</dd>
+            <dt>Why it happens</dt>
+            <dd>Docker never deletes anything by itself. Every deploy leaves the previous image behind. Every build adds cache. After some months this is tens of gigabytes.</dd>
+            <dt>Find it</dt>
+            <dd><pre data-lang="sh">df -h
+docker system df</pre></dd>
+            <dt>Fix it</dt>
+            <dd><pre data-lang="sh"># Remove images that no container uses and that are older than 7 days
+docker image prune -a --filter "until=168h"
+
+# Remove unused build cache
+docker builder prune</pre></dd>
+            <dt>Prevent it</dt>
+            <dd>Run the image prune above on a schedule (cron or a CI job). Do <b>not</b> schedule anything that prunes volumes.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="issue">
+        <summary><b>Container logs eat the disk</b><span class="badge danger">Very common</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>What you see</dt>
+            <dd>The disk is full, but <code>docker system df</code> does not explain it. One file under <code>/var/lib/docker/containers/</code> is many gigabytes.</dd>
+            <dt>Why it happens</dt>
+            <dd>By default Docker writes everything a container prints into one JSON file and never rotates it. A chatty app fills the disk in weeks.</dd>
+            <dt>Find it</dt>
+            <dd><pre data-lang="sh">sudo sh -c 'du -sh /var/lib/docker/containers/*/*-json.log' | sort -h | tail -5</pre></dd>
+            <dt>Fix and prevent it</dt>
+            <dd>Turn on rotation, per service in Compose:
+              <pre data-lang="yaml" data-title="compose.yaml">services:
+  web:
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"</pre>
+              or for the whole server in <code>/etc/docker/daemon.json</code>, followed by a restart of Docker. The setting applies only to containers created afterwards.
+              <pre data-lang="json" data-title="/etc/docker/daemon.json">{
+  "log-driver": "json-file",
+  "log-opts": { "max-size": "10m", "max-file": "3" }
+}</pre></dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="issue">
+        <summary><b>Images are huge and deploys are slow</b><span class="badge warn">Common</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>What you see</dt>
+            <dd>An image of 1.5 GB for a small service. Every deploy and every CI run waits minutes for downloads.</dd>
+            <dt>Why it happens</dt>
+            <dd>A full base image, build tools left in the final image, no <code>.dockerignore</code>, package caches not cleaned.</dd>
+            <dt>Find it</dt>
+            <dd><pre data-lang="sh">docker images
+docker history my-api:1.0</pre></dd>
+            <dt>Fix it</dt>
+            <dd>Use a <code>-slim</code> or <code>-alpine</code> base. Use a multi-stage build. Add a <code>.dockerignore</code>. Install with <code>pip install --no-cache-dir</code> or <code>npm ci --omit=dev</code>. Clean up in the <b>same</b> <code>RUN</code> line as the install, because a later line cannot shrink an earlier layer.</dd>
+          </dl>
+        </div>
+      </details>
+    </section>
+
+    <section id="reliability">
+      <h2>Crashes and restarts</h2>
+
+      <details class="issue" open>
+        <summary><b>The app starts before the database is ready</b><span class="badge danger">Very common</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>What you see</dt>
+            <dd><code>connection refused</code> in the app logs right after <code>docker compose up</code>. It works when you restart the app by hand a few seconds later.</dd>
+            <dt>Why it happens</dt>
+            <dd><code>depends_on</code> in its short form only waits until the database <b>container</b> has started. Postgres itself needs a few more seconds.</dd>
+            <dt>Fix it</dt>
+            <dd><pre data-lang="yaml">services:
+  web:
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10</pre></dd>
+            <dt>Prevent it</dt>
+            <dd>Also let the app retry its connection for a short time. In production the database can restart at any moment, not only at startup.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="issue">
+        <summary><b>A container dies with exit code 137</b><span class="badge warn">Common</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>What you see</dt>
+            <dd>The service disappears under load. <code>docker ps -a</code> shows <code>Exited (137)</code>. The app logs end suddenly, with no error message.</dd>
+            <dt>Why it happens</dt>
+            <dd>The Linux kernel killed the process because it used more memory than allowed, or more than the server has.</dd>
+            <dt>Find it</dt>
+            <dd><pre data-lang="console">$ docker inspect -f '{{.State.OOMKilled}}' api
+true
+$ docker stats</pre></dd>
+            <dt>Fix it</dt>
+            <dd>Find the memory leak, or give the container what it really needs. Then set a limit on every container, so that one bad service cannot take down the whole server:
+              <pre data-lang="sh">docker run -d --memory 512m --name api my-api:1.0</pre>
+              In Compose the key is <code>mem_limit: 512m</code>.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="issue">
+        <summary><b>After a reboot, nothing comes back</b><span class="badge warn">Common</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>What you see</dt>
+            <dd>The server was restarted for maintenance. Docker is running, but all containers are stopped.</dd>
+            <dt>Why it happens</dt>
+            <dd>The default restart policy is <code>no</code>.</dd>
+            <dt>Fix it</dt>
+            <dd><pre data-lang="sh">docker run -d --restart unless-stopped --name api my-api:1.0</pre>
+              In Compose: <code>restart: unless-stopped</code> under the service.</dd>
+          </dl>
+          <div class="table-wrap">
+            <table>
+              <tr><th>Policy</th><th>Behaviour</th></tr>
+              <tr><td><code>no</code></td><td class="wrap">Never restart (the default)</td></tr>
+              <tr><td><code>on-failure</code></td><td class="wrap">Restart only when the exit code is not 0</td></tr>
+              <tr><td><code>unless-stopped</code></td><td class="wrap">Always restart, except when you stopped it yourself. The usual choice.</td></tr>
+              <tr><td><code>always</code></td><td class="wrap">Always restart, also after a manual stop once Docker itself restarts</td></tr>
+            </table>
+          </div>
+        </div>
+      </details>
+
+      <details class="issue">
+        <summary><b>docker stop takes ten seconds and requests are cut off</b><span class="badge info">Subtle</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>What you see</dt>
+            <dd>Every deploy has a pause of exactly ten seconds per container. Users get errors during deploys. The container shows <code>Exited (137)</code> after a normal stop.</dd>
+            <dt>Why it happens</dt>
+            <dd><code>docker stop</code> sends a polite signal and waits ten seconds. With <code>CMD gunicorn app:app</code> (no brackets) the signal goes to a shell, which does not pass it on. The app never hears it and is killed.</dd>
+            <dt>Fix it</dt>
+            <dd>Write <code>CMD ["gunicorn", "app:app"]</code> with square brackets. If you start the app from a shell script, the last line of the script must be <code>exec your-program</code>.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="issue">
+        <summary><b>The database was empty after the redeploy</b><span class="badge danger">Painful</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>What you see</dt>
+            <dd>After an upgrade or a clean-up, the application starts with no data.</dd>
+            <dt>Why it happens</dt>
+            <dd>One of three things: the database had no volume at all; the volume was mounted at the wrong path, so the real data stayed inside the container; or someone ran <code>docker compose down -v</code> or <code>docker volume prune -a</code>.</dd>
+            <dt>Find it</dt>
+            <dd><pre data-lang="sh">docker inspect -f '{{json .Mounts}}' db
+docker volume ls</pre></dd>
+            <dt>Prevent it</dt>
+            <dd>Use a named volume at the path the image documents. Take regular backups (<code>pg_dump</code> for Postgres) and store them on another machine. A volume protects against removing a container. It does not protect against a deleted volume or a dead disk.</dd>
+          </dl>
+        </div>
+      </details>
+    </section>
+
+    <section id="security">
+      <h2>Security</h2>
+
+      <details class="issue" open>
+        <summary><b>A secret was baked into an image</b><span class="badge danger">Serious</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>What you see</dt>
+            <dd>A security scan, or a stranger, finds an API key or database password in an image that was pushed to a registry.</dd>
+            <dt>Why it happens</dt>
+            <dd>The secret was written with <code>ENV</code> or <code>ARG</code>, or a <code>.env</code> file was copied in by <code>COPY . .</code>. Deleting it in a later line does not help: the earlier layer still contains it.</dd>
+            <dt>Find it</dt>
+            <dd><pre data-lang="sh">docker history --no-trunc my-api:1.0
+docker inspect -f '{{.Config.Env}}' my-api:1.0</pre></dd>
+            <dt>Fix it</dt>
+            <dd><b>Change the secret first.</b> Once it was in a pushed image, treat it as public. Then remove it from the Dockerfile and rebuild.</dd>
+            <dt>Prevent it</dt>
+            <dd>Put <code>.env</code> in <code>.dockerignore</code>. Give secrets to the container when it starts (<code>-e</code>, <code>--env-file</code>, or a secret manager). For secrets needed during the build, use build secrets (<code>RUN --mount=type=secret</code>).</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="issue">
+        <summary><b>The database port is open to the internet</b><span class="badge danger">Serious</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>What you see</dt>
+            <dd>Login attempts from unknown addresses in the database logs, although the firewall (<code>ufw</code>) is set to block that port.</dd>
+            <dt>Why it happens</dt>
+            <dd><code>-p 5432:5432</code> listens on <b>every</b> network interface. On Linux, Docker writes its own firewall rules, and they are checked before those of <code>ufw</code>. The port is open even though <code>ufw status</code> says it is closed.</dd>
+            <dt>Find it</dt>
+            <dd><pre data-lang="sh">docker ps --format 'table {{.Names}}\t{{.Ports}}'</pre>
+              Every line that starts with <code>0.0.0.0:</code> is reachable from other machines.</dd>
+            <dt>Fix it</dt>
+            <dd>If only other containers need the database, publish no port at all and use a network. If you need it from the server itself, bind it to localhost: <code>-p 127.0.0.1:5432:5432</code>.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="issue">
+        <summary><b>The container runs as root</b><span class="badge warn">Common</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>What you see</dt>
+            <dd>A security review flags the image. Or files created through a bind mount belong to <code>root</code> on your machine and you cannot edit them.</dd>
+            <dt>Why it happens</dt>
+            <dd>Containers run as root unless the image says otherwise.</dd>
+            <dt>Find it</dt>
+            <dd><pre data-lang="console">$ docker exec api whoami
+root</pre></dd>
+            <dt>Fix it</dt>
+            <dd><pre data-lang="dockerfile">RUN useradd --create-home appuser
+COPY --chown=appuser:appuser . .
+USER appuser</pre></dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="issue">
+        <summary><b>"Permission denied" after switching to a normal user</b><span class="badge warn">Common</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>What you see</dt>
+            <dd>You added <code>USER appuser</code>, and now the container stops at once with <code>PermissionError: [Errno 13] Permission denied: '/app/app.py'</code>.</dd>
+            <dt>Why it happens</dt>
+            <dd><code>COPY</code> keeps the permissions that the files have on your machine and makes root the owner. If your files are not readable by "others", the new user cannot read them. It works on one laptop and fails on another, depending on how each is set up.</dd>
+            <dt>Fix it</dt>
+            <dd>Make the user the owner while copying: <code>COPY --chown=appuser:appuser . .</code> This exact problem appeared while the sample app of this course was being built, and that is why its Dockerfile uses <code>--chown</code>.</dd>
+          </dl>
+        </div>
+      </details>
+    </section>
+
+    <section id="delivery">
+      <h2>Builds and deploys</h2>
+
+      <details class="issue" open>
+        <summary><b>"Nobody changed anything" but today's build is broken</b><span class="badge danger">Very common</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>What you see</dt>
+            <dd>The same commit built fine last week. Today the build fails, or the app behaves differently in production.</dd>
+            <dt>Why it happens</dt>
+            <dd><code>FROM python:latest</code>, or no tag at all. <code>latest</code> moved to a new major version over the weekend. The same goes for dependencies without a version.</dd>
+            <dt>Fix and prevent it</dt>
+            <dd>Pin the base image (<code>python:3.13-slim</code>) and pin dependencies (<code>flask==3.1.3</code>, a lock file). Upgrades then happen when <b>you</b> decide, in a commit that can be reviewed and rolled back. The same applies to your own images: deploy <code>my-api:1.4.2</code> or a commit ID, never <code>my-api:latest</code>.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="issue">
+        <summary><b>Works on my Mac, fails on the server: "exec format error"</b><span class="badge warn">Common</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>What you see</dt>
+            <dd><code>exec format error</code> when the container starts on the server, or a warning that the image platform <code>linux/arm64</code> does not match the host <code>linux/amd64</code>.</dd>
+            <dt>Why it happens</dt>
+            <dd>Apple Silicon Macs build images for ARM processors. Most servers use Intel or AMD processors. An image is built for one processor type.</dd>
+            <dt>Fix it</dt>
+            <dd><pre data-lang="sh">docker build --platform linux/amd64 -t my-api:1.0 .</pre></dd>
+            <dt>Prevent it</dt>
+            <dd>Do not deploy images built on laptops. Let CI build them on the same processor type as production.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="issue">
+        <summary><b>Every CI build takes ten minutes</b><span class="badge warn">Common</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>What you see</dt>
+            <dd>A one-line change triggers a full install of all dependencies, every time.</dd>
+            <dt>Why it happens</dt>
+            <dd><code>COPY . .</code> comes before the install step, so any change breaks the cache from that line on. Or the CI machine starts empty and has no cache at all.</dd>
+            <dt>Fix it</dt>
+            <dd>Copy the dependency list, install, and only then copy the code (<a href="dockerfile.html#layers">Module 3</a>). In CI, turn on the build cache feature of your CI system.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="issue">
+        <summary><b>CI fails with "toomanyrequests"</b><span class="badge info">Occasional</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>What you see</dt>
+            <dd><code>toomanyrequests: You have reached your pull rate limit</code> while pulling a base image.</dd>
+            <dt>Why it happens</dt>
+            <dd>Docker Hub limits how many images can be pulled without logging in, counted per IP address. Shared CI machines reach the limit quickly.</dd>
+            <dt>Fix it</dt>
+            <dd>Run <code>docker login</code> in the CI job, or pull base images through your company registry, which keeps a copy.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="issue">
+        <summary><b>I changed the code but the container still runs the old version</b><span class="badge danger">Very common</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>What you see</dt>
+            <dd>You saved the file and restarted the container. Nothing changed.</dd>
+            <dt>Why it happens</dt>
+            <dd>An image is a snapshot taken at build time. Restarting a container starts the same snapshot again.</dd>
+            <dt>Fix it</dt>
+            <dd><pre data-lang="sh">docker compose up -d --build</pre>
+              While developing, use a bind mount so that the container reads your files directly (<a href="compose.html#dev">Module 5</a>).</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="issue">
+        <summary><b>Docker says a file does not exist, but it is right there</b><span class="badge info">Ubuntu</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>What you see</dt>
+            <dd><code>failed to read dockerfile: open Dockerfile: no such file or directory</code>, or a bind mount that is empty inside the container, although the files exist.</dd>
+            <dt>Why it happens</dt>
+            <dd>On Ubuntu, Docker installed as a <b>snap</b> package is sandboxed. It can only see folders inside your home directory. It cannot see <code>/tmp</code> or other system folders.</dd>
+            <dt>Fix it</dt>
+            <dd>Keep projects inside your home directory, or install Docker Engine from Docker's own package repository instead of snap. Check with <code>snap list docker</code>.</dd>
+          </dl>
+        </div>
+      </details>
+    </section>
+
+    <section id="practice">
+      <h2>Practice: what would you do?</h2>
+      <p>Each exercise is a situation from real operations.</p>
+      <div data-exercises="real-world"></div>
+    </section>
+
+    <section class="takeaways" id="takeaways">
+      <h2>Remember</h2>
+      <ul>
+        <li>Debug in order: <code>docker ps -a</code> → exit code → <code>docker logs</code> → ports → listening address.</li>
+        <li>Docker never cleans up and never rotates logs unless you tell it to.</li>
+        <li>Pin every version: base images, dependencies, and the images you deploy.</li>
+        <li>A secret that was in an image is a leaked secret. Change it.</li>
+        <li><code>-p</code> opens a port to the network. Use <code>127.0.0.1:</code> or no port at all for databases.</li>
+        <li>Set a memory limit, a restart policy and a health check on everything that matters.</li>
+        <li>Volumes are not backups.</li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

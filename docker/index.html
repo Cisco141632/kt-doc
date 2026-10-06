@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1. What is Docker? · Docker learning path</title>
+  <meta name="description" content="A plain-language Docker course: concepts, commands, Dockerfiles, Compose, real-world issues, practice and quizzes.">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/app.js"></script>
+  <script src="assets/exercises.js" defer></script>
+  <script src="assets/practice.js" defer></script>
+</head>
+<body data-module="index">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="content">
+
+    <header class="page-head">
+      <h1>What is Docker?</h1>
+      <p class="lead">Docker packs an application together with everything it needs, so it runs the same way on every machine. This page explains the idea in plain language, then you start your first container.</p>
+    </header>
+
+    <section id="path">
+      <h2>How this learning path works</h2>
+      <p>Go through the modules in order. Every lesson follows the same rhythm: a short explanation, a picture, a command you run yourself, then exercises that check your answer. You need a terminal and about three hours in total.</p>
+      <div class="cards" data-module-cards></div>
+      <noscript><p>This site needs JavaScript for navigation, diagrams and exercises. Pages: <a href="commands.html">commands</a>, <a href="dockerfile.html">Dockerfile</a>, <a href="storage-network.html">data &amp; networking</a>, <a href="compose.html">Compose</a>, <a href="real-world.html">real-world issues</a>, <a href="practice.html">practice</a>, <a href="quiz.html">quiz</a>, <a href="cheatsheet.html">cheat sheet</a>.</p></noscript>
+    </section>
+
+    <section id="problem">
+      <h2>The problem Docker solves</h2>
+      <p>You have probably heard this sentence: <b>"But it works on my machine."</b></p>
+      <p>An application needs more than its own code. It needs a language runtime (Python 3.13, Node 24), libraries, system packages and settings. Your laptop has one combination. Your teammate's laptop has another. The server has a third. The same code behaves differently in each place.</p>
+      <div class="compare">
+        <div>
+          <h4>Without Docker</h4>
+          <ul class="timeline">
+            <li>You: Python 3.13, Ubuntu, library v2</li>
+            <li>Teammate: Python 3.10, macOS, library v1</li>
+            <li>Server: Python 3.11, another Linux</li>
+            <li class="bad">Result: three different behaviours, long setup documents, bugs that only appear in production</li>
+          </ul>
+        </div>
+        <div>
+          <h4>With Docker</h4>
+          <ul class="timeline">
+            <li>You build one package: code + Python + libraries + settings</li>
+            <li>Your teammate runs that same package</li>
+            <li>The server runs that same package</li>
+            <li class="good">Result: the same behaviour everywhere, setup is one command</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout analogy" style="margin-top:16px">
+        <span class="callout-title">Think of it like this</span>
+        <p>Before shipping containers, goods were loaded onto ships piece by piece, and every port handled them differently. Then the world agreed on one standard steel box. Any crane, ship or truck can move it without caring what is inside. Docker is that standard box for software.</p>
+      </div>
+    </section>
+
+    <section id="words">
+      <h2>Four words you need</h2>
+      <p>Almost everything in Docker is built from these four ideas.</p>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Word</th><th>What it is</th><th>Kitchen comparison</th><th>Programming comparison</th></tr>
+          <tr><td><b>Dockerfile</b></td><td class="wrap">A text file with the steps to build an image</td><td>The recipe</td><td>Source code</td></tr>
+          <tr><td><b>Image</b></td><td class="wrap">A read-only package: your app plus everything it needs</td><td>A frozen ready meal made from the recipe</td><td>A class</td></tr>
+          <tr><td><b>Container</b></td><td class="wrap">A running instance of an image</td><td>The meal, heated and on the table</td><td>An object created from the class</td></tr>
+          <tr><td><b>Registry</b></td><td class="wrap">A server that stores and shares images (Docker Hub is the default)</td><td>The supermarket freezer</td><td>GitHub, but for images</td></tr>
+        </table>
+      </div>
+      <figure class="diagram">
+        <pre class="mermaid">
+flowchart LR
+  DF["Dockerfile&lt;br/&gt;the recipe"] -- "docker build" --> IMG["Image&lt;br/&gt;the packaged app"]
+  IMG -- "docker run" --> C1["Container 1&lt;br/&gt;running"]
+  IMG -- "docker run" --> C2["Container 2&lt;br/&gt;running"]
+  IMG -- "docker push" --> REG[("Registry&lt;br/&gt;Docker Hub")]
+  REG -- "docker pull" --> IMG
+        </pre>
+        <figcaption>You build an image once, run it as many containers as you like, and share it through a registry.</figcaption>
+      </figure>
+      <ul>
+        <li><b>An image never changes.</b> To change it, you build a new one.</li>
+        <li><b>One image can start many containers.</b> Each gets its own private, writable copy of the files.</li>
+        <li><b>A container is just a process</b> with its own isolated files, network and process list.</li>
+        <li><b>Deleting a container does not delete the image.</b> You can start a fresh one at any time.</li>
+      </ul>
+      <details class="reveal">
+        <summary>Check yourself: you start three containers from one image and delete a file in the first. What happens in the other two?</summary>
+        <div><p>Nothing. Each container has its own writable layer on top of the shared read-only image. Changes in one are invisible to the others, and the image itself stays untouched.</p></div>
+      </details>
+    </section>
+
+    <section id="vm">
+      <h2>Containers and virtual machines</h2>
+      <p>Both let you run isolated software on one computer. The difference is <b>what each one carries with it</b>.</p>
+      <figure class="diagram">
+        <div class="compare">
+          <div>
+            <h4>Virtual machines</h4>
+            <div class="stack">
+              <div class="row"><div class="layer app">App A</div><div class="layer app">App B</div></div>
+              <div class="row"><div class="layer">Libraries</div><div class="layer">Libraries</div></div>
+              <div class="row"><div class="layer heavy">Guest OS<br>(full, GBs)</div><div class="layer heavy">Guest OS<br>(full, GBs)</div></div>
+              <div class="layer engine">Hypervisor</div>
+              <div class="layer">Host operating system</div>
+              <div class="layer">Hardware</div>
+            </div>
+          </div>
+          <div>
+            <h4>Containers</h4>
+            <div class="stack">
+              <div class="row"><div class="layer app">App A</div><div class="layer app">App B</div></div>
+              <div class="row"><div class="layer">Libraries</div><div class="layer">Libraries</div></div>
+              <div class="layer engine">Docker Engine</div>
+              <div class="layer">Host operating system (one shared kernel)</div>
+              <div class="layer">Hardware</div>
+            </div>
+          </div>
+        </div>
+        <figcaption>A virtual machine carries a whole operating system. A container carries only the app and its libraries, and borrows the kernel of the host.</figcaption>
+      </figure>
+      <div class="table-wrap">
+        <table>
+          <tr><th></th><th>Virtual machine</th><th>Container</th></tr>
+          <tr><td><b>Contains</b></td><td class="wrap">A full guest operating system plus the app</td><td class="wrap">The app and its libraries only</td></tr>
+          <tr><td><b>Kernel</b></td><td class="wrap">Its own</td><td class="wrap">Shared with the host</td></tr>
+          <tr><td><b>Typical size</b></td><td class="wrap">Gigabytes</td><td class="wrap">Tens to hundreds of megabytes</td></tr>
+          <tr><td><b>Start time</b></td><td class="wrap">Tens of seconds to minutes</td><td class="wrap">About a second</td></tr>
+          <tr><td><b>Isolation</b></td><td class="wrap">Stronger (separate kernel)</td><td class="wrap">Good, but the kernel is shared</td></tr>
+          <tr><td><b>Use it when</b></td><td class="wrap">You need a different operating system or very strong isolation</td><td class="wrap">You want to package and run applications</td></tr>
+        </table>
+      </div>
+      <div class="callout">
+        <span class="callout-title">Good to know</span>
+        <p>They are not rivals. In the cloud, containers usually run <i>inside</i> virtual machines. And because containers need a Linux kernel, Docker Desktop on macOS and Windows quietly runs a small Linux virtual machine for you.</p>
+      </div>
+    </section>
+
+    <section id="how">
+      <h2>How Docker works behind the scenes</h2>
+      <p>Docker has three parts. The <code>docker</code> command you type is only a remote control. The real work is done by a background program called the <b>Docker daemon</b> (also called the Docker Engine). The daemon talks to a <b>registry</b> when it needs an image.</p>
+      <figure class="diagram">
+        <pre class="mermaid">
+flowchart LR
+  subgraph machine["Your machine"]
+    CLI["docker CLI&lt;br/&gt;what you type"] -- "sends the request" --> D["Docker daemon&lt;br/&gt;does the work"]
+    D -- "stores" --> I["Images"]
+    D -- "runs" --> C["Containers"]
+  end
+  R[("Registry&lt;br/&gt;Docker Hub")]
+  D -- "pull and push" --> R
+        </pre>
+        <figcaption>Client, daemon, registry. If the daemon is not running, every docker command fails.</figcaption>
+      </figure>
+
+      <h3>Click through: what happens when you run a container</h3>
+      <p>The command is <code>docker run -d -p 8080:80 nginx:alpine</code>. Press <b>Next step</b> to follow it.</p>
+      <div data-stepper>
+        <div class="step" data-label="You type">
+          <h4>1. You type the command</h4>
+          <p>The <code>docker</code> program reads your command and sends a request to the Docker daemon. The CLI itself does not run anything.</p>
+        </div>
+        <div class="step" data-label="Image here?">
+          <h4>2. The daemon looks for the image locally</h4>
+          <p>"Do I already have <code>nginx:alpine</code> on this machine?" If yes, it skips the next step. That is why the second run is much faster than the first.</p>
+        </div>
+        <div class="step" data-label="Pull">
+          <h4>3. Not found, so it pulls from the registry</h4>
+          <p>The daemon downloads the image from Docker Hub, layer by layer. You see lines such as <code>Pulling fs layer</code> and <code>Pull complete</code>. This happens only the first time.</p>
+        </div>
+        <div class="step" data-label="Create">
+          <h4>4. It creates a container</h4>
+          <p>The daemon adds a thin writable layer on top of the read-only image and gives the container its own network address and its own view of the files.</p>
+        </div>
+        <div class="step" data-label="Map port">
+          <h4>5. It connects the port</h4>
+          <p>Because of <code>-p 8080:80</code>, traffic that arrives at port 8080 on your machine is forwarded to port 80 inside the container.</p>
+        </div>
+        <div class="step" data-label="Start">
+          <h4>6. It starts the main process</h4>
+          <p>The image says which program to start, here the nginx web server. <b>The container lives exactly as long as this process runs.</b> When it ends, the container stops.</p>
+        </div>
+        <div class="step" data-label="Use it">
+          <h4>7. You open the browser</h4>
+          <p>Go to <code>http://localhost:8080</code> and nginx answers. Because of <code>-d</code>, your terminal is free again while the container runs in the background.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="install">
+      <h2>Install and check</h2>
+      <p>Install <b>Docker Desktop</b> on macOS or Windows, or <b>Docker Engine</b> on Linux, from the official guide: <a href="https://docs.docker.com/get-started/get-docker/">docs.docker.com/get-started/get-docker</a>. Then check that it works:</p>
+      <pre data-lang="console">$ docker --version
+Docker version 29.8.0, build 88096ef
+$ docker compose version
+Docker Compose version v5.5.1
+$ docker run hello-world
+Hello from Docker!
+This message shows that your installation appears to be working correctly.</pre>
+      <p>Your version numbers will be different. What matters is that all three commands answer without an error.</p>
+      <div class="callout warn">
+        <span class="callout-title">Linux: "permission denied"</span>
+        <p>If you see <code>permission denied while trying to connect to the Docker daemon socket</code>, your user is not allowed to talk to the daemon yet. Run <code>sudo usermod -aG docker $USER</code>, then log out and log in again. Be aware that members of the <code>docker</code> group effectively have root access to the machine.</p>
+      </div>
+    </section>
+
+    <section id="first">
+      <h2>Your first real container</h2>
+      <p>Start a web server, look at it, and clean up. Run the lines one at a time.</p>
+      <pre data-lang="console">$ docker run -d -p 8080:80 --name web nginx:alpine
+$ docker ps
+CONTAINER ID   IMAGE          COMMAND                  CREATED         STATUS         PORTS                  NAMES
+867f4dfa1a47   nginx:alpine   "/docker-entrypoint.…"   5 seconds ago   Up 5 seconds   0.0.0.0:8080->80/tcp   web</pre>
+      <p>Now open <a href="http://localhost:8080">http://localhost:8080</a>. You should see <b>"Welcome to nginx!"</b>. You are running a web server without installing one.</p>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Part</th><th>Meaning</th></tr>
+          <tr><td><code>docker run</code></td><td class="wrap">Create a new container and start it</td></tr>
+          <tr><td><code>-d</code></td><td class="wrap">Detached: run in the background and give the terminal back</td></tr>
+          <tr><td><code>-p 8080:80</code></td><td class="wrap">Publish a port. Left is your machine, right is the container: <code>HOST:CONTAINER</code></td></tr>
+          <tr><td><code>--name web</code></td><td class="wrap">A name you choose, so you do not need the random container ID</td></tr>
+          <tr><td><code>nginx:alpine</code></td><td class="wrap">The image: repository <code>nginx</code>, tag <code>alpine</code> (a very small variant)</td></tr>
+        </table>
+      </div>
+      <p>Look at what the server logged, then stop and remove it:</p>
+      <pre data-lang="console">$ docker logs web
+$ docker stop web
+$ docker rm web</pre>
+      <div class="callout tip">
+        <span class="callout-title">If port 8080 is busy</span>
+        <p>The error <code>Bind for 0.0.0.0:8080 failed: port is already allocated</code> means something else on your machine uses that port. Change only the left number, for example <code>-p 8081:80</code>, and open <code>localhost:8081</code>.</p>
+      </div>
+    </section>
+
+    <section id="practice">
+      <h2>Practice</h2>
+      <p>Type the answer and press <kbd>Enter</kbd>. Options may be in any order. Nothing is sent anywhere: the check runs in your browser.</p>
+      <div data-exercises="index"></div>
+    </section>
+
+    <section class="takeaways" id="takeaways">
+      <h2>Remember</h2>
+      <ul>
+        <li>Docker packs an app with everything it needs, so it runs the same everywhere.</li>
+        <li><b>Dockerfile</b> (recipe) → <b>image</b> (package) → <b>container</b> (running instance). Images are shared through a <b>registry</b>.</li>
+        <li>Containers share the kernel of the host. That is why they are small and start in about a second.</li>
+        <li>The <code>docker</code> command is a remote control for the Docker daemon.</li>
+        <li>A container lives as long as its main process runs.</li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

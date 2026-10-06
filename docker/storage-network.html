@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4. Data &amp; networking · Docker learning path</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/app.js"></script>
+  <script src="assets/widgets.js" defer></script>
+  <script src="assets/exercises.js" defer></script>
+  <script src="assets/practice.js" defer></script>
+</head>
+<body data-module="storage-network">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="content">
+
+    <header class="page-head">
+      <h1>Data &amp; networking</h1>
+      <p class="lead">Two questions every real application has to answer: where does my data live when the container is gone, and how do containers reach each other and the outside world?</p>
+    </header>
+
+    <section id="forget">
+      <h2>Containers forget</h2>
+      <p>In the lab of Module 2 you changed a file inside a container, removed the container, and the change was gone. That is by design: a container is disposable. For a web server this is fine. For a database it would be a disaster.</p>
+      <figure class="diagram">
+        <div class="compare">
+          <div>
+            <h4>Without a volume</h4>
+            <ol class="timeline">
+              <li>1. The database writes its files inside the container</li>
+              <li>2. You upgrade: <code>docker rm</code> the old container</li>
+              <li>3. You start a new container</li>
+              <li class="bad">4. The database is empty. The data left with the old container.</li>
+            </ol>
+          </div>
+          <div>
+            <h4>With a volume</h4>
+            <ol class="timeline">
+              <li>1. The database writes its files into a volume</li>
+              <li>2. You upgrade: <code>docker rm</code> the old container</li>
+              <li>3. You start a new container with the same volume</li>
+              <li class="good">4. All data is still there. The volume lives outside the container.</li>
+            </ol>
+          </div>
+        </div>
+        <figcaption>A volume is storage that exists independently of any container.</figcaption>
+      </figure>
+      <div class="callout">
+        <span class="callout-title">Be precise</span>
+        <p><code>docker stop</code> does <b>not</b> lose data. The files stay until the container is removed with <code>docker rm</code>. But in real life containers are replaced all the time, for every upgrade and every deploy, so anything important must be in a volume.</p>
+      </div>
+    </section>
+
+    <section id="kinds">
+      <h2>Two ways to keep data</h2>
+      <figure class="diagram">
+        <pre class="mermaid">
+flowchart LR
+  subgraph host["Your machine"]
+    V[("Named volume&lt;br/&gt;managed by Docker")]
+    F["Your project folder&lt;br/&gt;./site"]
+  end
+  subgraph cont["Containers"]
+    P1["database&lt;br/&gt;/var/lib/postgresql/data"]
+    P2["web server&lt;br/&gt;/usr/share/nginx/html"]
+  end
+  V -- "volume" --- P1
+  F -- "bind mount" --- P2
+        </pre>
+        <figcaption>Both make a folder inside the container point to storage outside of it.</figcaption>
+      </figure>
+      <div class="table-wrap">
+        <table>
+          <tr><th></th><th>Named volume</th><th>Bind mount</th></tr>
+          <tr><td><b>What it is</b></td><td class="wrap">Storage that Docker creates and manages</td><td class="wrap">A folder of your machine, shown inside the container</td></tr>
+          <tr><td><b>Written as</b></td><td><code>-v db_data:/path</code></td><td><code>-v "$(pwd)/site:/path"</code></td></tr>
+          <tr><td><b>How to tell</b></td><td class="wrap">Left side is a plain name</td><td class="wrap">Left side is a path</td></tr>
+          <tr><td><b>Best for</b></td><td class="wrap">Databases and anything that must survive</td><td class="wrap">Source code during development, config files</td></tr>
+          <tr><td><b>Used in</b></td><td class="wrap">Development and production</td><td class="wrap">Mostly development</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="volume">
+      <h2>Try a named volume</h2>
+      <p>You will write a file from one container and read it from a completely different one. Both containers delete themselves (<code>--rm</code>), and the data still survives.</p>
+      <pre data-lang="console">$ docker volume create notes
+notes
+$ docker run --rm -v notes:/data alpine sh -c 'echo "I survive" > /data/note.txt'
+$ docker run --rm -v notes:/data alpine cat /data/note.txt
+I survive</pre>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Command</th><th>What it does</th><th>Example</th></tr>
+          <tr><td><code>docker volume create</code></td><td class="wrap">Create a named volume</td><td><code>docker volume create notes</code></td></tr>
+          <tr><td><code>docker volume ls</code></td><td class="wrap">List volumes</td><td><code>docker volume ls</code></td></tr>
+          <tr><td><code>docker volume inspect</code></td><td class="wrap">Show where the volume is stored and when it was created</td><td><code>docker volume inspect notes</code></td></tr>
+          <tr><td><code>docker volume rm</code></td><td class="wrap">Delete a volume and its data</td><td><code>docker volume rm notes</code></td></tr>
+        </table>
+      </div>
+      <p>A real database uses exactly the same idea. Clean up your test with <code>docker volume rm notes</code>.</p>
+      <pre data-lang="sh">docker run -d --name db \
+  -e POSTGRES_PASSWORD=secret \
+  -v db_data:/var/lib/postgresql/data \
+  postgres:17-alpine</pre>
+      <div class="callout tip">
+        <span class="callout-title">Which path?</span>
+        <p>The path on the right is where that program stores its data, and it is different for every image. Find it under "volumes" or "where to store data" on the image's Docker Hub page. Example: Postgres up to version 17 uses <code>/var/lib/postgresql/data</code>, and the Postgres 18 image moved it to <code>/var/lib/postgresql</code>. A wrong path fails silently: the container works, and the data is lost anyway.</p>
+      </div>
+    </section>
+
+    <section id="bind">
+      <h2>Try a bind mount</h2>
+      <p>Now the opposite direction: show a folder of your machine inside a container. Create a tiny website and let nginx serve it.</p>
+      <pre data-lang="console">$ mkdir site
+$ echo "&lt;h1&gt;Hello from my laptop&lt;/h1&gt;" > site/index.html
+$ docker run -d --name site -p 8080:80 -v "$(pwd)/site:/usr/share/nginx/html:ro" nginx:alpine</pre>
+      <p>Open <a href="http://localhost:8080">http://localhost:8080</a>. Then edit <code>site/index.html</code> in your editor and refresh the browser. The change is there at once, with no rebuild and no restart. This is how developers get live reloading in containers.</p>
+      <ul>
+        <li><code>$(pwd)</code> inserts the full path of the current folder. Docker needs a full path for a bind mount. In Windows PowerShell write <code>${PWD}</code>.</li>
+        <li><code>:ro</code> at the end means read-only: the container can read your files but cannot change them.</li>
+      </ul>
+      <div class="callout warn">
+        <span class="callout-title">You see "403 Forbidden"?</span>
+        <p>nginx runs as its own user inside the container. If your files are readable only by you, it is not allowed to read them. Run <code>chmod -R a+rX site</code> and refresh. A bind mount keeps the permissions of your machine: this is the most common bind mount problem on Linux.</p>
+      </div>
+      <p>Clean up with <code>docker rm -f site</code>.</p>
+    </section>
+
+    <section id="ports">
+      <h2>Ports: reaching a container from your machine</h2>
+      <p>A container has its own private network. Nothing outside can reach it until you <b>publish</b> a port with <code>-p HOST:CONTAINER</code>.</p>
+      <div class="widget" id="portmap"></div>
+      <div class="table-wrap">
+        <table>
+          <tr><th>You write</th><th>Meaning</th></tr>
+          <tr><td><code>-p 8080:80</code></td><td class="wrap">Port 8080 of your machine goes to port 80 of the container. Reachable from other machines too.</td></tr>
+          <tr><td><code>-p 127.0.0.1:8080:80</code></td><td class="wrap">The same, but reachable only from your own machine</td></tr>
+          <tr><td><code>-p 5433:5432</code></td><td class="wrap">Use host port 5433 because 5432 is already taken on your machine</td></tr>
+          <tr><td>(no <code>-p</code>)</td><td class="wrap">Not reachable from your machine. Other containers on the same network can still reach it.</td></tr>
+        </table>
+      </div>
+      <ul>
+        <li>The <b>right</b> number is decided by the app in the image. You cannot choose it.</li>
+        <li>The <b>left</b> number is your choice. Two containers cannot use the same host port.</li>
+        <li><code>EXPOSE</code> in a Dockerfile does not publish anything.</li>
+      </ul>
+    </section>
+
+    <section id="networks">
+      <h2>Networks: containers talking to each other</h2>
+      <p>An app container needs to reach its database container. The rule is simple: <b>put them on the same network that you created, and they can find each other by name.</b></p>
+      <figure class="diagram">
+        <pre class="mermaid">
+flowchart LR
+  B["Your browser"] -- "localhost:8000&lt;br/&gt;needs -p" --> APP
+  subgraph net["Network: labnet"]
+    APP["Container: api"] -- "db:5432&lt;br/&gt;by name, no -p needed" --> DB["Container: db"]
+  end
+        </pre>
+        <figcaption>From outside you use a published port. Inside the network, containers use each other's names.</figcaption>
+      </figure>
+      <p>Try it. You start a database with <b>no published port</b> and reach it from a second container by name:</p>
+      <pre data-lang="console">$ docker network create labnet
+$ docker run -d --name labdb --network labnet -e POSTGRES_PASSWORD=secret postgres:17-alpine
+$ docker run --rm --network labnet postgres:17-alpine pg_isready -h labdb
+labdb:5432 - accepting connections</pre>
+      <p>If the answer is <code>no response</code>, wait a few seconds and run the last line again. The database container has started, but Postgres inside it is not ready yet. Remember this: it becomes important in Module 5.</p>
+      <p>Clean up:</p>
+      <pre data-lang="sh">docker rm -f labdb
+docker network rm labnet</pre>
+      <div class="callout">
+        <span class="callout-title">Why create a network?</span>
+        <p>Containers started without <code>--network</code> land on Docker's default network, where finding each other <b>by name does not work</b>. Name lookup is a feature of networks you create yourself. Docker Compose creates one for you automatically.</p>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Command</th><th>What it does</th><th>Example</th></tr>
+          <tr><td><code>docker network create</code></td><td class="wrap">Create a network</td><td><code>docker network create labnet</code></td></tr>
+          <tr><td><code>docker network ls</code></td><td class="wrap">List networks</td><td><code>docker network ls</code></td></tr>
+          <tr><td><code>docker network inspect</code></td><td class="wrap">Show which containers are on a network</td><td><code>docker network inspect labnet</code></td></tr>
+          <tr><td><code>docker network rm</code></td><td class="wrap">Delete a network that no container uses</td><td><code>docker network rm labnet</code></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="localhost">
+      <h2>The localhost trap</h2>
+      <p>This mistake catches almost everyone once. <b>Inside a container, <code>localhost</code> means that container, not your machine and not another container.</b> If your app connects to <code>localhost:5432</code> and the database is in another container, the connection is refused.</p>
+      <div class="table-wrap">
+        <table>
+          <tr><th>From</th><th>To</th><th>Use this address</th></tr>
+          <tr><td class="wrap">Your browser or machine</td><td class="wrap">A container</td><td class="wrap"><code>localhost:HOST_PORT</code> (the container needs <code>-p</code>)</td></tr>
+          <tr><td class="wrap">A container</td><td class="wrap">Another container on the same network</td><td class="wrap"><code>container-name:CONTAINER_PORT</code>, for example <code>db:5432</code></td></tr>
+          <tr><td class="wrap">A container</td><td class="wrap">A program on your machine</td><td class="wrap"><code>host.docker.internal:PORT</code>. Works out of the box in Docker Desktop. On Linux, add <code>--add-host=host.docker.internal:host-gateway</code>.</td></tr>
+          <tr><td class="wrap">A container</td><td class="wrap">Itself</td><td class="wrap"><code>localhost</code></td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="practice">
+      <h2>Practice</h2>
+      <div data-exercises="storage-network"></div>
+    </section>
+
+    <section class="takeaways" id="takeaways">
+      <h2>Remember</h2>
+      <ul>
+        <li>Data inside a container is gone when the container is removed. Important data goes in a volume.</li>
+        <li><b>Named volume</b> (<code>name:/path</code>) for data that must survive. <b>Bind mount</b> (<code>/host/path:/path</code>) for live code.</li>
+        <li><code>-p HOST:CONTAINER</code>. Left is yours to choose, right belongs to the app.</li>
+        <li>Containers on a network you created reach each other by name, without <code>-p</code>.</li>
+        <li>Inside a container, <code>localhost</code> is the container itself.</li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>
