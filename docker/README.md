@@ -1,6 +1,6 @@
 # Docker learning path
 
-A static, plain-language Docker course: eleven pages of lessons, interactive diagrams, a practice lab that checks typed commands, and quizzes. No build step and no server code.
+A static, plain-language Docker course: thirteen pages of lessons, interactive diagrams, a practice lab that checks typed commands, and quizzes. No build step and no server code.
 
 Live site (GitHub Pages): https://cisco141632.github.io/kt-doc/docker/
 
@@ -23,6 +23,7 @@ In reading order. The order, the numbering in the sidebar and the previous/next 
 | File | Module |
 | --- | --- |
 | `index.html` | What is Docker? |
+| `visual-tour.html` | Visual Docker journey |
 | `commands.html` | Everyday commands |
 | `dockerfile.html` | Build your own image |
 | `rebuild.html` | Change, build, run |
@@ -30,6 +31,7 @@ In reading order. The order, the numbering in the sidebar and the previous/next 
 | `compose.html` | Docker Compose |
 | `pipeline.html` | From laptop to production |
 | `real-world.html` | Real-world issues |
+| `interview.html` | Interview questions & best practices |
 | `practice.html` | Practice lab |
 | `quiz.html` | Quiz |
 | `cheatsheet.html` | Cheat sheet |
@@ -41,6 +43,8 @@ In reading order. The order, the numbering in the sidebar and the previous/next 
 | `assets/style.css` | All styling, light and dark theme |
 | `assets/app.js` | Navigation (the `MODULES` list), theme, copy buttons, Mermaid, steppers, tabs |
 | `assets/widgets.js` | The interactive diagrams: container lifecycle, build cache, port mapping, code/image/container |
+| `assets/visual-tour.js` | The visual lifecycle walkthrough and live `docker run` command builder |
+| `assets/interview.js` | Filterable interview question bank, mock-question picker and confidence tracking |
 | `assets/exercises.js` | The exercise bank (type the command, fill in the blank, scenario) |
 | `assets/practice.js` | Renders the exercises and checks the answers |
 | `assets/quiz.js` | The quiz questions and the quiz screen |

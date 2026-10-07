@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interview questions & best practices · Docker learning path</title>
+  <meta name="description" content="Docker interview questions with model answers, production best practices and troubleshooting scenarios.">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/app.js"></script>
+  <script src="assets/interview.js" defer></script>
+</head>
+<body data-module="interview">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="content">
+
+    <header class="page-head">
+      <h1>Interview questions &amp; best practices</h1>
+      <p class="lead">Prepare answers you can explain—not just memorize. Filter questions by level, test yourself before revealing the answer, and use the production checklist to turn theory into good habits.</p>
+    </header>
+
+    <section id="answer-method">
+      <h2>How to give a strong technical answer</h2>
+      <p>Use this four-part pattern. It keeps a simple question short while giving the interviewer clear paths for a deeper follow-up.</p>
+      <div class="answer-method">
+        <div><span>1</span><b>Define it</b><small>One clear sentence without jargon.</small></div>
+        <div><span>2</span><b>Explain why</b><small>Name the problem it solves.</small></div>
+        <div><span>3</span><b>Give an example</b><small>Use a command or real situation.</small></div>
+        <div><span>4</span><b>Add a trade-off</b><small>Show where the answer has limits.</small></div>
+      </div>
+      <details class="reveal">
+        <summary>Example: “What is the difference between an image and a container?”</summary>
+        <div>
+          <p><b>Definition:</b> An image is an immutable package; a container is a running or stopped instance created from it. <b>Why:</b> The image gives every environment the same starting point. <b>Example:</b> One <code>nginx:alpine</code> image can create five independent containers. <b>Trade-off:</b> A container's writable layer is disposable, so important data belongs in a volume.</p>
+        </div>
+      </details>
+    </section>
+
+    <section id="questions">
+      <h2>Interactive question bank</h2>
+      <p>Say your answer aloud first. Then open the model answer and mark the question when you can explain it confidently without reading.</p>
+      <div id="interview-bank"></div>
+      <noscript><div class="callout warn"><span class="callout-title">JavaScript is off</span><p>The filterable question bank needs JavaScript. The best-practice and troubleshooting sections below still work.</p></div></noscript>
+    </section>
+
+    <section id="standards">
+      <h2>Production-standard Docker checklist</h2>
+      <p>Check an item only when you can explain <i>why</i> it matters. Your progress is saved in this browser.</p>
+      <div class="standards-head">
+        <div class="progress-bar"><span data-standard-progress style="width:0%"></span></div>
+        <b data-standard-count>0 of 12 understood</b>
+      </div>
+      <div class="standard-grid" data-standard-list>
+        <label class="standard-card">
+          <input type="checkbox" value="trusted-base">
+          <span><b>Use a trusted, minimal base image</b><small>Prefer an official or verified image and include only what the runtime needs. Less software means smaller downloads and less attack surface.</small><code>FROM python:3.13-slim</code></span>
+        </label>
+        <label class="standard-card">
+          <input type="checkbox" value="pin-version">
+          <span><b>Pin a deliberate version</b><small>Avoid a vague production tag such as <code>latest</code>. Use a version tag; use a digest where exact reproducibility is required.</small><code>FROM node:24.9.0-bookworm-slim</code></span>
+        </label>
+        <label class="standard-card">
+          <input type="checkbox" value="dockerignore">
+          <span><b>Keep the build context small</b><small>Use <code>.dockerignore</code> to exclude Git history, dependencies, test output, local secrets and other files the build does not need.</small><code>.git · node_modules · .env</code></span>
+        </label>
+        <label class="standard-card">
+          <input type="checkbox" value="cache-order">
+          <span><b>Order layers for the build cache</b><small>Copy dependency files and install packages before copying frequently changed source code.</small><code>COPY package*.json ./</code></span>
+        </label>
+        <label class="standard-card">
+          <input type="checkbox" value="multi-stage">
+          <span><b>Use multi-stage builds</b><small>Compile and test in a builder stage, then copy only the runtime artifact into a smaller final image.</small><code>COPY --from=build /app/dist ./dist</code></span>
+        </label>
+        <label class="standard-card">
+          <input type="checkbox" value="non-root">
+          <span><b>Run the app as a non-root user</b><small>Create or select a dedicated user and switch with <code>USER</code>. Do not use <code>--privileged</code> as a shortcut.</small><code>USER app</code></span>
+        </label>
+        <label class="standard-card">
+          <input type="checkbox" value="no-secrets">
+          <span><b>Never bake secrets into an image</b><small>Do not put passwords in <code>ENV</code>, <code>ARG</code>, copied files or image layers. Inject secrets at runtime or use BuildKit secret mounts while building.</small><code>docker run --env-file .env …</code></span>
+        </label>
+        <label class="standard-card">
+          <input type="checkbox" value="exec-form">
+          <span><b>Use an exec-form startup command</b><small>The main process receives stop signals correctly when it runs as PID 1. If a wrapper is needed, make it use <code>exec</code>.</small><code>CMD ["python", "app.py"]</code></span>
+        </label>
+        <label class="standard-card">
+          <input type="checkbox" value="healthcheck">
+          <span><b>Define meaningful health checks</b><small>“Process exists” is not enough. Check the app behavior that proves it can serve traffic, with a realistic startup period.</small><code>HEALTHCHECK CMD curl -f localhost:8000/health</code></span>
+        </label>
+        <label class="standard-card">
+          <input type="checkbox" value="ephemeral">
+          <span><b>Keep containers disposable</b><small>Write persistent state to volumes or external services. Send application logs to stdout and stderr.</small><code>docker run --mount source=data,target=/data …</code></span>
+        </label>
+        <label class="standard-card">
+          <input type="checkbox" value="limits">
+          <span><b>Set and test resource limits</b><small>Without constraints, a container may consume the host's available memory and CPU. Choose limits from measurements, not guesses.</small><code>--memory 512m --cpus 1.0</code></span>
+        </label>
+        <label class="standard-card">
+          <input type="checkbox" value="ci-scan">
+          <span><b>Build, test and scan in CI</b><small>Rebuild regularly for patches, run application tests, scan image dependencies, and promote the same immutable image through environments.</small><code>docker build --pull -t app:$COMMIT_SHA .</code></span>
+        </label>
+      </div>
+      <div class="callout tip">
+        <span class="callout-title">Official references</span>
+        <p>These recommendations follow Docker's current guidance on <a href="https://docs.docker.com/build/building/best-practices/">building best practices</a>, <a href="https://docs.docker.com/build/building/multi-stage/">multi-stage builds</a>, <a href="https://docs.docker.com/engine/security/">engine security</a> and <a href="https://docs.docker.com/engine/containers/resource_constraints/">resource constraints</a>.</p>
+      </div>
+    </section>
+
+    <section id="issues">
+      <h2>Issues interviewers expect you to diagnose</h2>
+      <p>A strong troubleshooting answer starts with evidence. Say which command you would run, what you expect to see, and how that result changes your next step.</p>
+
+      <details class="issue">
+        <summary><span class="badge danger">Runtime</span><b>The container starts and immediately exits</b><span>Open →</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>Start with</dt><dd><code>docker ps -a</code>, then <code>docker logs &lt;name&gt;</code> and <code>docker inspect &lt;name&gt;</code>.</dd>
+            <dt>Likely causes</dt><dd>The main process finished, crashed, cannot find a file, lacks a variable, or has the wrong command. A container lives only while its PID 1 process lives.</dd>
+            <dt>Fix</dt><dd>Correct <code>CMD</code>/<code>ENTRYPOINT</code>, configuration or permissions. Do not keep it alive with a fake infinite sleep.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="issue">
+        <summary><span class="badge warn">Networking</span><b>The app runs, but localhost in the browser refuses the connection</b><span>Open →</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>Start with</dt><dd><code>docker ps</code> to verify the published ports, then <code>docker logs</code>. Inside the container, confirm which address and port the app listens on.</dd>
+            <dt>Likely causes</dt><dd>No <code>-p</code> mapping, the host/container ports are reversed, or the app binds to <code>127.0.0.1</code> inside the container.</dd>
+            <dt>Fix</dt><dd>Publish <code>HOST:CONTAINER</code> and make the app listen on <code>0.0.0.0</code> inside the container.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="issue">
+        <summary><span class="badge warn">Networking</span><b>One container cannot connect to another at localhost</b><span>Open →</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>Key idea</dt><dd>Inside a container, <code>localhost</code> means that same container—not the host and not another service.</dd>
+            <dt>Start with</dt><dd><code>docker network inspect &lt;network&gt;</code> or <code>docker compose ps</code>.</dd>
+            <dt>Fix</dt><dd>Attach both containers to the same user-defined network and connect with the other container or Compose service name, such as <code>db:5432</code>.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="issue">
+        <summary><span class="badge danger">Data</span><b>Database data disappeared after the container was replaced</b><span>Open →</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>Likely cause</dt><dd>The database wrote to the container's disposable writable layer instead of a named volume or bind mount.</dd>
+            <dt>Start with</dt><dd><code>docker inspect &lt;name&gt;</code> and check <code>Mounts</code>; list volumes with <code>docker volume ls</code>.</dd>
+            <dt>Fix</dt><dd>Mount durable storage at the exact directory used by the database, then test replacement—not only restart.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="issue">
+        <summary><span class="badge warn">Build</span><b>A rebuild still runs old code</b><span>Open →</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>Separate the objects</dt><dd>Source code, image and container can each be on a different version. A restart does not move an old container to a new image.</dd>
+            <dt>Start with</dt><dd>Check the build context and <code>.dockerignore</code>, inspect build output, then compare image IDs with <code>docker image ls</code> and <code>docker inspect</code>.</dd>
+            <dt>Fix</dt><dd>Build the intended context and tag, then remove/recreate the container from that new image. Use <code>--no-cache</code> only when evidence points to incorrect cache reuse.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="issue">
+        <summary><span class="badge danger">Host</span><b>Builds fail with “no space left on device”</b><span>Open →</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>Start with</dt><dd><code>docker system df</code> to see space used by images, containers, local volumes and build cache.</dd>
+            <dt>Fix safely</dt><dd>Identify unused objects before pruning. Be especially careful with volumes because they may contain irreplaceable data.</dd>
+            <dt>Prevent it</dt><dd>Use multi-stage builds, small contexts and images, CI retention rules, monitoring and intentional cleanup.</dd>
+          </dl>
+        </div>
+      </details>
+
+      <details class="issue">
+        <summary><span class="badge danger">Platform</span><b>“exec format error” appears on deployment</b><span>Open →</span></summary>
+        <div class="issue-body">
+          <dl>
+            <dt>Likely causes</dt><dd>The image or binary was built for a different CPU architecture, or a script has an invalid shebang/line ending.</dd>
+            <dt>Start with</dt><dd><code>docker image inspect &lt;image&gt; --format '{{.Os}}/{{.Architecture}}'</code> and compare it with the target host.</dd>
+            <dt>Fix</dt><dd>Build for the target platform, or publish a multi-platform image with Buildx. Also check script shebangs and Unix line endings.</dd>
+          </dl>
+        </div>
+      </details>
+    </section>
+
+    <section id="rapid-fire">
+      <h2>Rapid-fire points worth remembering</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Question</th><th>Short answer</th></tr>
+          <tr><td class="wrap">Does <code>EXPOSE</code> publish a port?</td><td class="wrap">No. It documents the intended container port. Use <code>-p</code> or Compose <code>ports</code> to publish it to the host.</td></tr>
+          <tr><td class="wrap">Does <code>docker restart</code> use a newly built image?</td><td class="wrap">No. It restarts the same container with the image snapshot it was created from.</td></tr>
+          <tr><td class="wrap">Is a container a lightweight VM?</td><td class="wrap">It is an isolated process, not a machine. Containers share the host kernel; VMs have guest kernels.</td></tr>
+          <tr><td class="wrap">Should every container have exactly one process?</td><td class="wrap">Prefer one concern and one clear lifecycle. One process is a useful rule of thumb, not an absolute law.</td></tr>
+          <tr><td class="wrap">Are tags immutable?</td><td class="wrap">No. A tag can be moved to another image. A digest identifies exact image content.</td></tr>
+          <tr><td class="wrap">Is the Docker socket harmless inside a container?</td><td class="wrap">No. Access to the daemon socket is highly privileged and can usually control the host through Docker.</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section class="takeaways" id="takeaways">
+      <h2>Interview-day checklist</h2>
+      <ul>
+        <li>Explain the mental model before listing commands.</li>
+        <li>For troubleshooting, begin with evidence: status, logs, inspect, resources and network state.</li>
+        <li>Mention security, persistence and observability when moving from development to production.</li>
+        <li>If a rule has exceptions, call it a rule of thumb and explain the actual goal.</li>
+        <li>Use one concrete example and one trade-off in every important answer.</li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

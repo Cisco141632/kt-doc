@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual Docker journey · Docker learning path</title>
+  <meta name="description" content="An interactive, step-by-step visual guide to building an image, running a container and understanding docker run.">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/app.js"></script>
+  <script src="assets/visual-tour.js" defer></script>
+</head>
+<body data-module="visual-tour">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="content">
+
+    <header class="page-head">
+      <h1>See Docker happen</h1>
+      <p class="lead">Follow one tiny web app from files on your laptop to a running container. Each click changes the picture, the command and what Docker keeps on your machine.</p>
+    </header>
+
+    <section id="mental-model">
+      <h2>First, keep this picture in your head</h2>
+      <p>Docker is a short pipeline. You write the first two things; Docker creates the last two.</p>
+      <div class="concept-flow" aria-label="Dockerfile to image to container flow">
+        <div class="concept-card">
+          <span class="concept-icon" aria-hidden="true">{ }</span>
+          <b>App files</b>
+          <small>Your code and dependencies</small>
+        </div>
+        <span class="concept-arrow" aria-hidden="true">+</span>
+        <div class="concept-card">
+          <span class="concept-icon" aria-hidden="true">▤</span>
+          <b>Dockerfile</b>
+          <small>The build instructions</small>
+        </div>
+        <span class="concept-arrow" aria-hidden="true">→</span>
+        <div class="concept-card accent">
+          <span class="concept-icon" aria-hidden="true">▱</span>
+          <b>Image</b>
+          <small>A saved, read-only package</small>
+        </div>
+        <span class="concept-arrow" aria-hidden="true">→</span>
+        <div class="concept-card success">
+          <span class="concept-icon" aria-hidden="true">▶</span>
+          <b>Container</b>
+          <small>A running copy of the image</small>
+        </div>
+      </div>
+      <div class="callout analogy">
+        <span class="callout-title">The two verbs</span>
+        <p><code>docker build</code> turns files into an image. <code>docker run</code> turns that image into a container. If these two arrows make sense, the rest of Docker has somewhere to fit.</p>
+      </div>
+    </section>
+
+    <section id="journey">
+      <h2>Click through a complete container journey</h2>
+      <p>Use <b>Next step</b> and watch the highlighted objects. This is a safe simulation—it explains the real commands but does not run Docker in your browser.</p>
+      <div id="visual-journey" class="visual-journey" aria-label="Interactive Docker lifecycle walkthrough"></div>
+      <noscript>
+        <div class="callout warn"><span class="callout-title">JavaScript is off</span><p>Turn on JavaScript to use the walkthrough. The sequence is: build the image, run a container, send a request, inspect it, stop it, remove the container, then optionally remove the image.</p></div>
+      </noscript>
+    </section>
+
+    <section id="build-command">
+      <h2>Build your own <code>docker run</code> command</h2>
+      <p>Change the choices. The command and network picture update immediately, so every option has a visible meaning.</p>
+      <div id="run-builder" class="run-builder"></div>
+    </section>
+
+    <section id="survival">
+      <h2>What survives each action?</h2>
+      <p>Most beginner confusion comes from treating an image and a container as the same thing. Compare the result of each command.</p>
+      <div class="survival-grid">
+        <article class="survival-card">
+          <span class="badge info">Stop</span>
+          <h3><code>docker stop web</code></h3>
+          <div class="survival-state"><span>Image</span><b class="yes">Still there</b></div>
+          <div class="survival-state"><span>Container</span><b class="yes">Still there, stopped</b></div>
+          <p>You can start the same container again with <code>docker start web</code>.</p>
+        </article>
+        <article class="survival-card">
+          <span class="badge warn">Remove container</span>
+          <h3><code>docker rm web</code></h3>
+          <div class="survival-state"><span>Image</span><b class="yes">Still there</b></div>
+          <div class="survival-state"><span>Container</span><b class="no">Gone</b></div>
+          <p>You can create a fresh container from the same image.</p>
+        </article>
+        <article class="survival-card">
+          <span class="badge danger">Remove image</span>
+          <h3><code>docker rmi nginx:alpine</code></h3>
+          <div class="survival-state"><span>Image</span><b class="no">Gone</b></div>
+          <div class="survival-state"><span>Container</span><b>Must be removed first</b></div>
+          <p>Docker can pull or build the image again when you need it.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="next">
+      <h2>What should I learn next?</h2>
+      <p>Choose the question that sounds like your next problem. You do not need to learn everything at once.</p>
+      <div class="next-map">
+        <a class="next-card" href="commands.html">
+          <span class="next-number">1</span>
+          <span><b>How do I control containers?</b><small>Start, stop, inspect, read logs and clean up.</small></span>
+          <span aria-hidden="true">→</span>
+        </a>
+        <a class="next-card" href="dockerfile.html">
+          <span class="next-number">2</span>
+          <span><b>How do I package my own app?</b><small>Write a Dockerfile and understand image layers.</small></span>
+          <span aria-hidden="true">→</span>
+        </a>
+        <a class="next-card" href="storage-network.html">
+          <span class="next-number">3</span>
+          <span><b>How do I keep data and connect things?</b><small>Learn volumes, ports and container networks.</small></span>
+          <span aria-hidden="true">→</span>
+        </a>
+        <a class="next-card" href="compose.html">
+          <span class="next-number">4</span>
+          <span><b>How do I run an app with a database?</b><small>Describe the whole stack in one Compose file.</small></span>
+          <span aria-hidden="true">→</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="takeaways" id="takeaways">
+      <h2>Remember</h2>
+      <ul>
+        <li><b>Build:</b> app files + Dockerfile → image.</li>
+        <li><b>Run:</b> image → container.</li>
+        <li>A port mapping sends traffic from a host port to the port where the app listens inside the container.</li>
+        <li>Stopping or removing a container does not remove its image.</li>
+        <li>A container is disposable. Important data belongs in a volume, which you will learn later.</li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

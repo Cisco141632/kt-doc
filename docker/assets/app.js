@@ -6,6 +6,7 @@
   // Single source of truth for navigation. To add a page, add one line here.
   const MODULES = [
     { id: 'index', file: 'index.html', title: 'What is Docker?', mins: 10, desc: 'The idea, the four key words, containers vs virtual machines, and your first container.' },
+    { id: 'visual-tour', file: 'visual-tour.html', title: 'Visual Docker journey', mins: 15, desc: 'Watch code become an image and a running container, then build your own docker run command.' },
     { id: 'commands', file: 'commands.html', title: 'Everyday commands', mins: 20, desc: 'Every daily command explained with one simple example.' },
     { id: 'dockerfile', file: 'dockerfile.html', title: 'Build your own image', mins: 25, desc: 'Write a Dockerfile, understand layers and caching, and use multi-stage builds.' },
     { id: 'rebuild', file: 'rebuild.html', title: 'Change, build, run', mins: 15, desc: 'What really happens when you change code, build again, restart or run again.' },
@@ -13,6 +14,7 @@
     { id: 'compose', file: 'compose.html', title: 'Docker Compose', mins: 20, desc: 'Run an app and its database together from one file.' },
     { id: 'pipeline', file: 'pipeline.html', title: 'From laptop to production', mins: 20, desc: 'Registries, versions, deploys and rollbacks: how an image reaches a real server.' },
     { id: 'real-world', file: 'real-world.html', title: 'Real-world issues', mins: 20, desc: 'Problems teams really hit in production, and how to fix and prevent them.' },
+    { id: 'interview', file: 'interview.html', title: 'Interview & best practices', mins: 25, desc: 'Practice common interview questions, production standards and troubleshooting scenarios.' },
     { id: 'practice', file: 'practice.html', title: 'Practice lab', mins: 30, desc: 'Type the command or fill in the blank, then check your answer.' },
     { id: 'quiz', file: 'quiz.html', title: 'Quiz', mins: 20, desc: 'Short tests for each topic, with an explanation after every question.' },
     { id: 'cheatsheet', file: 'cheatsheet.html', title: 'Cheat sheet', mins: 5, desc: 'All commands on one page, plus quick fixes for common errors.' },
