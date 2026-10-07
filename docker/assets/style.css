@@ -429,6 +429,65 @@ pre.mermaid.mermaid-failed::before { content: "Diagram could not load (it needs 
 .standard-card small { margin: 3px 0 8px; color: var(--muted); line-height: 1.45; }
 .standard-card code { white-space: normal; }
 
+/* ---------- Storage and network visualizers ---------- */
+
+.storage-step-track { display: flex; gap: 5px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px; }
+.storage-step-track button { flex: 1 0 auto; min-width: 68px; padding: 5px 6px; border: 0; border-bottom: 3px solid transparent; background: transparent; color: var(--muted); font: inherit; font-size: 0.7rem; cursor: pointer; }
+.storage-step-track button span { display: grid; place-items: center; width: 22px; height: 22px; margin: 0 auto 3px; border: 1px solid var(--border); border-radius: 50%; background: var(--surface-2); }
+.storage-step-track button.is-past { color: var(--ok); border-color: var(--ok); }
+.storage-step-track button.is-past span { border-color: var(--ok); background: var(--ok); color: var(--surface); }
+.storage-step-track button.is-current { color: var(--accent); border-color: var(--accent); font-weight: 700; }
+.storage-step-track button.is-current span { border-color: var(--accent); background: var(--accent); color: var(--on-accent); }
+
+.storage-stage { display: grid; grid-template-columns: minmax(130px, 1fr) auto minmax(170px, 1.15fr) auto minmax(130px, 1fr); align-items: center; gap: 8px; padding: 20px; border: 1px solid var(--border); border-radius: 10px; background-color: var(--bg); background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px); background-size: 24px 24px; }
+.storage-object { min-height: 130px; padding: 14px 10px; border: 2px dashed var(--border); border-radius: 10px; background: var(--surface); text-align: center; color: var(--muted); opacity: 0.6; transition: border-color 0.2s, opacity 0.2s, transform 0.2s, box-shadow 0.2s; }
+.storage-object b, .storage-object > span:last-child { display: block; }
+.storage-object b { margin: 6px 0 18px; color: var(--text); }
+.storage-object.is-active { border-style: solid; border-color: var(--accent); opacity: 1; transform: translateY(-3px); box-shadow: 0 0 0 4px var(--accent-soft); }
+.storage-object[data-state="running"], .storage-object[data-state="reading"], .storage-object[data-state="data"], .storage-object[data-state="empty"] { border-style: solid; opacity: 1; }
+.container-object[data-state="running"], .container-object[data-state="reading"] { border-color: var(--ok); }
+.container-object[data-state="running"] > span:last-child, .container-object[data-state="reading"] > span:last-child { color: var(--ok); font-weight: 700; }
+.storage-object[data-state="removed"] { border-color: var(--danger); background: var(--danger-soft); opacity: 0.55; }
+.volume-object[data-state="data"] { border-color: var(--ok); background: var(--ok-soft); }
+.volume-object[data-state="empty"] { border-color: var(--accent); background: var(--accent-soft); }
+.volume-object[data-state="removed"] { border-color: var(--danger); background: var(--danger-soft); }
+.object-kicker { color: var(--muted); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+.volume-file { padding: 5px 7px; border-radius: 6px; background: var(--surface); color: var(--ok); font-family: var(--mono); font-size: 0.72rem; }
+.mount-link { color: var(--muted); font-size: 1.3rem; }
+.storage-explain { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(250px, 0.8fr); gap: 14px; margin-top: 12px; }
+.storage-explain h4 { margin-top: 7px; }
+.storage-explain p { margin: 0; color: var(--muted); font-size: 0.88rem; }
+.storage-explain .mini-term { min-height: 110px; max-height: none; }
+.storage-controls { display: flex; gap: 8px; margin-top: 10px; }
+.storage-controls [data-next] { margin-left: auto; }
+
+.mount-mirror { display: grid; grid-template-columns: minmax(0, 1fr) 120px minmax(0, 1fr); align-items: stretch; gap: 10px; margin: 14px 0; }
+.mirror-side { min-width: 0; padding: 14px; border: 2px solid var(--accent); border-radius: 10px; background: var(--accent-soft); text-align: center; }
+.mirror-side b { display: block; margin: 6px 0 12px; overflow-wrap: anywhere; font-family: var(--mono); font-size: 0.75rem; }
+.mirror-side.is-removed { border-color: var(--danger); background: var(--danger-soft); opacity: 0.65; }
+.file-preview { display: block; padding: 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); font-family: var(--mono); font-size: 0.75rem; overflow-wrap: anywhere; }
+.mirror-bridge { align-self: center; text-align: center; color: var(--muted); }
+.mirror-bridge span, .mirror-bridge b, .mirror-bridge small { display: block; }
+.mirror-bridge span { color: var(--accent); font-size: 1.8rem; }
+.mirror-bridge b { color: var(--text); font-size: 0.74rem; }
+.mirror-bridge small { font-size: 0.65rem; }
+
+.route-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.route-map { display: grid; grid-template-columns: minmax(115px, 1fr) auto minmax(115px, 1fr) auto minmax(115px, 1fr) auto minmax(115px, 1fr); align-items: center; gap: 6px; min-height: 130px; }
+.route-node { min-height: 92px; padding: 12px 8px; border: 2px solid var(--border); border-radius: 9px; background: var(--surface-2); color: var(--muted); text-align: center; opacity: 0.5; transition: opacity 0.2s, border-color 0.2s, transform 0.2s; }
+.route-node small, .route-node b { display: block; }
+.route-node small { margin-bottom: 8px; font-size: 0.67rem; text-transform: uppercase; }
+.route-node b { color: var(--text); font-size: 0.78rem; overflow-wrap: anywhere; }
+.route-node.is-past { border-color: var(--ok); opacity: 0.82; }
+.route-node.is-current { border-color: var(--accent); background: var(--accent-soft); opacity: 1; transform: translateY(-3px); }
+.route-node.is-success { border-color: var(--ok); background: var(--ok-soft); }
+.route-node.is-failure { border-color: var(--danger); background: var(--danger-soft); }
+.route-arrow { color: var(--muted); }
+.route-explain { min-height: 82px; margin: 12px 0; padding: 10px 12px; border-left: 3px solid var(--accent); border-radius: 7px; background: var(--accent-soft); }
+.route-explain p { margin: 3px 0 0; color: var(--muted); font-size: 0.86rem; }
+.route-controls { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+.route-controls span { margin-left: auto; color: var(--muted); font-size: 0.8rem; }
+
 /* ---------- Exercises ---------- */
 
 .exercise { margin: 0 0 14px; padding: 14px 16px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); }
@@ -511,6 +570,9 @@ pre.mermaid.mermaid-failed::before { content: "Diagram could not load (it needs 
   .builder-controls { border-right: 0; border-bottom: 1px solid var(--border); }
   .answer-method { grid-template-columns: repeat(2, 1fr); }
   .standard-grid { grid-template-columns: 1fr; }
+  .storage-explain { grid-template-columns: 1fr; }
+  .route-map { grid-template-columns: 1fr; }
+  .route-arrow { text-align: center; transform: rotate(90deg); }
 }
 
 @media (max-width: 620px) {
@@ -535,11 +597,17 @@ pre.mermaid.mermaid-failed::before { content: "Diagram could not load (it needs 
   .question-topic { grid-column: 2; }
   .standards-head { align-items: stretch; flex-direction: column; }
   .standards-head .progress-bar { max-width: none; }
+  .storage-stage { grid-template-columns: 1fr; }
+  .mount-link { text-align: center; transform: rotate(90deg); }
+  .mount-mirror { grid-template-columns: 1fr; }
+  .mirror-bridge span { transform: rotate(90deg); }
+  .storage-controls { flex-wrap: wrap; }
+  .storage-controls [data-next] { order: -1; width: 100%; justify-content: center; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .journey-node, .browser-node, .request-path, .next-card { transition: none; }
+  .journey-node, .browser-node, .request-path, .next-card, .storage-object, .route-node { transition: none; }
 }
 
 @media print {

@@ -85,6 +85,9 @@ flowchart LR
     <section id="volume">
       <h2>Try a named volume</h2>
       <p>You will write a file from one container and read it from a completely different one. Both containers delete themselves (<code>--rm</code>), and the data still survives.</p>
+      <h3>Visual walkthrough: replace the container, keep the data</h3>
+      <p>Move through the steps and watch the container identity change while the volume and its file stay in place.</p>
+      <div class="widget" id="volume-life"></div>
       <pre data-lang="console">$ docker volume create notes
 notes
 $ docker run --rm -v notes:/data alpine sh -c 'echo "I survive" > /data/note.txt'
@@ -117,6 +120,9 @@ I survive</pre>
     <section id="bind">
       <h2>Try a bind mount</h2>
       <p>Now the opposite direction: show a folder of your machine inside a container. Create a tiny website and let nginx serve it.</p>
+      <h3>Interactive: one file seen from two places</h3>
+      <p>Edit the host file, try a write from the container, switch between read-only and read-write, then replace the container.</p>
+      <div class="widget" id="bind-mirror"></div>
       <pre data-lang="console">$ mkdir site
 $ echo "&lt;h1&gt;Hello from my laptop&lt;/h1&gt;" > site/index.html
 $ docker run -d --name site -p 8080:80 -v "$(pwd)/site:/usr/share/nginx/html:ro" nginx:alpine</pre>
@@ -165,6 +171,9 @@ flowchart LR
         </pre>
         <figcaption>From outside you use a published port. Inside the network, containers use each other's names.</figcaption>
       </figure>
+      <h3>Trace the request, one hop at a time</h3>
+      <p>Choose where the request starts. The correct address changes because every container has its own network view.</p>
+      <div class="widget" id="network-path"></div>
       <p>Try it. You start a database with <b>no published port</b> and reach it from a second container by name:</p>
       <pre data-lang="console">$ docker network create labnet
 $ docker run -d --name labdb --network labnet -e POSTGRES_PASSWORD=secret postgres:17-alpine

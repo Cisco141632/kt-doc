@@ -10,7 +10,7 @@
     { id: 'commands', file: 'commands.html', title: 'Everyday commands', mins: 20, desc: 'Every daily command explained with one simple example.' },
     { id: 'dockerfile', file: 'dockerfile.html', title: 'Build your own image', mins: 25, desc: 'Write a Dockerfile, understand layers and caching, and use multi-stage builds.' },
     { id: 'rebuild', file: 'rebuild.html', title: 'Change, build, run', mins: 15, desc: 'What really happens when you change code, build again, restart or run again.' },
-    { id: 'storage-network', file: 'storage-network.html', title: 'Data & networking', mins: 20, desc: 'Volumes, bind mounts, ports, and how containers talk to each other.' },
+    { id: 'storage-network', file: 'storage-network.html', title: 'Data & networking', mins: 35, desc: 'Visual labs for volumes, bind mounts, ports, Docker DNS and container-to-container traffic.' },
     { id: 'compose', file: 'compose.html', title: 'Docker Compose', mins: 20, desc: 'Run an app and its database together from one file.' },
     { id: 'pipeline', file: 'pipeline.html', title: 'From laptop to production', mins: 20, desc: 'Registries, versions, deploys and rollbacks: how an image reaches a real server.' },
     { id: 'real-world', file: 'real-world.html', title: 'Real-world issues', mins: 20, desc: 'Problems teams really hit in production, and how to fix and prevent them.' },
