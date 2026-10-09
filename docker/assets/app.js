@@ -12,6 +12,7 @@
     { id: 'rebuild', file: 'rebuild.html', title: 'Change, build, run', mins: 15, desc: 'What really happens when you change code, build again, restart or run again.' },
     { id: 'storage-network', file: 'storage-network.html', title: 'Data & networking', mins: 35, desc: 'Visual labs for volumes, bind mounts, ports, Docker DNS and container-to-container traffic.' },
     { id: 'compose', file: 'compose.html', title: 'Docker Compose', mins: 20, desc: 'Run an app and its database together from one file.' },
+    { id: 'doubts', file: 'common-doubts.html', title: 'Common Docker doubts', mins: 30, desc: 'Prediction-first simulations for addresses, ports, WORKDIR, rebuilds, startup commands and Compose variables.' },
     { id: 'pipeline', file: 'pipeline.html', title: 'From laptop to production', mins: 20, desc: 'Registries, versions, deploys and rollbacks: how an image reaches a real server.' },
     { id: 'real-world', file: 'real-world.html', title: 'Real-world issues', mins: 20, desc: 'Problems teams really hit in production, and how to fix and prevent them.' },
     { id: 'interview', file: 'interview.html', title: 'Interview & best practices', mins: 25, desc: 'Practice common interview questions, production standards and troubleshooting scenarios.' },

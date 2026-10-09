@@ -149,6 +149,7 @@ hello-docker-web-1   hello-docker-web     "gunicorn --bind 0.0…"   web       1
           <p>Now <code>web</code> starts, connects to <code>db:5432</code>, and port 8000 is published on your machine.</p>
         </div>
       </div>
+      <p><a href="common-doubts.html#compose-up">Repeat this flow in the Common Docker doubts module →</a></p>
     </section>
 
     <section id="commands">
@@ -239,20 +240,31 @@ Visits so far: 1</pre>
     </section>
 
     <section id="env">
-      <h2>Secrets and the .env file</h2>
-      <p>The password is not written in <code>compose.yaml</code>. The file says <code>${POSTGRES_PASSWORD}</code>, and Compose reads the value from a file named <code>.env</code> in the same folder.</p>
+      <h2>Compose variables, container variables and secrets</h2>
+      <p>The password is not written directly in <code>compose.yaml</code>. The file says <code>${POSTGRES_PASSWORD}</code>, and Compose uses a value from <code>.env</code> while it resolves the file.</p>
       <pre data-lang="text" data-title=".env (never commit this file)">POSTGRES_PASSWORD=change-me</pre>
+      <p>In this example, the value reaches the database only because the service explicitly passes it:</p>
+      <pre data-lang="yaml" data-title="compose.yaml">services:
+  db:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}</pre>
       <ul>
-        <li><code>compose.yaml</code> goes into Git. It contains no secrets.</li>
-        <li><code>.env</code> is listed in <code>.gitignore</code> and stays on each machine.</li>
+        <li><code>.env</code> supplies values for expressions such as <code>${POSTGRES_PASSWORD}</code> and <code>${HOST_PORT:-8080}</code>.</li>
+        <li><code>environment:</code> or <code>env_file:</code> places values into a container. A Compose <code>.env</code> file does <b>not</b> automatically inject every value.</li>
+        <li><code>compose.yaml</code> goes into Git; local secret values do not.</li>
+        <li><code>.env</code> is listed in <code>.gitignore</code> and stays on each developer machine.</li>
         <li><code>.env.example</code> goes into Git with placeholder values, so a new teammate knows which variables to set.</li>
-        <li>Run <code>docker compose config</code> to see the file with the values filled in. If a variable is missing, Compose warns you there.</li>
+        <li>Run <code>docker compose config</code> to inspect the resolved model. Remember that its output may contain resolved secret values.</li>
       </ul>
+      <div class="callout tip">
+        <span class="callout-title">A default value for local ports</span>
+        <p><code>ports: ["${HOST_PORT:-8080}:${CONTAINER_PORT:-8000}"]</code> means “use the supplied value, or use this default when it is unset or empty.” This changes the Compose model; it does not make those names environment variables inside the container. <a href="common-doubts.html#compose-env">Try it in the variable-flow simulator →</a></p>
+      </div>
       <div class="callout warn">
         <span class="callout-title">Forgot to create .env?</span>
         <p>Compose prints <code>The "POSTGRES_PASSWORD" variable is not set. Defaulting to a blank string</code>, the database refuses to start without a password, and <code>up</code> ends with <code>dependency failed to start</code>. Run <code>cp .env.example .env</code> and try again.</p>
       </div>
-      <p>In production, teams usually go one step further and keep secrets in a secret manager instead of a file on the server.</p>
+      <p>A local <code>.env</code> file is convenient configuration, not strong secret protection. In production, use Compose secrets or your platform's secret manager and restrict who can inspect the resulting container configuration.</p>
     </section>
 
     <section id="dev">
@@ -296,7 +308,8 @@ Visits so far: 1</pre>
         <li>After a code change: <code>docker compose up -d --build</code>.</li>
         <li><code>down</code> keeps your data. <code>down -v</code> deletes it.</li>
         <li>"Started" is not "ready": use a health check with <code>service_healthy</code>.</li>
-        <li>Secrets go in <code>.env</code>, and <code>.env</code> never goes into Git.</li>
+        <li><code>.env</code> supplies interpolation values; <code>environment</code> and <code>env_file</code> pass values into containers.</li>
+        <li>Never commit secret values. Use a real secret mechanism in production.</li>
       </ul>
     </section>
 

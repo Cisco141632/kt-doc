@@ -90,9 +90,19 @@ CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--access-logfile", "-", "app:app"]</
         <span class="callout-title">RUN or CMD?</span>
         <p><code>RUN</code> happens <b>once, while the image is built</b>, and its result is stored in the image. <code>CMD</code> happens <b>every time a container starts</b>. Install with <code>RUN</code>. Start your app with <code>CMD</code>.</p>
       </div>
+      <div class="callout tip">
+        <span class="callout-title">Can two Dockerfiles both use WORKDIR /app?</span>
+        <p>Yes. Each image and each container has its own filesystem. Container A's <code>/app</code> is not Container B's <code>/app</code>, just as two houses can both have a room called “kitchen.” Files become shared only when you deliberately mount the same host folder or volume into both containers. <a href="common-doubts.html#workdir">Try the isolation simulator →</a></p>
+      </div>
       <div class="callout warn">
-        <span class="callout-title">Why 0.0.0.0?</span>
-        <p>The app must listen on <code>0.0.0.0</code> (all addresses), not on <code>127.0.0.1</code>. Inside a container, <code>127.0.0.1</code> means "only this container", so nothing from outside could reach the app, even with <code>-p</code>.</p>
+        <span class="callout-title">127.0.0.1 in the browser is correct—but the app still needs 0.0.0.0</span>
+        <p>These addresses are used in two different places:</p>
+        <ol>
+          <li>The app runs <b>inside the container</b> and listens on <code>0.0.0.0:8000</code>. This means “accept port 8000 traffic arriving through any container network interface.”</li>
+          <li>Docker maps <code>-p 127.0.0.1:8080:8000</code>. This means “accept traffic on this machine only, at host port 8080, and forward it to container port 8000.”</li>
+          <li>You open <code>http://127.0.0.1:8080</code> in the browser. That address means your <b>host machine</b>, not the container.</li>
+        </ol>
+        <p>If the app listens on <code>127.0.0.1:8000</code> inside the container, it accepts only requests created inside that same container. Docker's forwarded request arrives through another container interface, so it cannot reach the app. <a href="common-doubts.html#listening">Predict several address combinations in the visual lab →</a></p>
       </div>
     </section>
 
@@ -184,7 +194,7 @@ compose.yaml</pre>
       </div>
       <div class="callout tip">
         <span class="callout-title">Why the square brackets in CMD?</span>
-        <p><code>CMD ["gunicorn", "app:app"]</code> starts your program directly. When you run <code>docker stop</code>, the program receives the signal and shuts down cleanly, in less than a second for this app. The other spelling, <code>CMD gunicorn app:app</code>, starts a shell that starts your program. The stop signal then often does not reach the app, and Docker waits 10 seconds before killing it. Use the brackets.</p>
+        <p><code>CMD ["gunicorn", "app:app"]</code> starts your program directly. When you run <code>docker stop</code>, the program receives the signal and can shut down cleanly. The other spelling, <code>CMD gunicorn app:app</code>, starts a shell that starts your program. That shell may not pass the stop signal to the app, so Docker may have to force the stop after its grace period. Use the brackets for a long-running server. <a href="common-doubts.html#signals">Follow the signal in the interactive visual →</a></p>
       </div>
     </section>
 

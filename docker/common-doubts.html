@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Common Docker doubts · Docker learning path</title>
+  <meta name="description" content="Interactive explanations for Docker networking, WORKDIR, rebuilds, EXPOSE, CMD, ENTRYPOINT, PID 1 and Compose variables.">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/app.js"></script>
+  <script src="assets/widgets.js" defer></script>
+  <script src="assets/doubts.js" defer></script>
+  <script src="assets/exercises.js" defer></script>
+  <script src="assets/practice.js" defer></script>
+</head>
+<body data-module="doubts">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="content">
+
+    <header class="page-head">
+      <h1>Common Docker doubts</h1>
+      <p class="lead">These are the questions people usually ask after the basic explanation. Predict the result first, use the simulation, and then explain the result in your own words.</p>
+    </header>
+
+    <section id="method">
+      <h2>Use the page for active recall</h2>
+      <div class="recall-loop" aria-label="Active recall learning loop">
+        <div><span>1</span><b>Predict</b><small>Choose what you think will happen.</small></div>
+        <span aria-hidden="true">→</span>
+        <div><span>2</span><b>Run</b><small>Use the visual simulation.</small></div>
+        <span aria-hidden="true">→</span>
+        <div><span>3</span><b>Explain</b><small>Say why the result happened.</small></div>
+        <span aria-hidden="true">→</span>
+        <div><span>4</span><b>Recall</b><small>Answer the practice question later.</small></div>
+      </div>
+      <div class="callout tip">
+        <span class="callout-title">Do not click immediately</span>
+        <p>Pause for five seconds and make a prediction. The prediction—not the click—is what makes the idea easier to remember.</p>
+      </div>
+    </section>
+
+    <section id="listening">
+      <h2>Why must the app use 0.0.0.0?</h2>
+      <p>There are <b>three separate settings</b>. Mixing them together causes most of the confusion.</p>
+      <div class="address-equation">
+        <div><small>Application listens inside container</small><b>0.0.0.0:8000</b></div>
+        <span aria-hidden="true">+</span>
+        <div><small>Docker publishes host to container</small><b>127.0.0.1:8080:8000</b></div>
+        <span aria-hidden="true">=</span>
+        <div><small>You open on the host</small><b>127.0.0.1:8080</b></div>
+      </div>
+      <p><code>0.0.0.0</code> is a <b>server listening setting</b>. You normally do not type it into the browser. <code>127.0.0.1:8080</code> is the <b>host address</b> you open.</p>
+      <div class="widget" id="listen-lab"></div>
+      <details class="reveal">
+        <summary>Why does 127.0.0.1 work in my browser but fail inside the application?</summary>
+        <div><p>They belong to different network spaces. In your browser, <code>127.0.0.1</code> means your host machine. Inside the container, it means the container itself. Docker forwards the host request through the container's network interface, so the server must accept traffic on that interface by listening on <code>0.0.0.0</code>.</p></div>
+      </details>
+    </section>
+
+    <section id="ports">
+      <h2>EXPOSE, application port and published port</h2>
+      <p>These three lines do three different jobs. All three may mention ports, but only one creates the host connection.</p>
+      <div class="three-layer-model">
+        <article>
+          <span class="badge info">Metadata</span>
+          <h3><code>EXPOSE 8000</code></h3>
+          <p>Documents the intended container port. It does not open a host port by itself.</p>
+        </article>
+        <article>
+          <span class="badge ok">Application</span>
+          <h3><code>--bind 0.0.0.0:8000</code></h3>
+          <p>Makes the server accept traffic arriving at port 8000 inside the container.</p>
+        </article>
+        <article>
+          <span class="badge warn">Docker runtime</span>
+          <h3><code>-p 8080:8000</code></h3>
+          <p>Forwards host port 8080 to container port 8000.</p>
+        </article>
+      </div>
+      <div class="callout">
+        <span class="callout-title">One advanced detail</span>
+        <p><code>docker run -P</code> can read the image's <code>EXPOSE</code> metadata and publish those ports to random available host ports. Ordinary <code>docker run</code> still publishes nothing unless you use <code>-p</code> or <code>-P</code>.</p>
+      </div>
+    </section>
+
+    <section id="workdir">
+      <h2>If two Dockerfiles use WORKDIR /app, do they conflict?</h2>
+      <p>No. Each image has its own filesystem, and every container gets its own writable layer. The text <code>/app</code> is the same, but the storage behind it is different.</p>
+      <div class="widget" id="workdir-lab"></div>
+      <p>They share files only when you deliberately connect both to the same external storage, such as a bind mount or named volume.</p>
+    </section>
+
+    <section id="rebuild">
+      <h2>Does docker build update a running container?</h2>
+      <p>No. First predict which box will change, then press the buttons and watch code, image and container versions separately.</p>
+      <div class="widget" id="rebuild-sim"></div>
+      <p>The reliable development loop without Compose is: <b>edit → build → remove old container → run new container</b>. With Compose it is usually <code>docker compose up -d --build</code>.</p>
+    </section>
+
+    <section id="command">
+      <h2>ENTRYPOINT, CMD and docker run arguments</h2>
+      <p>Think of <code>ENTRYPOINT</code> as the program and <code>CMD</code> as its default command or arguments. Arguments after the image replace <code>CMD</code>. The <code>--entrypoint</code> option deliberately replaces <code>ENTRYPOINT</code>.</p>
+      <div class="widget" id="command-lab"></div>
+      <div class="callout">
+        <span class="callout-title">CMD can also be the whole command</span>
+        <p>If the image has no <code>ENTRYPOINT</code>, then <code>CMD ["python", "app.py"]</code> is the complete default command. It is still replaced by arguments after the image name.</p>
+      </div>
+    </section>
+
+    <section id="signals">
+      <h2>Why use square brackets?</h2>
+      <p>The JSON-array spelling is called <b>exec form</b>. It normally makes the application the container's main process. Shell form inserts <code>/bin/sh -c</code> in front, and that shell may fail to pass Docker's stop signal to the application.</p>
+      <div class="widget" id="signal-lab"></div>
+      <p>Shell form is not forbidden—it is useful when you intentionally need shell features such as pipes or variable expansion. For a long-running server, use exec form or make the wrapper script finish with <code>exec your-app</code>.</p>
+    </section>
+
+    <section id="compose-up">
+      <h2>What happens during docker compose up?</h2>
+      <p>Click through the normal flow. A step happens only when the Compose file requires it; for example, a volume is created only when the project declares or uses one.</p>
+      <div data-stepper>
+        <div class="step" data-label="Read">
+          <h4>1. Read and resolve configuration</h4>
+          <p>Compose reads <code>compose.yaml</code>, loads interpolation values, merges override files, and calculates the desired project configuration. Use <code>docker compose config</code> to see this result.</p>
+        </div>
+        <div class="step" data-label="Plan">
+          <h4>2. Compare desired and current state</h4>
+          <p>Compose checks existing networks, volumes, images and containers. Objects that already match can be reused.</p>
+        </div>
+        <div class="step" data-label="Prepare">
+          <h4>3. Prepare declared resources</h4>
+          <p>Compose creates the project's default network and any required named volumes that do not already exist.</p>
+        </div>
+        <div class="step" data-label="Images">
+          <h4>4. Obtain images</h4>
+          <p>Services using <code>image</code> may pull according to their pull policy. Services using <code>build</code> use a local image; add <code>--build</code> when source changes must produce a new one.</p>
+        </div>
+        <div class="step" data-label="Create">
+          <h4>5. Create or replace containers</h4>
+          <p>Compose creates missing containers and replaces containers whose image or configuration changed. Unchanged containers can keep running.</p>
+        </div>
+        <div class="step" data-label="Order">
+          <h4>6. Start in dependency order</h4>
+          <p>Short <code>depends_on</code> waits for the dependency to start, not to become ready. <code>condition: service_healthy</code> waits for a configured health check to pass.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="compose-env">
+      <h2>Does .env automatically enter the container?</h2>
+      <p>No. A Compose <code>.env</code> file supplies values for <b>interpolation</b>. A value enters the container only when the resolved service configuration passes it through <code>environment</code> or <code>env_file</code>.</p>
+      <div class="widget" id="env-lab"></div>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Thing</th><th>Job</th></tr>
+          <tr><td><code>.env</code></td><td class="wrap">Default values used while Compose resolves expressions such as <code>${HOST_PORT:-8080}</code>.</td></tr>
+          <tr><td><code>environment:</code></td><td class="wrap">Places named values into the container environment.</td></tr>
+          <tr><td><code>env_file:</code></td><td class="wrap">Loads container environment variables from a specified file.</td></tr>
+          <tr><td><code>docker compose config</code></td><td class="wrap">Shows the resolved Compose model. Add <code>--environment</code> to inspect interpolation inputs.</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section id="practice">
+      <h2>Practice the doubts</h2>
+      <p>Answer without scrolling back. The check happens in your browser.</p>
+      <div data-exercises="doubts"></div>
+    </section>
+
+    <section class="takeaways" id="takeaways">
+      <h2>Remember</h2>
+      <ul>
+        <li>Browser address, Docker port mapping and application listening address are three different settings.</li>
+        <li>The same path inside two containers does not mean shared storage.</li>
+        <li>Build creates an image; only a new container can use that new image.</li>
+        <li>Runtime arguments replace <code>CMD</code>; <code>--entrypoint</code> replaces <code>ENTRYPOINT</code>.</li>
+        <li>Compose interpolation and the container's environment are related but not the same thing.</li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+</body>
+</html>

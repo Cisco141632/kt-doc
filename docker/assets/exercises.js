@@ -621,6 +621,123 @@ window.DOCKER_EXERCISES = [
     why: 'The build finds nothing new, the image is the same, so there is no reason to touch the container.',
   },
 
+  /* ---------- Common Docker doubts ---------- */
+  {
+    id: 'd-listen-address', module: 'doubts', type: 'choice',
+    q: 'A container is started with <code>-p 8080:8000</code>, but its web app listens on <code>127.0.0.1:8000</code> inside the container. What happens when the host opens <code>127.0.0.1:8080</code>?',
+    options: [
+      'It works because both addresses contain 127.0.0.1',
+      'It fails because the host and container port numbers are different',
+      'It fails because the app accepts only connections created inside its own container',
+      'Docker automatically changes the app to 0.0.0.0',
+    ],
+    correct: 2,
+    why: 'Docker can forward the packet to container port 8000, but the app is listening only on the container\'s loopback interface. Bind the app to <code>0.0.0.0:8000</code>.',
+  },
+  {
+    id: 'd-host-loopback', module: 'doubts', type: 'choice',
+    q: 'The app correctly listens on <code>0.0.0.0:8000</code>. What does <code>-p 127.0.0.1:8080:8000</code> allow?',
+    options: [
+      'Only programs inside the container can connect',
+      'This host can connect at 127.0.0.1:8080, but other computers cannot',
+      'Every computer on the network can connect',
+      'Nothing, because 127.0.0.1 is never valid with Docker',
+    ],
+    correct: 1,
+    why: 'Here <code>127.0.0.1</code> belongs to the host-side publishing rule. It is useful when a development service should not be exposed to the local network.',
+  },
+  {
+    id: 'd-expose-publish', module: 'doubts', type: 'choice',
+    q: 'An image contains <code>EXPOSE 8000</code>. Which statement is correct?',
+    options: [
+      '<code>EXPOSE</code> automatically publishes host port 8000',
+      '<code>EXPOSE</code> changes the address on which the app listens',
+      '<code>EXPOSE</code> is metadata; use <code>-p</code> for a chosen host port or <code>-P</code> for automatic random publishing',
+      '<code>EXPOSE</code> creates a Docker network',
+    ],
+    correct: 2,
+    why: '<code>EXPOSE</code> documents intended container ports. Lowercase <code>-p</code> publishes an explicit mapping; uppercase <code>-P</code> publishes exposed ports to available host ports.',
+  },
+  {
+    id: 'd-workdir-isolation', module: 'doubts', type: 'choice',
+    q: 'Two unrelated containers both use <code>WORKDIR /app</code>. Container A writes <code>/app/note.txt</code>. What does Container B see?',
+    options: [
+      'The same file immediately',
+      'Nothing, unless both containers were deliberately attached to the same external storage',
+      'A read-only copy from Container A',
+      'An error because /app is already in use',
+    ],
+    correct: 1,
+    why: 'The path name can be identical while the filesystems are isolated. A shared bind mount or volume changes that on purpose.',
+  },
+  {
+    id: 'd-build-running', module: 'doubts', type: 'choice',
+    q: 'You rebuild <code>myapp:latest</code> while a container made from the older image is running. Which code does that container use?',
+    options: [
+      'The new code immediately',
+      'A random mixture of old and new layers',
+      'The old code until you replace the container with one created from the new image',
+      'No code; Docker stops it during the build',
+    ],
+    correct: 2,
+    why: 'A running container keeps the image snapshot from which it was created. Reusing the same tag does not reconnect the old container to the new image.',
+  },
+  {
+    id: 'd-entry-cmd', module: 'doubts', type: 'blank',
+    q: 'The image has <code>ENTRYPOINT ["python"]</code> and <code>CMD ["app.py"]</code>. Complete the final process for <code>docker run report worker.py --once</code>.',
+    code: '[[0]] [[1]] [[2]]',
+    blanks: [{ a: ['python'] }, { a: ['worker.py'] }, { a: ['--once'] }],
+    why: 'Runtime arguments after the image replace <code>CMD</code>, but the image <code>ENTRYPOINT</code> remains: <code>python worker.py --once</code>.',
+  },
+  {
+    id: 'd-entrypoint-override', module: 'doubts', type: 'choice',
+    q: 'What does <code>docker run --entrypoint sh report</code> deliberately replace?',
+    options: [
+      'Only the image tag',
+      'The image ENTRYPOINT; because no command follows the image here, the final process is <code>sh</code>',
+      'Only the image CMD while keeping ENTRYPOINT',
+      'The Docker daemon',
+    ],
+    correct: 1,
+    why: '<code>--entrypoint</code> overrides the executable configured by the image. Ordinary arguments after the image replace <code>CMD</code>.',
+  },
+  {
+    id: 'd-exec-form', module: 'doubts', type: 'choice',
+    q: 'Why is exec form such as <code>CMD ["gunicorn", "app:app"]</code> normally preferred for a server?',
+    options: [
+      'It automatically publishes the server port',
+      'It installs gunicorn during the build',
+      'It avoids an extra shell, so the server can receive Docker stop signals directly',
+      'It makes all commands run as root',
+    ],
+    correct: 2,
+    why: 'Shell form runs through <code>/bin/sh -c</code>. That shell may not pass the stop signal to its child process, delaying or preventing a graceful shutdown.',
+  },
+  {
+    id: 'd-env-flow', module: 'doubts', type: 'choice',
+    q: 'A Compose <code>.env</code> file contains <code>APP_MODE=debug</code>, but the service never uses that name. Is <code>APP_MODE</code> inside the container?',
+    options: [
+      'Yes, every .env value is injected automatically',
+      'Only when the image has EXPOSE',
+      'No. Pass it with <code>environment:</code> or a service <code>env_file:</code>',
+      'Only after docker compose restart',
+    ],
+    correct: 2,
+    why: 'The project <code>.env</code> is an interpolation source. It affects the container environment only when the resolved service configuration passes the value through.',
+  },
+  {
+    id: 'd-compose-ready', module: 'doubts', type: 'choice',
+    q: 'Why can <code>depends_on: [db]</code> still allow the app to fail during startup?',
+    options: [
+      'It starts the app before the database container exists',
+      'It waits for the database process to exit',
+      'It orders container startup but does not prove the database is ready to accept connections',
+      'It disables networking between the services',
+    ],
+    correct: 2,
+    why: 'Add a database health check and use the long form with <code>condition: service_healthy</code> when readiness matters.',
+  },
+
   /* ---------- From laptop to production ---------- */
   {
     id: 'p-registry-run', module: 'pipeline', type: 'command',

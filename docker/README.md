@@ -1,6 +1,6 @@
 # Docker learning path
 
-A static, plain-language Docker course: thirteen pages of lessons, interactive diagrams, a practice lab that checks typed commands, and quizzes. No build step and no server code.
+A static, plain-language Docker course: fourteen pages of lessons, interactive diagrams, a practice lab that checks typed commands, and quizzes. No build step and no server code.
 
 Live site (GitHub Pages): https://cisco141632.github.io/kt-doc/docker/
 
@@ -29,6 +29,7 @@ In reading order. The order, the numbering in the sidebar and the previous/next 
 | `rebuild.html` | Change, build, run |
 | `storage-network.html` | Data & networking |
 | `compose.html` | Docker Compose |
+| `common-doubts.html` | Common Docker doubts |
 | `pipeline.html` | From laptop to production |
 | `real-world.html` | Real-world issues |
 | `interview.html` | Interview questions & best practices |
@@ -44,6 +45,7 @@ In reading order. The order, the numbering in the sidebar and the previous/next 
 | `assets/app.js` | Navigation (the `MODULES` list), theme, copy buttons, Mermaid, steppers, tabs |
 | `assets/widgets.js` | The interactive diagrams: container lifecycle, build cache, volume lifecycle, bind mounts, request routing, port mapping, code/image/container |
 | `assets/visual-tour.js` | The visual lifecycle walkthrough and live `docker run` command builder |
+| `assets/doubts.js` | Prediction-first simulations for the common-doubts module |
 | `assets/interview.js` | Filterable interview question bank, mock-question picker and confidence tracking |
 | `assets/exercises.js` | The exercise bank (type the command, fill in the blank, scenario) |
 | `assets/practice.js` | Renders the exercises and checks the answers |
