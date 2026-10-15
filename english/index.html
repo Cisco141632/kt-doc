@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>English Recall Path · Learn from basic to advanced</title>
+  <meta name="description" content="An interactive English learning path for full sentences, vocabulary recall, spelling, daily English and workplace communication.">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/app.js" defer></script>
+</head>
+<body data-module="start">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="content">
+    <header class="hero page-head">
+      <div>
+        <p class="eyebrow">Your English learning path</p>
+        <h1>Remember it. Build it. Use it.</h1>
+        <p class="lead">Go from short, incomplete ideas to clear daily and workplace English—one small practice at a time.</p>
+        <div class="goal-strip"><span>Full sentences</span><span>Vocabulary recall</span><span>Better spelling</span><span>Confident speaking</span></div>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="bubble"><img src="assets/images/message.svg" alt=""><b>I can explain it clearly.</b><small>That is our goal.</small></div>
+      </div>
+    </header>
+
+    <section id="understood">
+      <h2>Yes, this path is made for your condition</h2>
+      <p class="section-intro">You can understand some English, but words do not always come back when you need them. You may know the idea but write only part of a sentence, make spelling mistakes, or feel confused by forms such as “is being fixed.” We will train those exact skills.</p>
+      <div class="example-pair">
+        <div class="bad"><strong>Idea only</strong>“Need help task.”<br><small>The listener must guess some of the meaning.</small></div>
+        <div class="good"><strong>Complete sentence</strong>“I need help with this task.”<br><small>Subject + verb + complete idea.</small></div>
+      </div>
+      <div class="callout">
+        <b>Your condition, written naturally</b>
+        <p>“Currently, I am not able to write complete sentences. I also have difficulty recalling vocabulary, and I make spelling mistakes.”</p>
+      </div>
+      <div class="callout success">
+        <b>Your first confusing sentence</b>
+        <p><strong>“It is being fixed”</strong> means <strong>“Someone is fixing it now.”</strong> You do not need to master the grammar today. You will practise it slowly in the advanced module.</p>
+      </div>
+    </section>
+
+    <section id="method">
+      <h2>How you will remember</h2>
+      <div class="level-grid">
+        <div class="level"><span>1</span><b>See</b><small>Connect a picture to a useful word.</small></div>
+        <div class="level"><span>2</span><b>Hear</b><small>Listen and repeat the word or sentence.</small></div>
+        <div class="level"><span>3</span><b>Recall</b><small>Hide the answer and bring it from memory.</small></div>
+        <div class="level"><span>4</span><b>Use</b><small>Write and speak it in a real situation.</small></div>
+      </div>
+      <p class="callout warn"><b>Recall rule</b>Do not only reread. First try without looking. A difficult recall creates a stronger memory than easy rereading.</p>
+    </section>
+
+    <section id="starting-check">
+      <h2>Small starting check</h2>
+      <p>This is not an exam. Try each one before showing the answer.</p>
+      <form class="practice-box" data-answer="I need help with this task" data-model="I need help with this task" data-hint="Add the subject “I” and the word “with”.">
+        <span class="practice-label">Make it complete</span>
+        <p>Rewrite: <strong>“Need help task.”</strong></p>
+        <div class="answer-row"><input aria-label="Your complete sentence" placeholder="Type a complete sentence"><button class="btn primary">Check</button></div>
+        <p class="feedback" aria-live="polite"></p>
+      </form>
+      <form class="practice-box" data-answer="I completed the task yesterday" data-model="I completed the task yesterday" data-hint="Yesterday needs the past form: completed.">
+        <span class="practice-label">Use the past</span>
+        <p>Write a sentence with: <strong>I / complete / task / yesterday</strong></p>
+        <div class="answer-row"><input aria-label="Your past sentence" placeholder="Type your sentence"><button class="btn primary">Check</button></div>
+        <p class="feedback" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section id="levels">
+      <h2>From basic to advanced</h2>
+      <div class="level-grid">
+        <div class="level"><span>A</span><b>Beginner</b><small>Complete sentences and daily words.</small></div>
+        <div class="level"><span>B</span><b>Elementary</b><small>Workplace patterns and useful grammar.</small></div>
+        <div class="level"><span>C</span><b>Intermediate</b><small>Recall, spelling and natural conversation.</small></div>
+        <div class="level"><span>D</span><b>Advanced</b><small>Clear explanations and professional tone.</small></div>
+      </div>
+    </section>
+
+    <section id="path">
+      <h2>Your modules</h2>
+      <p class="section-intro">Follow the order the first time. After that, use Vocabulary Recall, Spelling, and Daily Practice every day.</p>
+      <div class="cards" data-module-cards></div>
+      <noscript><p>This course needs JavaScript for answer checking, audio and saved progress. The lesson text remains readable.</p></noscript>
+    </section>
+  </main>
+</div>
+</body>
+</html>

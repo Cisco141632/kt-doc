@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Build full sentences · English Recall Path</title>
+  <link rel="stylesheet" href="assets/style.css"><script src="assets/app.js" defer></script>
+</head>
+<body data-module="sentences">
+<div class="layout"><aside class="sidebar" id="sidebar"></aside><main class="content">
+  <header class="page-head"><h1>Build full sentences</h1><p class="lead">Turn a thought into a sentence the listener can understand without guessing.</p></header>
+
+  <section id="shape">
+    <h2>The most useful sentence shape</h2>
+    <div class="formula"><span>Who or what?</span><i>+</i><span>does what?</span><i>+</i><span>the rest of the idea</span></div>
+    <div class="table-wrap"><table><thead><tr><th>Subject</th><th>Verb</th><th>Rest</th><th>Complete sentence</th></tr></thead><tbody>
+      <tr><td>I</td><td>need</td><td>some help</td><td>I need some help.</td></tr>
+      <tr><td>She</td><td>sent</td><td>the document</td><td>She sent the document.</td></tr>
+      <tr><td>The meeting</td><td>starts</td><td>at 10 AM</td><td>The meeting starts at 10 AM.</td></tr>
+    </tbody></table></div>
+    <div class="callout"><b>Sentence checklist</b>Start with a capital letter. Include a subject and verb. Complete the idea. End with <strong>.</strong>, <strong>?</strong>, or <strong>!</strong></div>
+  </section>
+
+  <section id="build">
+    <h2>Build it yourself</h2>
+    <div class="practice-box" data-sentence-builder data-target="I need help with this task.">
+      <span class="practice-label">Click the words in the correct order</span>
+      <div class="word-bank"><button class="word-chip" data-word="this">this</button><button class="word-chip" data-word="I">I</button><button class="word-chip" data-word="task.">task.</button><button class="word-chip" data-word="help">help</button><button class="word-chip" data-word="with">with</button><button class="word-chip" data-word="need">need</button></div>
+      <div class="sentence-line" aria-live="polite"></div>
+      <div class="builder-actions"><button class="btn small" data-undo>Undo</button><button class="btn small" data-clear>Clear</button><button class="btn primary" data-check-sentence>Check sentence</button></div>
+      <p class="feedback" aria-live="polite"></p>
+    </div>
+    <div class="practice-box" data-sentence-builder data-target="The meeting starts at ten.">
+      <span class="practice-label">Try another</span>
+      <div class="word-bank"><button class="word-chip" data-word="starts">starts</button><button class="word-chip" data-word="ten.">ten.</button><button class="word-chip" data-word="The">The</button><button class="word-chip" data-word="at">at</button><button class="word-chip" data-word="meeting">meeting</button></div>
+      <div class="sentence-line" aria-live="polite"></div>
+      <div class="builder-actions"><button class="btn small" data-undo>Undo</button><button class="btn small" data-clear>Clear</button><button class="btn primary" data-check-sentence>Check sentence</button></div>
+      <p class="feedback" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section id="be">
+    <h2>Use am, is, and are</h2>
+    <p>Use a form of <strong>be</strong> to describe a person, thing, state, or action happening now.</p>
+    <div class="table-wrap"><table><thead><tr><th>Subject</th><th>Be</th><th>Example</th></tr></thead><tbody>
+      <tr><td>I</td><td>am</td><td>I am ready. / I am working.</td></tr>
+      <tr><td>he, she, it</td><td>is</td><td>She is busy. / It is working.</td></tr>
+      <tr><td>you, we, they</td><td>are</td><td>We are ready. / They are waiting.</td></tr>
+    </tbody></table></div>
+    <form class="practice-box" data-answer="She is working today|is" data-model="She is working today" data-hint="Use “is” with she.">
+      <span class="practice-label">Fill the missing word</span><p>She ___ working today.</p>
+      <div class="answer-row"><input aria-label="Complete the sentence"><button class="btn primary">Check</button></div><p class="feedback" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <section id="fragments">
+    <h2>Repair incomplete thoughts</h2>
+    <div class="example-pair"><div class="bad"><strong>Fragment</strong>“Because the server stopped.”<br><small>This gives a reason but not the main result.</small></div><div class="good"><strong>Complete</strong>“The release failed because the server stopped.”</div></div>
+    <div class="example-pair"><div class="bad"><strong>Missing subject</strong>“Completed the document.”</div><div class="good"><strong>Complete</strong>“I completed the document.”</div></div>
+    <form class="practice-box" data-answer="I will send the update tomorrow|We will send the update tomorrow" data-model="I will send the update tomorrow" data-hint="Who will send it? Add I or we.">
+      <span class="practice-label">Repair it</span><p>Incomplete: <strong>“Will send update tomorrow.”</strong></p>
+      <div class="answer-row"><input aria-label="Repair the sentence"><button class="btn primary">Check</button></div><p class="feedback" aria-live="polite"></p>
+    </form>
+  </section>
+
+  <section id="speak"><h2>Say complete thoughts</h2><p>Listen, pause, and repeat. Then change one part to make your own sentence.</p>
+    <div class="cards"><div class="card"><b>I need some time.</b><small>Change “time” to help, water, or information.</small><button class="btn small" data-speak="I need some time.">🔊 Listen</button></div><div class="card"><b>I am working on it.</b><small>Use this for an action happening now.</small><button class="btn small" data-speak="I am working on it.">🔊 Listen</button></div></div>
+  </section>
+</main></div>
+</body></html>
