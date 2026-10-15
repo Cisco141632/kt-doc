@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Deployment strategies · CI/CD learning path</title>
+  <meta name="description" content="Compare recreate, rolling, blue-green, canary and feature flag deployment strategies."><link rel="stylesheet" href="../docker/assets/style.css"><script src="assets/app.js"></script>
+</head><body data-module="deploy"><div class="layout"><aside class="sidebar" id="sidebar"></aside><main class="content">
+  <header class="page-head"><h1>Deployment strategies</h1><p class="lead">Deployment places code in an environment. Release exposes behavior to users. Choosing how traffic moves determines downtime, infrastructure cost, detection speed and rollback complexity.</p></header>
+
+  <section id="compare"><h2>Choose the simplest strategy that meets the risk</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Strategy</th><th>How it works</th><th>Strength</th><th>Trade-off</th></tr>
+      <tr><td><b>Recreate</b></td><td class="wrap">Stop old, start new</td><td class="wrap">Simple and cheap</td><td class="wrap">Downtime; no overlap</td></tr>
+      <tr><td><b>Rolling</b></td><td class="wrap">Replace instances gradually</td><td class="wrap">Continuous availability</td><td class="wrap">Old and new coexist</td></tr>
+      <tr><td><b>Blue-green</b></td><td class="wrap">Build a complete parallel environment, then switch traffic</td><td class="wrap">Fast traffic rollback</td><td class="wrap">Temporary duplicate capacity</td></tr>
+      <tr><td><b>Canary</b></td><td class="wrap">Send a small traffic percentage to the new version, then increase</td><td class="wrap">Limits initial blast radius</td><td class="wrap">Needs traffic control and version-aware metrics</td></tr>
+      <tr><td><b>Feature flag</b></td><td class="wrap">Deploy code disabled, then enable behavior separately</td><td class="wrap">Separates deploy from release</td><td class="wrap">Flag cleanup and interaction complexity</td></tr>
+    </table></div>
+  </section>
+
+  <section id="decide"><h2>Hands-on: make the deployment decision</h2>
+    <div class="exercise" data-check data-explain="Blue-green keeps the current environment intact while the new full environment is validated; switching traffic back is fast. Database compatibility is still required.">
+      <p class="ex-q">A payment service requires near-instant traffic rollback and can temporarily afford double capacity. Which is the best initial choice?</p>
+      <div class="ex-options"><button data-option>Recreate</button><button data-option>Rolling</button><button data-option data-correct>Blue-green</button></div><p class="ex-feedback" data-feedback></p>
+    </div>
+    <div class="exercise" data-check data-explain="A canary exposes a small population while comparing error, latency and business signals by version before increasing traffic.">
+      <p class="ex-q">A recommendation change may affect conversion in ways tests cannot predict. You want 2% exposure first.</p>
+      <div class="ex-options"><button data-option>Recreate</button><button data-option data-correct>Canary</button><button data-option>Run more lint rules</button></div><p class="ex-feedback" data-feedback></p>
+    </div>
+  </section>
+
+  <section id="canary"><h2>A canary is a controlled experiment</h2>
+    <div data-stepper>
+      <div class="step" data-label="Baseline"><h4>1. Establish the baseline</h4><p>Record current error rate, latency, saturation and business success for the stable version.</p></div>
+      <div class="step" data-label="Deploy"><h4>2. Deploy without meaningful traffic</h4><p>Confirm readiness, configuration and dependency access.</p></div>
+      <div class="step" data-label="2%"><h4>3. Send a small cohort</h4><p>Compare canary and stable by version. Aggregate metrics can hide canary failure.</p></div>
+      <div class="step" data-label="Increase"><h4>4. Increase in timed steps</h4><p>Continue only while technical and business guardrails pass.</p></div>
+      <div class="step" data-label="Finish"><h4>5. Complete or abort</h4><p>Move to 100% and retire old instances, or send traffic back and preserve evidence for diagnosis.</p></div>
+    </div>
+  </section>
+
+  <section id="kubernetes"><h2>Rolling update and rollback in Kubernetes</h2>
+    <pre data-lang="console">$ kubectl set image deployment/api api=ghcr.io/acme/api:a81f29c
+$ kubectl rollout status deployment/api
+deployment "api" successfully rolled out
+$ kubectl rollout history deployment/api
+$ kubectl rollout undo deployment/api
+$ kubectl rollout status deployment/api</pre>
+    <p>A readiness probe prevents traffic reaching an instance before it is ready. <code>maxUnavailable</code> limits lost capacity; <code>maxSurge</code> limits extra capacity. The commands do not solve database compatibility or confirm business health by themselves.</p>
+  </section>
+
+  <section id="rollback"><h2>Rollback is one recovery tool</h2>
+    <ul><li><b>Rollback:</b> deploy the previous artifact when it remains compatible.</li><li><b>Roll forward:</b> release a small corrective change when rollback is unsafe.</li><li><b>Disable a feature:</b> use a flag or kill switch to reduce impact quickly.</li><li><b>Shift traffic:</b> return traffic to blue/stable while keeping the failed version available for inspection.</li></ul>
+    <div class="callout danger"><span class="callout-title">Practice before the incident</span><p>A rollback runbook that nobody has exercised is a hypothesis. Regularly prove artifact retention, access, commands, database compatibility and decision ownership.</p></div>
+  </section>
+
+  <section class="takeaways" id="remember"><h2>Remember</h2><ul><li>Recreate is simplest; rolling preserves capacity; blue-green switches environments; canary limits exposure.</li><li>Feature flags separate deployment from behavior release, but they create code paths that must be cleaned up.</li><li>A successful rollout command is not enough—verify user-facing health.</li></ul></section>
+</main></div></body></html>

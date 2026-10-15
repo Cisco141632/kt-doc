@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>IaC, Kubernetes and GitOps · CI/CD learning path</title>
+  <meta name="description" content="Understand Infrastructure as Code, Kubernetes, Helm and GitOps reconciliation in delivery systems."><link rel="stylesheet" href="../docker/assets/style.css"><script src="assets/app.js"></script>
+</head><body data-module="gitops"><div class="layout"><aside class="sidebar" id="sidebar"></aside><main class="content">
+  <header class="page-head"><h1>Infrastructure as Code, Kubernetes and GitOps</h1><p class="lead">Application delivery is repeatable only when its runtime environment is also declared, reviewed and recoverable.</p></header>
+
+  <section id="iac"><h2>Infrastructure as Code (IaC)</h2>
+    <p>IaC stores the desired infrastructure in version-controlled files. A plan shows the proposed difference; review checks the risk; apply changes the provider; state tracks resource identity.</p>
+    <pre data-lang="hcl" data-title="Illustrative Terraform resource">resource "aws_ecr_repository" "api" {
+  name                 = "payments-api"
+  image_tag_mutability = "IMMUTABLE"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+}</pre>
+    <pre data-lang="console">$ terraform fmt -check
+$ terraform validate
+$ terraform plan -out=plan.tfplan
+$ terraform apply plan.tfplan</pre>
+    <div class="callout danger"><span class="callout-title">Treat plans as sensitive</span><p>Plans and state may contain infrastructure details or secret values. Store remote state securely, lock concurrent changes, limit access and never publish plan files as public artifacts.</p></div>
+  </section>
+
+  <section id="kubernetes"><h2>Where Kubernetes fits</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Need</th><th>Kubernetes object</th><th>Pipeline responsibility</th></tr>
+      <tr><td>Run replicated containers</td><td>Deployment</td><td class="wrap">Set an immutable image reference and rollout policy</td></tr>
+      <tr><td>Stable service address</td><td>Service</td><td class="wrap">Validate port/selector behavior</td></tr>
+      <tr><td>External HTTP routing</td><td>Ingress/Gateway</td><td class="wrap">Validate routes and TLS policy</td></tr>
+      <tr><td>Non-secret settings</td><td>ConfigMap</td><td class="wrap">Version desired configuration</td></tr>
+      <tr><td>Sensitive settings</td><td>Secret/external secret</td><td class="wrap">Reference controlled secret material</td></tr>
+      <tr><td>Persistent storage</td><td>PersistentVolumeClaim</td><td class="wrap">Protect lifecycle and backup policy</td></tr>
+    </table></div>
+    <p>Helm packages parameterized Kubernetes resources. Kustomize overlays a base without a template language. Both should render inspectable YAML that policy and server-side validation can check before reconciliation.</p>
+  </section>
+
+  <section id="gitops"><h2>Push deployment and GitOps</h2>
+    <div class="compare"><div><h4>Pipeline pushes</h4><ul class="timeline"><li>CI receives cluster credentials</li><li>CI runs the deployment command</li><li>Result depends on pipeline connectivity</li><li class="good">Direct and familiar</li></ul></div><div><h4>GitOps controller pulls</h4><ul class="timeline"><li>CI updates desired state in Git</li><li>In-cluster controller detects the change</li><li>Controller reconciles continuously</li><li class="good">Credentials stay in the runtime boundary</li></ul></div></div>
+    <figure class="diagram"><pre class="mermaid">
+flowchart LR
+  APP["Application repo"] --> CI["CI builds image"] --> REG[("Registry")]
+  CI --> PR["Update digest in environment repo"]
+  PR --> GIT["Reviewed desired state"]
+  CTRL["Argo CD / Flux"] -- watches --> GIT
+  CTRL -- reconciles --> K8S["Kubernetes cluster"]
+  K8S -- drift / health --> CTRL
+    </pre><figcaption>Git records the desired version; the controller works to make the cluster match it.</figcaption></figure>
+  </section>
+
+  <section id="drift"><h2>Reconciliation changes the operating model</h2>
+    <p>If someone manually edits the cluster, a GitOps controller detects drift and can restore the declared state. Emergency changes must therefore be followed by a Git change, or the controller may reverse them.</p>
+    <div class="exercise" data-check data-explain="In GitOps, Git is the desired-state source. The durable rollback is a reviewed Git revert or change that the controller reconciles.">
+      <p class="ex-q">A bad image digest was merged into the environment repository. What is the durable GitOps rollback?</p><div class="ex-options"><button data-option>Only run <code>kubectl set image</code> manually</button><button data-option data-correct>Revert/update the digest in Git and let the controller reconcile</button><button data-option>Delete the controller</button></div><p class="ex-feedback" data-feedback></p>
+    </div>
+  </section>
+
+  <section id="order"><h2>Learn in this order</h2>
+    <ol><li>Docker images, processes, networking and volumes</li><li>A simple pipeline and registry</li><li>One-server or managed-platform deployment</li><li>Kubernetes workloads, networking, health and resources</li><li>Helm/Kustomize packaging</li><li>Terraform and remote state</li><li>GitOps reconciliation and progressive delivery</li></ol>
+    <p>Kubernetes is not a prerequisite for CI/CD. Adding it before understanding artifacts, health and configuration usually multiplies unknowns.</p>
+  </section>
+
+  <section class="takeaways" id="remember"><h2>Remember</h2><ul><li>IaC makes infrastructure changes reviewable, repeatable and recoverable.</li><li>Kubernetes runs the same OCI artifacts; it adds scheduling, rollout and reconciliation behavior.</li><li>GitOps moves cluster credentials out of CI and makes Git the desired-state record.</li></ul></section>
+</main></div></body></html>

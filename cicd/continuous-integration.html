@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Continuous integration · CI/CD learning path</title><meta name="description" content="Learn pull-request CI, test layers, quality gates, branch protection and reliable feedback.">
+  <link rel="stylesheet" href="../docker/assets/style.css"><script src="assets/app.js"></script>
+</head><body data-module="ci"><div class="layout"><aside class="sidebar" id="sidebar"></aside><main class="content">
+  <header class="page-head"><h1>Continuous integration</h1><p class="lead">CI is a team practice before it is a server: integrate small changes often, verify each change automatically, and keep the main branch releasable.</p></header>
+
+  <section id="loop"><h2>The developer feedback loop</h2>
+    <figure class="diagram"><pre class="mermaid">
+flowchart LR
+  C["Small code change"] --> L["Local checks"] --> P["Pull request"] --> CI["Automated CI"] --> R["Review"] --> M["Merge"]
+  CI -- failure --> C
+  R -- requested change --> C
+  M --> N["Next small change"]
+    </pre><figcaption>Small changes reduce review time and make a failure easier to locate.</figcaption></figure>
+    <p>A pull request should show the code difference and the machine evidence together. Require important checks before merge and prevent direct, unreviewed changes to the protected branch.</p>
+  </section>
+
+  <section id="tests"><h2>Use several test layers</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Layer</th><th>Question</th><th>Typical speed</th><th>Pipeline position</th></tr>
+      <tr><td>Static checks</td><td class="wrap">Is the code well-formed and free of obvious defects?</td><td>Seconds</td><td>First</td></tr>
+      <tr><td>Unit</td><td class="wrap">Does one function/class behave correctly?</td><td>Seconds–minutes</td><td>Every change</td></tr>
+      <tr><td>Integration</td><td class="wrap">Do our components, database and queue work together?</td><td>Minutes</td><td>Before publishing</td></tr>
+      <tr><td>Contract</td><td class="wrap">Do service interfaces remain compatible?</td><td>Minutes</td><td>Before merge/release</td></tr>
+      <tr><td>End-to-end</td><td class="wrap">Can a user complete a critical journey?</td><td>Slowest</td><td>Selected paths, staging</td></tr>
+      <tr><td>Smoke</td><td class="wrap">Did the deployed service start and answer?</td><td>Seconds</td><td>After deployment</td></tr>
+    </table></div>
+    <div class="exercise" data-check data-explain="A unit test mock can hide an incompatible schema. An integration test with the real migration/database boundary provides the needed evidence.">
+      <p class="ex-q">A database migration changes a column type. Which test is most likely to catch an incompatibility?</p>
+      <div class="ex-options"><button data-option>Formatter</button><button data-option>Unit test with a mocked repository</button><button data-option data-correct>Integration test against a real database instance</button></div><p class="ex-feedback" data-feedback></p>
+    </div>
+  </section>
+
+  <section id="quality"><h2>Quality gates need policy</h2>
+    <p>Useful gates reject known risk. Examples: tests pass, coverage on changed code does not fall below an agreed threshold, no critical exploitable vulnerability is introduced, and required reviewers approve sensitive paths.</p>
+    <div class="compare">
+      <div><h4>Healthy gate</h4><ul class="timeline"><li>Has a documented purpose</li><li>Produces an actionable message</li><li>Has an owner and exception process</li><li class="good">Blocks real risk consistently</li></ul></div>
+      <div><h4>Unhealthy gate</h4><ul class="timeline"><li>Was copied without context</li><li>Fails intermittently</li><li>Nobody knows how to fix it</li><li class="bad">Teams routinely bypass it</li></ul></div>
+    </div>
+  </section>
+
+  <section id="reliable"><h2>Make CI reliable and fast</h2>
+    <ul>
+      <li><b>Pin dependencies</b> and commit lock files.</li>
+      <li><b>Use clean runners</b> so undeclared machine state cannot make a test pass.</li>
+      <li><b>Cache dependencies, not truth.</b> Cache package downloads; never reuse stale test output.</li>
+      <li><b>Quarantine only with ownership.</b> A flaky test gets a ticket, owner and deadline.</li>
+      <li><b>Cancel obsolete runs.</b> If a new commit replaces an older pull-request run, stop wasted work.</li>
+      <li><b>Make local reproduction easy.</b> One script or container should run the same checks.</li>
+    </ul>
+    <pre data-lang="sh" data-title="scripts/ci-test.sh">#!/usr/bin/env sh
+set -eu
+./scripts/lint.sh
+./scripts/unit-test.sh
+./scripts/integration-test.sh</pre>
+  </section>
+
+  <section id="branches"><h2>Branching without long-lived divergence</h2>
+    <p>Short-lived feature branches and frequent merges expose integration problems early. Long-lived branches postpone integration, creating a large, risky merge at the end. Release branches can still be appropriate when multiple supported versions require separate maintenance.</p>
+    <details class="reveal"><summary>Recall: why does “merge small changes often” reduce risk?</summary><div><p>Each review contains less code, failures have fewer possible causes, conflicts are smaller, and rollback affects less behavior.</p></div></details>
+  </section>
+
+  <section class="takeaways" id="remember"><h2>Remember</h2><ul><li>CI keeps the main branch releasable through small integrations and automatic evidence.</li><li>Different tests answer different questions; no single test layer is sufficient.</li><li>A noisy, flaky gate trains people to ignore safety signals.</li></ul></section>
+</main></div></body></html>

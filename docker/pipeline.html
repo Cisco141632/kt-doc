@@ -178,6 +178,7 @@ docker build -t registry.example.com/team/hello-docker:"$COMMIT_ID" .
 # 3. Push
 docker push registry.example.com/team/hello-docker:"$COMMIT_ID"</pre>
       <p>Each CI product has its own file format around these commands. The commands themselves are the same everywhere.</p>
+      <p>Continue with the dedicated <a href="../cicd/">CI/CD learning path</a> for pull-request checks, environment promotion, deployment strategies, security, GitOps, observability and a hands-on GitHub Actions pipeline.</p>
       <div class="callout tip">
         <span class="callout-title">Why not build on your laptop?</span>
         <p>An image built by CI comes from code that is in Git, was tested, and was built on the right kind of processor. An image built on a laptop may contain changes that nobody else has, and may be built for the wrong processor. Laptops are for developing. CI is for building what gets shipped.</p>

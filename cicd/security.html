@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Pipeline security · CI/CD learning path</title>
+  <meta name="description" content="Secure CI/CD credentials, runners, dependencies, container images and build provenance."><link rel="stylesheet" href="../docker/assets/style.css"><script src="assets/app.js"></script>
+</head><body data-module="security"><div class="layout"><aside class="sidebar" id="sidebar"></aside><main class="content">
+  <header class="page-head"><h1>Pipeline security</h1><p class="lead">A delivery pipeline can modify production, publish trusted software and access secrets. Treat it as a high-value production system with a software supply-chain threat model.</p></header>
+
+  <section id="threats"><h2>What can go wrong?</h2>
+    <figure class="diagram"><pre class="mermaid">
+flowchart LR
+  PR["Untrusted change"] --> RUN["CI runner"] --> DEP["Dependencies + actions"] --> ART["Artifact"] --> REG["Registry"] --> PROD["Production"]
+  SEC[("Secrets / identity")] --> RUN
+  ATT["Attacker targets every boundary"] -.-> PR
+  ATT -.-> DEP
+  ATT -.-> SEC
+  ATT -.-> REG
+    </pre><figcaption>Security controls protect source, execution, dependencies, credentials, artifacts and deployment—not only application code.</figcaption></figure>
+  </section>
+
+  <section id="permissions"><h2>Least privilege by job</h2>
+    <pre data-lang="yaml" data-title="Read-only default, narrow escalation">permissions:
+  contents: read
+
+jobs:
+  test:
+    permissions:
+      contents: read
+    # no package or production permission
+
+  publish:
+    permissions:
+      contents: read
+      packages: write
+      id-token: write</pre>
+    <p>Separate build and deployment identities. A pull request from untrusted code must not receive production secrets. Protect environment secrets behind the production gate and prefer short-lived credentials.</p>
+    <div class="exercise" data-check data-explain="Pull-request code can execute arbitrary instructions. Giving it a production credential turns a code-review event into a production compromise path.">
+      <p class="ex-q">A forked pull request needs to run unit tests. Which permission is appropriate?</p><div class="ex-options"><button data-option>Production administrator credentials</button><button data-option data-correct>Read-only source access with no production secret</button><button data-option>Registry delete permission</button></div><p class="ex-feedback" data-feedback></p>
+    </div>
+  </section>
+
+  <section id="layers"><h2>Layer the checks</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Check</th><th>Finds</th><th>Important limitation</th></tr>
+      <tr><td>Secret scanning</td><td class="wrap">Keys and tokens committed to source</td><td class="wrap">If found, rotate; deleting Git text is not enough</td></tr>
+      <tr><td>SAST</td><td class="wrap">Risky source patterns and data flows</td><td class="wrap">Needs tuning and developer review</td></tr>
+      <tr><td>Dependency scan</td><td class="wrap">Known vulnerabilities and licenses</td><td class="wrap">Reachability and exploitability matter</td></tr>
+      <tr><td>Container scan</td><td class="wrap">OS and application packages in the final image</td><td class="wrap">Database freshness and base-image lifecycle matter</td></tr>
+      <tr><td>DAST</td><td class="wrap">Runtime behavior from an external view</td><td class="wrap">Coverage depends on reachable paths</td></tr>
+      <tr><td>Policy check</td><td class="wrap">Unapproved registries, privileged runtime, unsigned artifacts</td><td class="wrap">Policy must reflect actual risk</td></tr>
+    </table></div>
+  </section>
+
+  <section id="supply"><h2>Protect the software supply chain</h2>
+    <ul>
+      <li>Pin package dependencies with lock files.</li>
+      <li>Pin third-party CI actions to full commit SHAs; use an updater to propose reviewed changes.</li>
+      <li>Use trusted, ephemeral runners for sensitive builds.</li>
+      <li>Generate an SBOM and build provenance.</li>
+      <li>Sign or attest artifacts and verify policy before deployment.</li>
+      <li>Restrict registry writes and prevent production tags from being overwritten.</li>
+      <li>Patch/rebuild images when the base receives security updates, even if application code did not change.</li>
+    </ul>
+    <div class="callout warn"><span class="callout-title">Scanning is not patching</span><p>A scanner reports evidence. The remediation loop still needs ownership, severity policy, a deadline, a rebuilt artifact and verification that the vulnerable version is no longer deployed.</p></div>
+  </section>
+
+  <section id="secrets"><h2>When a secret leaks</h2>
+    <ol><li>Revoke or rotate the credential immediately.</li><li>Determine its scope, lifetime and access logs.</li><li>Remove the secret from current source and artifacts.</li><li>Rewrite history only when required, understanding that existing clones remain.</li><li>Find the control failure and add prevention/detection.</li></ol>
+    <details class="reveal"><summary>Recall: why is deleting the secret in a new commit insufficient?</summary><div><p>The previous commit, CI logs, caches, images and developer clones may still contain it. The credential must be assumed compromised and rotated.</p></div></details>
+  </section>
+
+  <section class="takeaways" id="remember"><h2>Remember</h2><ul><li>Give every job only the permissions it needs, for only as long as it needs them.</li><li>Never expose privileged secrets to untrusted pull-request code.</li><li>Evidence—scans, SBOMs and provenance—needs enforcement and a remediation owner.</li></ul></section>
+</main></div></body></html>

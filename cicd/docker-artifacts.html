@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Docker and artifacts · CI/CD learning path</title>
+  <meta name="description" content="Build, tag, scan, publish and promote immutable Docker images in CI/CD."><link rel="stylesheet" href="../docker/assets/style.css"><script src="assets/app.js"></script>
+</head><body data-module="docker"><div class="layout"><aside class="sidebar" id="sidebar"></aside><main class="content">
+  <header class="page-head"><h1>Docker and immutable artifacts</h1><p class="lead">CI should turn source into one identifiable output. For a containerized service, that output is an OCI image addressed by a tag and, precisely, by a content digest.</p></header>
+
+  <section id="contract"><h2>Docker is the delivery contract</h2>
+    <figure class="diagram"><pre class="mermaid">
+flowchart LR
+  S["Git commit a81f29c"] --> B["Reproducible build"] --> I["Image"] --> SC["Scan + test"] --> R[("Registry")]
+  R --> DEV["Development"]
+  R --> STG["Staging"]
+  R --> PRD["Production"]
+    </pre><figcaption>Every environment pulls the same image digest. Only external configuration changes.</figcaption></figure>
+    <p>This is <b>build once, promote many</b>. Rebuilding for production can silently change packages or base layers, so production would no longer run what staging verified.</p>
+    <div class="exercise" data-check data-explain="A digest identifies image content. A mutable tag such as latest can point to different content later.">
+      <p class="ex-q">Which value most precisely proves which image bytes are running?</p><div class="ex-options"><button data-option><code>latest</code></button><button data-option><code>main</code></button><button data-option data-correct>An image digest such as <code>sha256:…</code></button></div><p class="ex-feedback" data-feedback></p>
+    </div>
+  </section>
+
+  <section id="prepare"><h2>Prepare the application for containers</h2>
+    <ul>
+      <li>Read configuration from environment variables or mounted configuration.</li>
+      <li>Keep secrets out of source, build arguments, layers and image history.</li>
+      <li>Write logs to standard output/error.</li>
+      <li>Expose readiness and liveness endpoints with meaningful checks.</li>
+      <li>Handle termination signals and stop within the platform grace period.</li>
+      <li>Store durable data outside the writable container layer.</li>
+      <li>Run as a non-root user and use a small, maintained base image.</li>
+    </ul>
+    <p>Continue with the detailed <a href="../docker/dockerfile.html">Dockerfile module</a> when any item is unfamiliar.</p>
+    <pre data-lang="dockerfile" data-title="A small multi-stage pattern">FROM node:24-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm test &amp;&amp; npm run build
+
+FROM nginx:alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+USER nginx</pre>
+  </section>
+
+  <section id="identity"><h2>Give every build an identity</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Identifier</th><th>Use</th><th>Caution</th></tr>
+      <tr><td><code>app:1.4.2</code></td><td class="wrap">Human release version</td><td class="wrap">Never move the tag to different content</td></tr>
+      <tr><td><code>app:a81f29c</code></td><td class="wrap">Direct link to a Git commit</td><td class="wrap">Use enough characters to avoid collisions</td></tr>
+      <tr><td><code>app@sha256:…</code></td><td class="wrap">Exact content identity</td><td class="wrap">Less readable, strongest deployment reference</td></tr>
+      <tr><td><code>app:latest</code></td><td class="wrap">Convenience for local exploration</td><td class="wrap">Not a reliable production release identity</td></tr>
+    </table></div>
+    <pre data-lang="console">$ docker build -t ghcr.io/acme/payments:a81f29c .
+$ docker image inspect ghcr.io/acme/payments:a81f29c
+$ docker push ghcr.io/acme/payments:a81f29c</pre>
+  </section>
+
+  <section id="registry"><h2>The registry is the promotion boundary</h2>
+    <p>A registry stores versioned images and metadata. CI authenticates with write permission to publish. Runtime identities normally need read-only permission. Record the digest returned by the push; deployment consumes that digest.</p>
+    <div class="callout tip"><span class="callout-title">Promotion does not mean copying source</span><p>Promotion changes which verified digest an environment references. Some organizations copy the same manifest between registry namespaces, but they still preserve its content identity.</p></div>
+  </section>
+
+  <section id="evidence"><h2>Attach evidence to the artifact</h2>
+    <p>A mature build produces more than an image:</p>
+    <ul><li>Test and coverage reports</li><li>Vulnerability scan result</li><li>Software Bill of Materials (SBOM)</li><li>Provenance/attestation describing how it was built</li><li>OCI labels linking source repository, commit and license</li></ul>
+    <details class="reveal"><summary>Recall: why should CI build production images instead of a developer laptop?</summary><div><p>CI starts from committed code in a controlled environment, records the logs and identity, applies policy, and avoids uncommitted files or a mismatched processor architecture.</p></div></details>
+  </section>
+
+  <section class="takeaways" id="remember"><h2>Remember</h2><ul><li>Build once, verify once, and promote the same digest.</li><li>Tags are names; a digest is the immutable content identity.</li><li>Container readiness begins in the application: external config, stdout logs, health checks, signals and statelessness.</li></ul></section>
+</main></div></body></html>

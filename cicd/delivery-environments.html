@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Delivery and environments · CI/CD learning path</title>
+  <meta name="description" content="Learn continuous delivery, environment promotion, configuration, approvals and safe database changes."><link rel="stylesheet" href="../docker/assets/style.css"><script src="assets/app.js"></script>
+</head><body data-module="delivery"><div class="layout"><aside class="sidebar" id="sidebar"></aside><main class="content">
+  <header class="page-head"><h1>Continuous delivery and environments</h1><p class="lead">Delivery makes every accepted change release-ready. Environments provide increasing confidence, but they should not create different application builds.</p></header>
+
+  <section id="environments"><h2>One artifact, environment-specific configuration</h2>
+    <div class="table-wrap"><table>
+      <tr><th></th><th>Development</th><th>Staging</th><th>Production</th></tr>
+      <tr><td><b>Purpose</b></td><td class="wrap">Fast team feedback</td><td class="wrap">Production-like validation</td><td class="wrap">Serve users</td></tr>
+      <tr><td><b>Image</b></td><td><code>sha256:abc…</code></td><td><code>sha256:abc…</code></td><td><code>sha256:abc…</code></td></tr>
+      <tr><td><b>Configuration</b></td><td class="wrap">Development endpoints</td><td class="wrap">Staging endpoints</td><td class="wrap">Production endpoints</td></tr>
+      <tr><td><b>Secrets</b></td><td class="wrap">Non-production scope</td><td class="wrap">Staging scope</td><td class="wrap">Production scope, tightly controlled</td></tr>
+      <tr><td><b>Data</b></td><td class="wrap">Synthetic</td><td class="wrap">Representative and sanitized</td><td class="wrap">Real, protected and backed up</td></tr>
+    </table></div>
+    <p>Perfectly identical environments are rarely practical. Aim for <b>parity in the behavior being tested</b>: runtime version, deployment mechanism, networking and managed-service class should reveal production-relevant failures.</p>
+  </section>
+
+  <section id="gates"><h2>Use gates where risk changes</h2>
+    <div data-stepper>
+      <div class="step" data-label="Verify"><h4>1. Verify the commit</h4><p>Code review, automated tests and security checks create evidence. No deployment credential is needed.</p></div>
+      <div class="step" data-label="Publish"><h4>2. Publish the artifact</h4><p>Push an immutable image and record its digest, SBOM and provenance.</p></div>
+      <div class="step" data-label="Staging"><h4>3. Validate in staging</h4><p>Deploy the same digest, run smoke/contract/end-to-end checks, and examine signals.</p></div>
+      <div class="step" data-label="Approve"><h4>4. Satisfy production policy</h4><p>Risk may require a human reviewer, change window, automated SLO check or segregation of duties.</p></div>
+      <div class="step" data-label="Production"><h4>5. Release and verify</h4><p>Control traffic, watch the new version and automatically stop or roll back on failure.</p></div>
+    </div>
+    <div class="exercise" data-check data-explain="Environment protection should delay both the deploy and access to production-scoped credentials until the gate passes.">
+      <p class="ex-q">When should a production deployment job receive production secrets?</p><div class="ex-options"><button data-option>At the start of the entire workflow</button><button data-option data-correct>Only after the production environment gate passes</button><button data-option>Inside every pull-request job</button></div><p class="ex-feedback" data-feedback></p>
+    </div>
+  </section>
+
+  <section id="configuration"><h2>Separate code, configuration and secrets</h2>
+    <div class="compare"><div><h4>Configuration</h4><ul><li>Feature limits</li><li>Service URLs</li><li>Log level</li><li>Replica count</li></ul></div><div><h4>Secrets</h4><ul><li>Database password</li><li>Signing key</li><li>API credential</li><li>Private certificate</li></ul></div></div>
+    <p>Configuration can usually be versioned. Secrets require encrypted storage, access policy, auditing and rotation. Prefer short-lived identity federation (for example OIDC to a cloud role) over permanent cloud keys stored in CI.</p>
+  </section>
+
+  <section id="database"><h2>Database changes cross release boundaries</h2>
+    <p>An application rollback does not roll back data. Use backward-compatible <b>expand and contract</b> changes:</p>
+    <ol><li><b>Expand:</b> add the new column/table/API without removing the old one.</li><li><b>Migrate:</b> release code that can work with both shapes and backfill data safely.</li><li><b>Switch:</b> make the new path authoritative after verification.</li><li><b>Contract:</b> remove the old path in a later release.</li></ol>
+    <div class="callout warn"><span class="callout-title">Avoid a dangerous coupling</span><p>Do not deploy code that requires a destructive schema change at the exact same instant. During rolling or canary deployment, old and new instances coexist.</p></div>
+    <details class="reveal"><summary>Scenario: version 2 renames <code>customer_name</code> to <code>name</code>. What is the safe first migration?</summary><div><p>Add <code>name</code> while keeping <code>customer_name</code>. Update code to tolerate/write both, migrate existing values, and remove the old column only after no deployed version uses it.</p></div></details>
+  </section>
+
+  <section id="concurrency"><h2>Control concurrent deployments</h2>
+    <p>Two production deployments running at once can finish out of order. Configure a production concurrency group so only one release changes the environment at a time. Decide whether a newer queued release cancels or waits for the older one; migrations often require waiting.</p>
+  </section>
+
+  <section class="takeaways" id="remember"><h2>Remember</h2><ul><li>Promote one artifact; inject environment-specific configuration at runtime.</li><li>Put approval and secret access at the boundary where risk increases.</li><li>Use backward-compatible database migrations because application rollback cannot reverse data automatically.</li></ul></section>
+</main></div></body></html>

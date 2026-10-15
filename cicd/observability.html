@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Observe and improve · CI/CD learning path</title>
+  <meta name="description" content="Verify releases using logs, metrics, traces, SLOs and CI/CD performance measures."><link rel="stylesheet" href="../docker/assets/style.css"><script src="assets/app.js"></script>
+</head><body data-module="observe"><div class="layout"><aside class="sidebar" id="sidebar"></aside><main class="content">
+  <header class="page-head"><h1>Observe, verify and improve</h1><p class="lead">A green deployment step proves that an API accepted a request. Release verification proves that the new version is serving users correctly.</p></header>
+
+  <section id="signals"><h2>Read several kinds of evidence</h2>
+    <div class="cards">
+      <article class="card"><span class="tag">Metrics</span><b>What is changing?</b><small>Request rate, errors, latency, saturation, queue depth and business success.</small></article>
+      <article class="card"><span class="tag">Logs</span><b>What happened?</b><small>Structured events with timestamp, severity, service, version and correlation ID.</small></article>
+      <article class="card"><span class="tag">Traces</span><b>Where was time or failure spent?</b><small>A request path across services and dependencies.</small></article>
+      <article class="card"><span class="tag">Profiles</span><b>Where are resources spent?</b><small>CPU, memory allocation, lock contention and hot code paths.</small></article>
+    </div>
+    <p>Include the release version or image digest in telemetry. Otherwise stable and canary traffic are mixed, hiding whether the new release caused the change.</p>
+  </section>
+
+  <section id="verify"><h2>Release verification loop</h2>
+    <div data-stepper>
+      <div class="step" data-label="Ready"><h4>1. Readiness</h4><p>Can the instance serve traffic, with required dependencies initialized?</p></div>
+      <div class="step" data-label="Smoke"><h4>2. Smoke test</h4><p>Can a critical synthetic request travel through the deployed system?</p></div>
+      <div class="step" data-label="Compare"><h4>3. Compare by version</h4><p>Are errors, latency and business outcomes worse than the stable baseline?</p></div>
+      <div class="step" data-label="Observe"><h4>4. Observe long enough</h4><p>Wait for meaningful traffic and slow failure modes, within a defined verification window.</p></div>
+      <div class="step" data-label="Decide"><h4>5. Promote or mitigate</h4><p>Complete the rollout only with evidence; otherwise pause, shift traffic, disable the feature or roll back.</p></div>
+    </div>
+    <div class="exercise" data-check data-explain="CPU is a resource signal, not proof of user success. Error rate and latency for the new version plus a business outcome provide stronger release evidence.">
+      <p class="ex-q">The new version has normal CPU. Which additional signal best helps decide whether users are safe?</p><div class="ex-options"><button data-option>Number of lines changed</button><button data-option data-correct>Error/latency and critical business success split by version</button><button data-option>Image size only</button></div><p class="ex-feedback" data-feedback></p>
+    </div>
+  </section>
+
+  <section id="slo"><h2>Use SLOs and error budgets</h2>
+    <p>A service-level indicator (SLI) is a measured behavior, such as successful requests under 300 ms. A service-level objective (SLO) is the target over a window, such as 99.9% over 30 days. The error budget is the allowed unreliability.</p>
+    <div class="callout tip"><span class="callout-title">Connect delivery speed to reliability</span><p>When the error budget is healthy, teams can take normal release risk. When it burns too quickly, prioritize reliability work and use more conservative rollout controls.</p></div>
+  </section>
+
+  <section id="delivery-metrics"><h2>Measure the delivery system</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Measure</th><th>Question</th><th>Do not game it by…</th></tr>
+      <tr><td>Deployment frequency</td><td class="wrap">How often can value reach users?</td><td class="wrap">Deploying meaningless changes</td></tr>
+      <tr><td>Lead time for changes</td><td class="wrap">How long from committed change to production?</td><td class="wrap">Ignoring time waiting in queues</td></tr>
+      <tr><td>Change failure rate</td><td class="wrap">How often does a change require remediation?</td><td class="wrap">Hiding rollbacks or incidents</td></tr>
+      <tr><td>Failed deployment recovery time</td><td class="wrap">How quickly is service restored after a failed change?</td><td class="wrap">Closing the incident before users recover</td></tr>
+    </table></div>
+    <p>Use trends to find constraints, not to rank individuals. High performance combines throughput and stability.</p>
+  </section>
+
+  <section id="incident"><h2>Learn from failed releases</h2>
+    <ol><li>Restore service first.</li><li>Preserve timeline, pipeline logs, artifact identity and telemetry.</li><li>Ask which control should prevent, detect or reduce this failure—not who made the mistake.</li><li>Add the smallest durable improvement and test it.</li><li>Share the learning and verify the action was completed.</li></ol>
+    <details class="reveal"><summary>Recall: when is a deployment finished?</summary><div><p>When the intended artifact is serving traffic, post-deployment checks and health signals pass for the defined verification window, and the release record is traceable—not merely when the deploy command exits.</p></div></details>
+  </section>
+
+  <section class="takeaways" id="remember"><h2>Remember</h2><ul><li>Tag telemetry with the release version so you can compare new and stable behavior.</li><li>Health checks, smoke tests, technical signals and business outcomes answer different questions.</li><li>Measure delivery throughput and stability together; optimize the system, not individual scores.</li></ul></section>
+</main></div></body></html>

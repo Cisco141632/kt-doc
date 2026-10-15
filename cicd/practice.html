@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Hands-on Docker pipeline · CI/CD learning path</title>
+  <meta name="description" content="Build a real GitHub Actions CI pipeline that verifies and publishes a Docker image.">
+  <link rel="stylesheet" href="../docker/assets/style.css"><script src="assets/app.js"></script><script src="assets/labs.js" defer></script>
+</head><body data-module="practice"><div class="layout"><aside class="sidebar" id="sidebar"></aside><main class="content">
+  <header class="page-head"><h1>Hands-on: commit to container registry</h1><p class="lead">You will run a Dockerized application, test its health, write a GitHub Actions workflow, publish an immutable image and walk through a release decision.</p></header>
+
+  <section id="goal"><h2>Your mission</h2>
+    <figure class="diagram"><pre class="mermaid">
+flowchart LR
+  PR["Pull request"] --> V["Build + smoke test"]
+  V --> M["Merge to main"]
+  M --> B["Build image once"] --> S["Smoke test exact image"] --> P["Push SHA tag to GHCR"]
+  P --> D["Promote digest"]
+    </pre><figcaption>Pull requests prove the change is buildable. The main-branch run creates, tests and publishes the release artifact.</figcaption></figure>
+    <p>Prerequisites: Git, Docker, a GitHub repository with Actions enabled, and permission to publish packages. The sample commands use this repository's <code>docker/examples/hello-docker</code> application.</p>
+    <div class="callout tip"><span class="callout-title">Work in a branch</span><p>Create a practice branch. The workflow will first run as a pull request without publishing. Merge only after you understand every permission and command.</p></div>
+  </section>
+
+  <section id="local"><h2>Part 1 — prove the application locally</h2>
+    <pre data-lang="console">$ cd docker/examples/hello-docker
+$ docker build -t hello-ci:local .
+[+] Building ...
+$ docker run -d --name hello-ci -p 8000:8000 hello-ci:local
+$ curl --fail http://localhost:8000/health
+ok
+$ docker inspect --format='{{.Config.User}}' hello-ci:local
+appuser
+$ docker rm -f hello-ci</pre>
+    <p>The health request is a smoke test. The inspect command proves the final image does not run as root. If port 8000 is busy, use <code>-p 8001:8000</code> and curl port 8001.</p>
+    <div class="exercise" data-check data-explain="A successful build proves only that instructions completed. Starting the image and querying its health endpoint tests the built runtime artifact.">
+      <p class="ex-q">The image built successfully. Can the pipeline publish it immediately?</p><div class="ex-options"><button data-option>Yes; a build proves runtime health</button><button data-option data-correct>No; start and smoke-test the exact image first</button></div><p class="ex-feedback" data-feedback></p>
+    </div>
+  </section>
+
+  <section id="workflow"><h2>Part 2 — create the workflow</h2>
+    <p>Create <code>.github/workflows/container.yml</code> at the repository root. This workflow gives all jobs read-only access by default. Only the main-branch publish job receives package-write permission.</p>
+    <pre data-lang="yaml" data-title=".github/workflows/container.yml">name: Container pipeline
+
+on:
+  pull_request:
+    paths:
+      - "docker/examples/hello-docker/**"
+      - ".github/workflows/container.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docker/examples/hello-docker/**"
+      - ".github/workflows/container.yml"
+
+permissions:
+  contents: read
+
+env:
+  CONTEXT: docker/examples/hello-docker
+
+jobs:
+  verify:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the tested commit
+        uses: actions/checkout@v7
+
+      - name: Build pull-request image
+        run: docker build --tag hello-ci:verify "$CONTEXT"
+
+      - name: Smoke test image
+        run: |
+          set -eu
+          docker run -d --name hello-ci -p 8000:8000 hello-ci:verify
+          trap 'docker rm -f hello-ci' EXIT
+          curl --fail --retry 10 --retry-delay 1 \
+            --retry-all-errors http://localhost:8000/health
+          test "$(docker inspect --format='{{.Config.User}}' hello-ci:verify)" = appuser
+
+  publish:
+    if: github.event_name == 'push' &amp;&amp; github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      digest: ${{ steps.push.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Define the lowercase image name
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/hello-docker" >> "$GITHUB_ENV"
+
+      - name: Log in to GitHub Container Registry
+        run: printf '%s' "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io \
+          --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Build the release image once
+        run: docker build --tag "$IMAGE:$GITHUB_SHA" "$CONTEXT"
+
+      - name: Smoke test the release image
+        run: |
+          set -eu
+          docker run -d --name release-smoke -p 8000:8000 "$IMAGE:$GITHUB_SHA"
+          trap 'docker rm -f release-smoke' EXIT
+          curl --fail --retry 10 --retry-delay 1 \
+            --retry-all-errors http://localhost:8000/health
+
+      - name: Push the tested image
+        id: push
+        run: |
+          output="$(docker push "$IMAGE:$GITHUB_SHA")"
+          printf '%s\n' "$output"
+          digest="$(printf '%s\n' "$output" | awk '/digest: sha256:/{for (i=1;i&lt;=NF;i++) if ($i=="digest:") print $(i+1)}' | tail -1)"
+          test -n "$digest"
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+          echo "Published $IMAGE@$digest" >> "$GITHUB_STEP_SUMMARY"</pre>
+    <p>This example deliberately uses normal Docker commands so you can reproduce every important step locally. Larger pipelines commonly use Docker's official Buildx actions for cache, multi-platform images, metadata and attestations.</p>
+    <div class="callout warn"><span class="callout-title">Production hardening</span><p>Major tags such as <code>actions/checkout@v7</code> are readable for learning. Production workflows should pin third-party actions to reviewed full commit SHAs and use an updater to propose future versions.</p></div>
+  </section>
+
+  <section id="predict"><h2>Part 3 — predict before pushing</h2>
+    <div class="exercise" data-check data-explain="The publish job has an event condition requiring a push to main, so a pull request runs only verify.">
+      <p class="ex-q">Which jobs run when you open a pull request?</p><div class="ex-options"><button data-option data-correct><code>verify</code> only</button><button data-option><code>publish</code> only</button><button data-option>Both jobs publish images</button></div><p class="ex-feedback" data-feedback></p>
+    </div>
+    <div class="exercise" data-check data-explain="The shell exits on error, so the failed smoke-test step ends the publish job before it reaches docker push.">
+      <p class="ex-q">What happens if the health request fails on the main-branch run?</p><div class="ex-options"><button data-option>The image is published anyway</button><button data-option data-correct>The <code>publish</code> job stops before <code>docker push</code></button><button data-option>The failure is ignored automatically</button></div><p class="ex-feedback" data-feedback></p>
+    </div>
+    <div class="exercise" data-check data-explain="The release tag uses GITHUB_SHA, creating a traceable immutable identity. Reusing latest would make rollback and auditing ambiguous.">
+      <p class="ex-q">Why tag the release with <code>$GITHUB_SHA</code>?</p><div class="ex-options"><button data-option>It makes the image smaller</button><button data-option data-correct>It links the artifact to the exact source commit</button><button data-option>Docker requires that variable</button></div><p class="ex-feedback" data-feedback></p>
+    </div>
+  </section>
+
+  <section id="run"><h2>Part 4 — run it and inspect evidence</h2>
+    <ol>
+      <li>Create a branch: <code>git switch -c learn/container-pipeline</code>.</li>
+      <li>Add the workflow, commit it and push the branch.</li>
+      <li>Open a pull request. Confirm that only <b>verify</b> runs.</li>
+      <li>Open each step log. Find the health response and the non-root user check.</li>
+      <li>Intentionally change <code>/health</code> to a missing path. Push and observe the failure.</li>
+      <li>Restore the path, push and confirm recovery.</li>
+      <li>Merge when approved. Confirm the <b>publish</b> job writes a digest to the summary.</li>
+      <li>Open the repository package and locate the commit-SHA tag.</li>
+    </ol>
+    <p>If package publication is not permitted, keep the pull request unmerged. You still completed the CI portion without external writes.</p>
+  </section>
+
+  <section id="deploy"><h2>Part 5 — promote by digest</h2>
+    <p>Copy the published digest from the job summary. A deployment manifest should reference the exact content:</p>
+    <pre data-lang="yaml" data-title="Illustrative Kubernetes fragment">spec:
+  template:
+    spec:
+      containers:
+        - name: hello
+          image: ghcr.io/OWNER/hello-docker@sha256:PASTE_DIGEST_HERE
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000</pre>
+    <p>For a Docker server, pull and run the same digest. The deployment system should record commit, digest, environment, actor, time and result.</p>
+  </section>
+
+  <section id="mission"><h2>Interactive release rehearsal</h2>
+    <p>A release is ready. Perform the decisions in their safe order.</p>
+    <div class="widget" data-release-mission>
+      <div class="filter-row">
+        <button class="btn btn-small" data-release-step>1. Confirm required checks</button>
+        <button class="btn btn-small" data-release-step>2. Record image digest</button>
+        <button class="btn btn-small" data-release-step>3. Deploy digest to staging</button>
+        <button class="btn btn-small" data-release-step>4. Run staging smoke test</button>
+        <button class="btn btn-small" data-release-step>5. Confirm rollback digest</button>
+        <button class="btn btn-small" data-release-step>6. Approve production</button>
+        <button class="btn btn-small" data-release-step>7. Deploy progressively</button>
+        <button class="btn btn-small" data-release-step>8. Verify version health</button>
+      </div>
+      <p class="ex-feedback hint" data-release-output>Begin with the evidence that makes this commit releasable.</p>
+    </div>
+  </section>
+
+  <section id="extend"><h2>Optional extensions</h2>
+    <ul><li>Add a Python unit test and run it before the Docker build.</li><li>Add a dependency or container vulnerability scan with an explicit severity policy.</li><li>Generate an SBOM and attach it to the release evidence.</li><li>Add a protected <code>staging</code> environment and a deploy job that references it.</li><li>Add a concurrency group so production deployments cannot overlap.</li><li>Pin every action to its full commit SHA.</li></ul>
+  </section>
+
+  <section class="takeaways" id="done"><h2>Definition of done</h2><ul><li>You can explain every trigger, permission, dependency and command.</li><li>A deliberately broken health check blocks the pipeline.</li><li>The published image is tagged with its commit and recorded by digest.</li><li>You know how that same digest would be promoted and rolled back.</li></ul></section>
+
+  <section id="sources"><h2>Official references</h2><ul>
+    <li><a href="https://docs.github.com/en/actions/tutorials/publish-packages/publish-docker-images">GitHub: publishing Docker images</a></li>
+    <li><a href="https://docs.docker.com/build/ci/github-actions/">Docker: build with GitHub Actions</a></li>
+    <li><a href="https://docs.github.com/en/actions/concepts/workflows-and-actions/deployment-environments">GitHub: deployment environments</a></li>
+  </ul></section>
+</main></div></body></html>

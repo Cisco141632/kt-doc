@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What is CI/CD? · CI/CD learning path</title>
+  <meta name="description" content="Learn the complete CI/CD path from a Git commit to a safe, observable production release.">
+  <link rel="stylesheet" href="../docker/assets/style.css">
+  <script src="assets/app.js"></script>
+</head>
+<body data-module="index">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="content">
+    <header class="page-head">
+      <h1>What is CI/CD?</h1>
+      <p class="lead">CI/CD is the repeatable path that turns a code change into a verified release. It combines team habits, automated checks, immutable artifacts, controlled deployment and production feedback.</p>
+    </header>
+
+    <section id="picture">
+      <h2>The complete picture</h2>
+      <p>A healthy delivery system answers four questions in order: Is the change understandable? Is it correct? Is the exact release safe to deploy? Is it healthy after deployment?</p>
+      <figure class="diagram">
+        <pre class="mermaid">
+flowchart LR
+  DEV["Developer"] --> GIT["Commit + pull request"]
+  GIT --> CI["CI: lint, test, scan"]
+  CI --> BUILD["Build immutable artifact"]
+  BUILD --> REG[("Artifact registry")]
+  REG --> STAGE["Deploy staging"]
+  STAGE --> GATE{"Checks / approval"}
+  GATE --> PROD["Deploy production"]
+  PROD --> OBS["Observe + verify"]
+  OBS -- "problem" --> RB["Rollback / mitigate"]
+  OBS -- "learning" --> DEV
+        </pre>
+        <figcaption>The pipeline is a feedback loop, not a one-way conveyor belt.</figcaption>
+      </figure>
+      <div class="callout analogy">
+        <span class="callout-title">Think of a pipeline as an airport</span>
+        <p>Git identifies the passenger, CI performs security checks, the artifact is sealed luggage, deployment moves it to the aircraft, and monitoring confirms the flight is healthy. Skipping a gate may feel faster until something goes wrong.</p>
+      </div>
+    </section>
+
+    <section id="words">
+      <h2>CI, delivery and deployment</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Term</th><th>Meaning</th><th>Decision it automates</th></tr>
+          <tr><td><b>Continuous integration</b></td><td class="wrap">Developers merge small changes frequently. Every change is automatically built and tested.</td><td class="wrap">“Is this change safe to merge?”</td></tr>
+          <tr><td><b>Continuous delivery</b></td><td class="wrap">Every successful change becomes a deployable release. Production still has a deliberate approval or business decision.</td><td class="wrap">“Could we release this now?”</td></tr>
+          <tr><td><b>Continuous deployment</b></td><td class="wrap">Every change that passes the pipeline automatically reaches production.</td><td class="wrap">“All evidence passed, so release it.”</td></tr>
+        </table>
+      </div>
+      <p>Continuous deployment is not the first goal. Start with reliable continuous integration, then make releases repeatable, then automate production only when tests, observability and rollback are trustworthy.</p>
+      <div class="exercise" data-check data-explain="A human production approval makes this continuous delivery. Continuous deployment has no manual production gate.">
+        <div class="ex-head"><span class="badge info">Predict before revealing</span></div>
+        <p class="ex-q">Every merge is tested, packaged and deployed to staging. A release manager approves production. What is this?</p>
+        <div class="ex-options">
+          <button data-option>Continuous integration only</button>
+          <button data-option data-correct>Continuous delivery</button>
+          <button data-option>Continuous deployment</button>
+        </div>
+        <p class="ex-feedback" data-feedback></p>
+      </div>
+    </section>
+
+    <section id="benefits">
+      <h2>How it helps</h2>
+      <div class="cards">
+        <article class="card"><span class="tag">Speed</span><b>Short feedback</b><small>A developer learns about a failure in minutes while the change is still fresh.</small></article>
+        <article class="card"><span class="tag">Safety</span><b>Small releases</b><small>Small batches are easier to review, test, diagnose and reverse.</small></article>
+        <article class="card"><span class="tag">Consistency</span><b>One repeatable process</b><small>The pipeline performs the same steps for every release instead of relying on memory.</small></article>
+        <article class="card"><span class="tag">Evidence</span><b>Traceable releases</b><small>A commit, test run, artifact digest and deployment record explain exactly what is running.</small></article>
+      </div>
+      <p>CI/CD does not mean “deploy quickly at any cost.” It means reducing release risk through small changes, automated evidence and fast recovery.</p>
+    </section>
+
+    <section id="tool-map">
+      <h2>Where each technology fits</h2>
+      <div class="table-wrap">
+        <table>
+          <tr><th>Responsibility</th><th>Examples</th><th>What to learn first</th></tr>
+          <tr><td>Source and review</td><td class="wrap">Git, GitHub, GitLab, Bitbucket</td><td class="wrap">Commits, branches, pull requests, tags</td></tr>
+          <tr><td>Pipeline engine</td><td class="wrap">GitHub Actions, GitLab CI, Jenkins, Azure Pipelines</td><td class="wrap">Triggers, jobs, runners, dependencies, secrets</td></tr>
+          <tr><td>Artifact</td><td class="wrap">Docker/OCI image, package, binary</td><td class="wrap">Immutable versions and registries</td></tr>
+          <tr><td>Runtime</td><td class="wrap">Virtual machines, Kubernetes, ECS, Cloud Run</td><td class="wrap">Health checks, configuration, resources, rollout</td></tr>
+          <tr><td>Infrastructure</td><td class="wrap">Terraform/OpenTofu, cloud templates, Ansible</td><td class="wrap">Desired state, plans, reviews, drift</td></tr>
+          <tr><td>Visibility</td><td class="wrap">OpenTelemetry, Prometheus, Grafana, cloud monitoring</td><td class="wrap">Logs, metrics, traces, alerts and SLOs</td></tr>
+        </table>
+      </div>
+      <div class="callout tip">
+        <span class="callout-title">Do not learn a shopping list</span>
+        <p>Learn the responsibilities first. A Jenkins stage and a GitHub Actions job use different syntax, but both execute work on a runner and pass evidence to the next gate.</p>
+      </div>
+    </section>
+
+    <section id="path">
+      <h2>Your learning path</h2>
+      <p>Read in order and complete the recall check in every lesson. The hands-on module joins the concepts into one Docker pipeline.</p>
+      <div class="cards" data-module-cards></div>
+      <noscript><p>JavaScript adds navigation, progress and interactive checks. All lesson content remains readable without it.</p></noscript>
+    </section>
+
+    <section class="takeaways" id="remember">
+      <h2>Remember</h2>
+      <ul>
+        <li>CI verifies changes; continuous delivery keeps a verified release ready; continuous deployment releases it automatically.</li>
+        <li>The artifact that passed the tests—not freshly rebuilt code—should move between environments.</li>
+        <li>A pipeline is complete only when production health is verified and recovery is possible.</li>
+      </ul>
+    </section>
+  </main>
+</div>
+</body>
+</html>

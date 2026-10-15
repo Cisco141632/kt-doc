@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pipeline foundations · CI/CD learning path</title>
+  <meta name="description" content="Understand CI/CD triggers, workflows, jobs, runners, artifacts, dependencies and gates.">
+  <link rel="stylesheet" href="../docker/assets/style.css"><script src="assets/app.js"></script><script src="assets/labs.js" defer></script>
+</head>
+<body data-module="foundations"><div class="layout"><aside class="sidebar" id="sidebar"></aside><main class="content">
+  <header class="page-head"><h1>Pipeline foundations</h1><p class="lead">A pipeline is executable release policy: which event starts work, where it runs, what evidence it produces and which conditions allow the release to continue.</p></header>
+
+  <section id="anatomy"><h2>The six building blocks</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Part</th><th>Meaning</th><th>Example</th></tr>
+      <tr><td><b>Trigger</b></td><td class="wrap">The event that starts a run</td><td class="wrap">Pull request, merge, release tag, manual request, schedule</td></tr>
+      <tr><td><b>Workflow</b></td><td class="wrap">The complete automated process</td><td class="wrap"><code>.github/workflows/ci.yml</code></td></tr>
+      <tr><td><b>Job</b></td><td class="wrap">A group of steps on one runner</td><td class="wrap">Test, build image, deploy staging</td></tr>
+      <tr><td><b>Runner</b></td><td class="wrap">The machine or container executing a job</td><td class="wrap">Hosted Ubuntu VM or controlled self-hosted agent</td></tr>
+      <tr><td><b>Artifact</b></td><td class="wrap">A versioned output retained after the job</td><td class="wrap">Test report, binary, Docker image, SBOM</td></tr>
+      <tr><td><b>Gate</b></td><td class="wrap">A condition that must pass</td><td class="wrap">Tests green, scan accepted, approval granted</td></tr>
+    </table></div>
+    <figure class="diagram"><pre class="mermaid">
+flowchart TD
+  T["Trigger: pull request"] --> A["Lint"]
+  T --> B["Unit tests"]
+  A --> C["Build"]
+  B --> C
+  C --> D["Integration tests"]
+  D --> E{"Quality gate"}
+  E -- pass --> F["Publish artifact"]
+  E -- fail --> X["Stop + report"]
+    </pre><figcaption>Dependencies make the workflow a graph. Independent jobs can run in parallel.</figcaption></figure>
+  </section>
+
+  <section id="design"><h2>Design for fast, useful failure</h2>
+    <ol>
+      <li>Run formatting, linting and unit tests early because they are fast.</li>
+      <li>Run independent checks in parallel.</li>
+      <li>Build once after cheap checks pass.</li>
+      <li>Run integration, security and end-to-end checks against the built result.</li>
+      <li>Publish only verified artifacts.</li>
+      <li>Deploy with explicit concurrency and rollback rules.</li>
+    </ol>
+    <div class="callout warn"><span class="callout-title">A long pipeline is not automatically a strong pipeline</span><p>A 50-minute pipeline that fails for unrelated flaky tests teaches developers to ignore it. Optimize for trustworthy feedback: stable tests, clear ownership, useful logs and a short critical path.</p></div>
+  </section>
+
+  <section id="workflow"><h2>Read a small workflow</h2>
+    <pre data-lang="yaml" data-title=".github/workflows/ci.yml">name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: ./scripts/ci-test.sh</pre>
+    <p><code>on</code> defines triggers, <code>jobs</code> defines parallel work, <code>runs-on</code> chooses a runner, and <code>steps</code> run in order inside that job. Keeping commands in <code>scripts/ci-test.sh</code> lets developers run the same test locally.</p>
+    <div class="exercise" data-check data-explain="Jobs are isolated by default. Declare the dependency and explicitly transfer any required file as an artifact or rebuild it deterministically.">
+      <p class="ex-q">The test job creates <code>app.tar</code>. A separate deploy job expects that file. What must the workflow do?</p>
+      <div class="ex-options"><button data-option>Nothing; all jobs share one disk</button><button data-option data-correct>Upload it as an artifact and download it in the dependent job</button><button data-option>Store it in a source-code comment</button></div><p class="ex-feedback" data-feedback></p>
+    </div>
+  </section>
+
+  <section id="builder"><h2>Hands-on: assemble the safe path</h2>
+    <p>Select the stages in the order that gives fast feedback and preserves one verified artifact.</p>
+    <div class="widget" data-pipeline-builder>
+      <div class="filter-row">
+        <button class="btn btn-small" data-stage="production">Deploy production</button><button class="btn btn-small" data-stage="unit">Unit tests</button>
+        <button class="btn btn-small" data-stage="publish">Publish image</button><button class="btn btn-small" data-stage="lint">Lint</button>
+        <button class="btn btn-small" data-stage="staging">Deploy staging</button><button class="btn btn-small" data-stage="scan">Scan image</button>
+        <button class="btn btn-small" data-stage="smoke">Smoke test</button><button class="btn btn-small" data-stage="build">Build image</button>
+      </div>
+      <p class="ex-feedback hint" data-builder-output>Start with the fastest feedback that can reject a bad change.</p>
+      <button class="btn btn-small" type="button" data-builder-reset>Reset</button>
+    </div>
+  </section>
+
+  <section id="ownership"><h2>Pipeline ownership</h2>
+    <p>The platform team may provide templates, but the team shipping the service owns whether its tests describe reality. Treat a broken main branch or failed production deployment as a product incident, not as “the CI team's problem.”</p>
+    <ul><li>Every failed step should say what failed and how to reproduce it.</li><li>Every gate should have an owner and a reason.</li><li>Every exception should expire rather than silently becoming permanent.</li></ul>
+  </section>
+
+  <section class="takeaways" id="remember"><h2>Remember</h2><ul><li>Triggers start workflows; jobs run on isolated runners; artifacts carry outputs; gates control progression.</li><li>Parallelize independent work and put fast checks first.</li><li>The pipeline is shared production code: review, test and maintain it.</li></ul></section>
+</main></div></body></html>

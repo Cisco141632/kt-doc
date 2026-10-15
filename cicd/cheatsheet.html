@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>CI/CD cheat sheet · CI/CD learning path</title>
+  <meta name="description" content="A printable CI/CD pipeline blueprint, Docker commands, release checklist and troubleshooting guide."><link rel="stylesheet" href="../docker/assets/style.css"><script src="assets/app.js"></script>
+</head><body data-module="cheatsheet"><div class="layout"><aside class="sidebar" id="sidebar"></aside><main class="content">
+  <header class="page-head"><h1>CI/CD cheat sheet</h1><p class="lead">Use this during pipeline reviews and releases. It summarizes sequence, evidence, commands, ownership and recovery.</p></header>
+
+  <section id="blueprint"><h2>Safe pipeline blueprint</h2>
+    <ol><li><b>Change:</b> small commit, pull request, review.</li><li><b>Verify:</b> lint, unit, integration, contract and security checks.</li><li><b>Build once:</b> produce an immutable versioned artifact.</li><li><b>Identify:</b> record source commit, image tag and digest.</li><li><b>Publish:</b> push to a controlled registry with evidence.</li><li><b>Stage:</b> deploy the same digest and run smoke/end-to-end checks.</li><li><b>Gate:</b> satisfy policy, approval, SLO and change-window requirements.</li><li><b>Release:</b> roll out with controlled exposure.</li><li><b>Verify:</b> compare technical and business health by version.</li><li><b>Recover:</b> pause, shift traffic, disable, roll back or roll forward.</li></ol>
+  </section>
+
+  <section id="docker"><h2>Docker artifact commands</h2>
+    <pre data-lang="console">$ git rev-parse --short HEAD
+a81f29c
+$ docker build -t ghcr.io/acme/api:a81f29c .
+$ docker run -d --name smoke -p 8000:8000 ghcr.io/acme/api:a81f29c
+$ curl --fail http://localhost:8000/health
+ok
+$ docker push ghcr.io/acme/api:a81f29c
+$ docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/acme/api:a81f29c
+ghcr.io/acme/api@sha256:…
+$ docker rm -f smoke</pre>
+    <p>Use the resulting digest for environment promotion. Do not rebuild between staging and production.</p>
+  </section>
+
+  <section id="reviews"><h2>Pull-request pipeline checklist</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Question</th><th>Healthy answer</th></tr>
+      <tr><td>Can untrusted code access privileged secrets?</td><td class="wrap">No; fork/PR jobs are read-only and isolated</td></tr>
+      <tr><td>Can developers reproduce checks?</td><td class="wrap">Yes; repository scripts or containers run the same commands</td></tr>
+      <tr><td>Are dependencies deterministic?</td><td class="wrap">Lock files and pinned tool/action versions are reviewed</td></tr>
+      <tr><td>Are important checks required?</td><td class="wrap">Branch policy blocks merge when trustworthy checks fail</td></tr>
+      <tr><td>Are failures actionable?</td><td class="wrap">Logs identify the failing test, input and reproduction path</td></tr>
+      <tr><td>Is obsolete work cancelled?</td><td class="wrap">New commits cancel superseded safe-to-cancel runs</td></tr>
+    </table></div>
+  </section>
+
+  <section id="release"><h2>Production release checklist</h2>
+    <ul>
+      <li>Required tests, reviews and policy checks passed.</li>
+      <li>Artifact digest and source commit are recorded.</li>
+      <li>SBOM, scan and provenance meet policy.</li>
+      <li>Configuration and secret references are correct for the environment.</li>
+      <li>Database migration is backward-compatible and separately recoverable.</li>
+      <li>Previous working digest is retained and rollback was rehearsed.</li>
+      <li>Readiness, smoke and version-specific monitoring are ready.</li>
+      <li>Only one production deployment can run at a time.</li>
+      <li>Owner, communication path and stop conditions are known.</li>
+      <li>Release is observed for the defined verification window.</li>
+    </ul>
+  </section>
+
+  <section id="strategy"><h2>Strategy quick choice</h2>
+    <div class="table-wrap"><table>
+      <tr><th>If you need…</th><th>Start with…</th><th>Also prove…</th></tr>
+      <tr><td class="wrap">Simplicity and downtime is acceptable</td><td>Recreate</td><td class="wrap">Startup and rollback time</td></tr>
+      <tr><td class="wrap">Availability with modest complexity</td><td>Rolling</td><td class="wrap">Old/new compatibility and readiness</td></tr>
+      <tr><td class="wrap">Fast traffic switch/rollback</td><td>Blue-green</td><td class="wrap">Capacity, state and routing</td></tr>
+      <tr><td class="wrap">Limited real-user exposure</td><td>Canary</td><td class="wrap">Version-aware metrics and guardrails</td></tr>
+      <tr><td class="wrap">Deploy separately from user release</td><td>Feature flag</td><td class="wrap">Flag ownership, combinations and cleanup</td></tr>
+    </table></div>
+  </section>
+
+  <section id="troubleshoot"><h2>Failure triage</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Symptom</th><th>Check first</th></tr>
+      <tr><td>Works locally, fails in CI</td><td class="wrap">Uncommitted files, runtime version, architecture, environment variables, clean install</td></tr>
+      <tr><td>CI is slow</td><td class="wrap">Critical path, parallel jobs, dependency cache, duplicate builds, queue time</td></tr>
+      <tr><td>Flaky tests</td><td class="wrap">Shared state, time/race assumptions, external dependencies, fixed ports, order dependence</td></tr>
+      <tr><td>Image push denied</td><td class="wrap">Registry login, token scope, repository/package ownership, job permissions</td></tr>
+      <tr><td>Deploy succeeds, app unavailable</td><td class="wrap">Readiness, service selector/port, config, dependency access, logs</td></tr>
+      <tr><td>Rollback fails</td><td class="wrap">Old artifact retention, database compatibility, configuration drift, irreversible external effects</td></tr>
+      <tr><td>Wrong version is running</td><td class="wrap">Digest in desired state, mutable tags, concurrent deployments, controller reconciliation status</td></tr>
+    </table></div>
+  </section>
+
+  <section id="tools"><h2>Tool responsibility map</h2>
+    <p><b>Git</b> records intent · <b>CI engine</b> orchestrates evidence · <b>test tools</b> verify behavior · <b>Docker/OCI</b> packages the release · <b>registry</b> stores immutable artifacts · <b>IaC</b> declares infrastructure · <b>runtime/orchestrator</b> executes containers · <b>GitOps</b> reconciles desired state · <b>observability</b> verifies reality.</p>
+    <div class="table-wrap"><table>
+      <tr><th>Concept</th><th>GitHub Actions</th><th>GitLab CI</th><th>Jenkins</th><th>Azure Pipelines</th></tr>
+      <tr><td>Definition</td><td>Workflow YAML</td><td><code>.gitlab-ci.yml</code></td><td><code>Jenkinsfile</code></td><td>Pipeline YAML</td></tr>
+      <tr><td>Unit of work</td><td>Job / step</td><td>Job / script</td><td>Stage / step</td><td>Stage / job / step</td></tr>
+      <tr><td>Executor</td><td>Runner</td><td>Runner</td><td>Agent</td><td>Agent</td></tr>
+      <tr><td>Stored output</td><td>Artifact</td><td>Artifact</td><td>Archived artifact</td><td>Pipeline artifact</td></tr>
+      <tr><td>Deployment target</td><td>Environment</td><td>Environment</td><td>Usually modeled by pipeline/plugins</td><td>Environment</td></tr>
+    </table></div>
+    <p>The names and file formats change; triggers, isolated execution, dependencies, artifacts, gates and credentials remain the same concepts.</p>
+  </section>
+
+  <section id="sources"><h2>Official reference shelf</h2><ul>
+    <li><a href="https://docs.github.com/en/actions">GitHub Actions documentation</a></li>
+    <li><a href="https://docs.github.com/en/actions/tutorials/publish-packages/publish-docker-images">Publishing Docker images with GitHub Actions</a></li>
+    <li><a href="https://docs.docker.com/build/ci/github-actions/">Docker build CI with GitHub Actions</a></li>
+    <li><a href="https://docs.github.com/en/actions/reference/security/secure-use">GitHub Actions secure-use reference</a></li>
+    <li><a href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/">Kubernetes Deployments</a></li>
+    <li><a href="https://kubernetes.io/docs/tasks/run-application/update-deployment-without-downtime/">Kubernetes rolling update and rollback</a></li>
+  </ul></section>
+
+  <section class="takeaways" id="rule"><h2>One rule to carry forward</h2><p><b>Build once, identify precisely, promote the same artifact, verify real health, and keep recovery simpler than deployment.</b></p></section>
+</main></div></body></html>
