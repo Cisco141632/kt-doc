@@ -26,24 +26,24 @@ LESSONS = []
 def lesson(id, title, minutes, description, objectives, sections, recap, topic=None):
     LESSONS.append(dict(id=id,title=title,minutes=minutes,description=description,objectives=objectives,sections=sections,recap=recap,topic=topic))
 
-lesson("index", "Understand Git. Work confidently together.", 15,
- "A practical Git and GitHub knowledge base: learn what changes in the commit graph, diagnose development incidents, recover carefully, and build a team workflow with clear permissions.",
+lesson("index", "Git, explained one picture at a time.", 15,
+ "Start with a school project and discover what Git does, why it matters, and how GitHub helps people work together. Build confidence with pictures, hands-on practice and short recall sessions.",
  ["Explain Git and GitHub in different terms.", "Choose a learning route and practise in disposable repositories.", "Know the questions to ask before changing shared history."], [
-section("why", "The question behind every Git command",
- """<p>You finished a feature, another developer changed the same file, your push was rejected, and the editor offers “Accept current” or “Accept incoming.” Which action preserves the intended behavior? Memorizing commands alone will not answer that. You need to understand snapshots, references, ancestry, and the operation in progress.</p>
- <p><strong>Git</strong> is a distributed version-control system. Each normal clone has its own object database and references; commits and branches can be created without GitHub. <strong>GitHub</strong> hosts repositories and adds pull requests, code review, issues, permissions, rules, automation and collaboration. A local commit is not automatically uploaded, reviewed, approved or deployed.</p>""" +
- flow([("Change", "Edit and inspect files"),("Record", "Stage a coherent snapshot and commit"),("Integrate", "Review ancestry and combine changes"),("Collaborate", "Push, review, test and merge"),("Learn", "Trace history and recover with evidence")]) +
+section("why", "Start with a familiar problem",
+ """<p>You are making a school project. Yesterday it was correct; today you accidentally deleted a useful paragraph. A friend has a different copy. Which version should you keep, and how can you combine your work? Git helps you keep a clear history of recorded versions. Start with the illustrated beginner lesson, then build up to real development problems.</p>
+ <p><strong>Git</strong> is a distributed version-control system. It keeps a history of project versions you deliberately record on your computer. <strong>GitHub</strong> hosts repositories and adds pull requests, code review, issues, permissions, rules, automation and collaboration. A local commit is not automatically uploaded, reviewed, approved or deployed.</p>""" +
+ flow([("Edit", "Make a useful change"),("Select", "Choose what you want to record"),("Record", "Save a project snapshot"),("Share", "Send it to a remote repository"),("Review", "Compare and discuss the change")]) +
  note("The five questions", "Which repository and branch am I on? Is the work committed or uncommitted? Is this history already shared? Which local or remote reference will move? What evidence and recovery point do I have?")),
 section("routes", "Choose your route",
- """<div class="stat-grid"><div class="stat"><strong>21</strong><span>learning modules</span></div><div class="stat"><strong>60</strong><span>explained quiz questions</span></div><div class="stat"><strong>12</strong><span>real Git labs</span></div><div class="stat"><strong>30</strong><span>troubleshooting cases</span></div></div>""" +
+ """<div class="stat-grid"><div class="stat"><strong>23</strong><span>learning modules</span></div><div class="stat"><strong>60</strong><span>explained quiz questions</span></div><div class="stat"><strong>12</strong><span>real Git labs</span></div><div class="stat"><strong>30</strong><span>troubleshooting cases</span></div></div>""" +
  table(["Need", "Route"],[
- ["New to Git", "Foundations → daily workflow → branches and remotes → merge → conflicts."],
+ ["New to Git", '<a href="why-git.html">What is Git? A school-project story</a> → foundations → daily workflow → branches → merge → conflicts.'],
  ["Rebase or rejected push today", '<a href="rebase.html">Rebase</a> → <a href="force-push.html">force push and leases</a> → <a href="undo-recovery.html">recovery</a>.'],
  ["Investigate a regression", '<a href="history.html">History, blame and bisect</a>, then the disposable incident lab.'],
  ["Set team standards", '<a href="collaboration.html">Pull requests</a> → <a href="github-permissions.html">permissions</a> → <a href="rules.html">repository rules</a>.'],
- ["Learn visually", '<a href="playground.html">Step through the graph, resolve a conflict and simulate push/permission decisions</a>.'],
+ ["Learn visually", '<a href="studio.html">Play the five-station Practice Studio</a>, then <a href="playground.html">Step through the graph, resolve a conflict and simulate push/permission decisions</a>.'],
  ["Refresh quickly", '<a href="recap.html">Recall cards</a> and the <a href="reference.html">searchable reference</a>.']]) +
- """<p>Plan several short study sessions. Read, predict, inspect a real repository, then explain the result. The first pass takes roughly 12–16 hours with practice; deeper team exercises take longer. Every module ends with a concise recap.</p><div class="actions"><a class="btn btn-primary" href="foundations.html">Start learning →</a><a class="btn" href="playground.html">Open visual lab</a></div>"""),
+ """<p>Plan several short study sessions. Read, predict, inspect a real repository, then explain the result. The first pass takes roughly 12–16 hours with practice; deeper team exercises take longer. Every module ends with a concise recap.</p><div class="actions"><a class="btn btn-primary" href="why-git.html">Start with the school-project story →</a><a class="btn" href="studio.html">Try the Practice Studio →</a><a class="btn" href="playground.html">Open visual lab</a></div>"""),
 section("scope", "How to use these documents",
  """<p>Core commands use modern Git, including <code>switch</code> and <code>restore</code> (Git 2.23+). Labs also use <code>git init -b</code> (2.28+). Check <code>git --version</code> and the installed manual. GitHub capabilities depend on repository visibility, plan, organization policy and GitHub Enterprise version. Official sources are linked near the relevant explanations and collected in the reference.</p>
  <p>The browser exercises are simulations: they do not access or modify any repository. The real labs use newly created local repositories and local bare remotes, so no GitHub account or access token is needed. Do not run a destructive practice command in a work repository.</p>
@@ -51,6 +51,9 @@ section("scope", "How to use these documents",
  <p>This is a complete practical learning path, not a claim to list every Git plumbing flag or every GitHub product. Advanced topics point to their primary manuals. Learning progress is local to this browser and can be exported on the recap page.</p>"""),
 section("curriculum", "The full learning path", '<div class="cards" data-course-cards></div>')
 ], ["Git records snapshots and ancestry; GitHub adds collaboration and policy.", "Inspect state and shared ownership before changing history.", "Practise risky operations only in a disposable repository."])
+
+from beginner_content import add_beginner
+add_beginner(lesson, section, table, note)
 
 lesson("foundations", "Snapshots, the index, HEAD & objects", 25,
  "Understand what Git stores, what a branch actually is, and why staged and unstaged changes are different.",
@@ -644,6 +647,9 @@ section("access-lab","4 · Diagnose the permission gates",
  '<div id="permission-tool" class="visual-tool"></div><noscript><p>A valid identity, repository access, a suitable scoped credential and satisfied applicable rules are separate requirements. Admin alone is not an automatic bypass. Review the <a href="github-permissions.html">permissions lesson</a>.</p></noscript>')
 ],["Changing a graph label can change reachability without erasing every object.","A valid resolution preserves the stated requirements, not just syntax.","A lease and a repository role each solve only part of a larger decision."])
 
+from studio_content import add_studio
+add_studio(lesson, section, note, table)
+
 lesson("quiz","Scenario quiz: explain the result",35,
  "Sixty questions across fifteen topics test Git behavior, recovery, collaboration and GitHub controls, with an explanation for every choice.",
  ["Predict effects before memorizing commands.", "Review missed scenarios and revisit their source lesson.", "Distinguish current-attempt scores from practical proficiency."],[
@@ -655,7 +661,7 @@ lesson("recap","Recall cards and a skill-building plan",20,
  "Recall the right tool for the situation, review weak areas and preserve your browser-local learning progress.",
  ["Recall high-value commands and their boundaries.", "Follow a practical progression from staging to team governance.", "Back up or reset local learning data."],[
 section("cards","Retrieve before revealing",
- """<p>Say the command and its main risk before revealing the answer. “Know it” schedules the card for 1, 3, 7, 14 and 30 days after successive successful reviews. “Again” returns it to immediate review. Due + new cards focuses the session; All cards is available any time.</p><div id="flashcards"></div><noscript><p>Cover the command column in the <a href="reference.html">reference sheet</a> and test yourself from the task names.</p></noscript>"""),
+ """<p><a class="btn" href="studio.html#sprint">Start a five-minute recall round →</a></p><p>Say the command and its main risk before revealing the answer. “Know it” schedules the card for 1, 3, 7, 14 and 30 days after successive successful reviews. “Again” returns it to immediate review. Due + new cards focuses the session; All cards is available any time.</p><div id="flashcards"></div><noscript><p>Cover the command column in the <a href="reference.html">reference sheet</a> and test yourself from the task names.</p></noscript>"""),
 section("plan","A two-week practice plan",
  table(["Days","Focus","Proof of progress"],[
  ["1–2","Snapshots, staging and clean commits.","Explain MM and predict staged content in lab 1."],

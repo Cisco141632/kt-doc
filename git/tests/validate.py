@@ -30,7 +30,7 @@ class Document(HTMLParser):
                 self.links.append(attrs[attr])
 
 pages = {p.resolve(): Document(p) for p in ROOT.glob("*.html")}
-assert len(pages) == 21
+assert len(pages) == 23
 for path, doc in pages.items():
     assert doc.h1s == 1, path
     assert len(doc.ids) == len(set(doc.ids)), (path, "duplicate IDs")
@@ -52,10 +52,10 @@ assert len({s for lab in LABS for s in [lab["id"]]}) == 12
 data=json.loads((ROOT/"assets/data.js").read_text().split("window.GIT_DATA = ",1)[1].removesuffix(";\n"))
 assert data["questions"]==QUESTIONS
 assert {m["id"] for m in data["modules"]}=={p["id"] for p in LESSONS}
-assert len(data["cards"])==48 and data["exercises"]==[0,1,2]
+assert len(data["cards"])==48 and data["exercises"]==list(range(18))
 assert set(data["labSteps"])=={lab["id"]+"-"+str(i) for lab in LABS for i in range(len(lab["steps"]))}
 for path in ROOT.rglob("*"):
     if path.is_file() and "__pycache__" not in path.parts:
         for number,line in enumerate(path.read_text().splitlines(),1):
             assert line.rstrip()==line,(path,number,"trailing whitespace")
-print("PASS: 21 static pages, local links/anchors, unique IDs, 60 questions across 15 topics.")
+print("PASS: 23 static pages, local links/anchors, unique IDs, 60 questions across 15 topics and 18 practice goals.")

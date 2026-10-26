@@ -7,7 +7,7 @@
   const $$ = (s, root = document) => Array.from(root.querySelectorAll(s));
   const esc = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const KEY = 'git-learning-v1';
-  const empty = () => ({version:1, done:[], answers:{}, labs:[], cards:{}, missions:[]});
+  const empty = () => ({version:1, done:[], answers:{}, labs:[], cards:{}, missions:[], studioRecall:{}});
   let storageOK = true;
   function normalize(raw) {
     if (!raw || raw.version !== 1 || !Array.isArray(raw.done) || !Array.isArray(raw.labs) || !Array.isArray(raw.missions) ||
@@ -19,6 +19,7 @@
     clean.missions = D.exercises.filter(id => raw.missions.includes(id));
     D.questions.forEach(q => {
       if (Object.hasOwn(raw.answers, q.id) && Number.isInteger(raw.answers[q.id]) && raw.answers[q.id] >= 0 && raw.answers[q.id] < q.options.length) clean.answers[q.id] = raw.answers[q.id];
+      if (raw.studioRecall && Object.hasOwn(raw.studioRecall,q.id) && typeof raw.studioRecall[q.id] === 'boolean') clean.studioRecall[q.id] = raw.studioRecall[q.id];
     });
     D.cards.forEach(c => {
       const item = Object.hasOwn(raw.cards, c.id) ? raw.cards[c.id] : null;
@@ -38,8 +39,12 @@
   const title = id => (D.modules.find(m => m.id === id) || {title:id.replaceAll('-', ' ')}).title;
   window.GitLearning = {
     escape:esc,
-    completeMission(id) { if (!state.missions.includes(id)) { state.missions.push(id); persist(); } },
-    missionDone(id) { return state.missions.includes(id); }
+    completeMission(id) { if (D.exercises.includes(id) && !state.missions.includes(id)) { state.missions.push(id); persist(); } },
+    missionDone(id) { return state.missions.includes(id); },
+    recallResults() { return {...state.studioRecall}; },
+    recordRecall(id, correct) {
+      if (D.questions.some(q=>q.id===id) && typeof correct === 'boolean') { state.studioRecall[id]=correct; persist(); }
+    }
   };
   document.documentElement.classList.add('js');
   let theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -89,7 +94,7 @@
       $('#lab-meter').max = D.labSteps.length;
       $('#lab-meter').value = state.labs.length;
     }
-    if ($('#progress-summary')) $('#progress-summary').textContent = total + '/' + D.modules.length + ' lessons · ' + D.questions.filter(correct).length + '/' + D.questions.length + ' quiz answers correct · ' + state.labs.length + '/' + D.labSteps.length + ' lab steps · ' + state.missions.length + '/' + D.exercises.length + ' interactive exercises · ' + Object.keys(state.cards).length + '/' + D.cards.length + ' cards reviewed';
+    if ($('#progress-summary')) $('#progress-summary').textContent = total + '/' + D.modules.length + ' lessons · ' + D.questions.filter(correct).length + '/' + D.questions.length + ' quiz answers correct · ' + state.labs.length + '/' + D.labSteps.length + ' lab steps · ' + state.missions.length + '/' + D.exercises.length + ' interactive exercises · ' + Object.keys(state.cards).length + '/' + D.cards.length + ' cards reviewed · ' + Object.values(state.studioRecall).filter(x=>!x).length + ' studio questions to revisit';
   }
   $('#mark-done')?.addEventListener('click', () => {
     const id = document.body.dataset.module;

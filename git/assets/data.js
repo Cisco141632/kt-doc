@@ -3,9 +3,15 @@ window.GIT_DATA = {
   "modules": [
     {
       "id": "index",
-      "title": "Understand Git. Work confidently together.",
+      "title": "Git, explained one picture at a time.",
       "minutes": 15,
-      "description": "A practical Git and GitHub knowledge base: learn what changes in the commit graph, diagnose development incidents, recover carefully, and build a team workflow with clear permissions."
+      "description": "Start with a school project and discover what Git does, why it matters, and how GitHub helps people work together. Build confidence with pictures, hands-on practice and short recall sessions."
+    },
+    {
+      "id": "why-git",
+      "title": "What is Git, and why do we need it?",
+      "minutes": 20,
+      "description": "Start with a school project. Learn why saving useful versions matters, how Git helps a team, and how GitHub fits in. No coding knowledge needed."
     },
     {
       "id": "foundations",
@@ -108,6 +114,12 @@ window.GIT_DATA = {
       "title": "Visual history and decision labs",
       "minutes": 35,
       "description": "Step through history changes, resolve a three-way conflict, simulate a lease race and diagnose a permissions gate."
+    },
+    {
+      "id": "studio",
+      "title": "Practice Studio: make Git stick",
+      "minutes": 40,
+      "description": "Move snapshots, place branch pointers, investigate incidents and retrieve what you know. A visual practice session with room to experiment."
     },
     {
       "id": "quiz",
@@ -1671,7 +1683,22 @@ window.GIT_DATA = {
   "exercises": [
     0,
     1,
-    2
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
   ],
   "labSteps": [
     "staging-0",

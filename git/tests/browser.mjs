@@ -90,10 +90,10 @@ try {
     assert.equal(await evaluate('document.documentElement.scrollWidth <= innerWidth+1'),true,'desktop overflow: '+id);
   }
   await visit('index');await screenshot('kt-git-desktop.png');
-  console.log('PASS: all 21 desktop pages, scripts and local resources.');
+  console.log('PASS: all 23 desktop pages, scripts and local resources.');
   await click('#mark-done');
   await visit('foundations');
-  assert.match(await evaluate('document.querySelector("#course-progress").textContent'),/1 of 21/);
+  assert.match(await evaluate('document.querySelector("#course-progress").textContent'),/1 of 23/);
   await click('.theme-toggle');
   const theme=await evaluate('document.documentElement.dataset.theme');
   await visit('quiz');
@@ -206,6 +206,107 @@ try {
   await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});
   await until('document.querySelector("#graph-position").textContent.includes("Step 1")');
   console.log('PASS: all 8 graph stories, conflict operations, push race, permission gates, 3 saved exercises and keyboard activation.');
+  await visit('why-git');
+  await click('#beginner-mistake');
+  assert.equal(await evaluate('document.querySelectorAll("[data-version]").length'),1);
+  assert.match(await evaluate('document.querySelector("#beginner-state").textContent'),/not recorded/);
+  await click('#beginner-save');
+  assert.equal(await evaluate('document.querySelectorAll("[data-version]").length'),2);
+  await click('[data-version="A"]');await click('#beginner-restore');
+  assert.match(await evaluate('document.querySelector("#beginner-work").textContent'),/Eight/);
+  await click('#beginner-save');await click('[data-version="B"]');
+  assert.match(await evaluate('document.querySelector("#beginner-saved").textContent'),/Two/);
+  assert.match(await evaluate('document.querySelector("#beginner-goal").textContent'),/recovered/);
+  await click('#beginner-reset');
+  assert.equal(await evaluate('document.querySelectorAll("[data-version]").length'),1);
+  assert.equal(await evaluate('GitLearning.missionDone(17)'),true);
+  await evaluate('document.querySelector("#time-machine").scrollIntoView({behavior:"instant",block:"start"})');
+  await screenshot('kt-git-beginner.png');
+  await visit('studio');
+  const step=action=>click('[data-snapshot="'+action+'"]');
+  for(const action of ['editA','stage','editB'])await step(action);
+  assert.equal(await evaluate('document.querySelector("#snapshot-status").textContent'),'MM notes.txt');
+  await step('commit');
+  assert.equal(await evaluate('document.querySelector("#snapshot-status").textContent'),' M notes.txt');
+  assert.equal(await evaluate('GitLearning.missionDone(3)'),true);
+  await step('editA');await click('#snapshot-undo');
+  assert.equal(await evaluate('document.querySelector("#snapshot-status").textContent'),' M notes.txt');
+  await change('#snapshot-mission','1');await step('unstage');
+  assert.equal(await evaluate('GitLearning.missionDone(4)'),true);
+  await change('#snapshot-mission','2');await step('restore');
+  assert.equal(await evaluate('GitLearning.missionDone(5)'),true);
+  await evaluate('document.querySelector("#snapshots").scrollIntoView({behavior:"instant",block:"start"})');
+  await screenshot('kt-git-studio.png');
+  const predictions=await evaluate('GitStudio.pointerChallenges.map(c=>({target:c.target,wrong:c.nodes.find(n=>n.id!==c.target).id}))');
+  for(let i=0;i<predictions.length;i++) {
+    await change('#pointer-challenge',String(i));
+    await click('[data-commit="'+predictions[i].wrong+'"]');await click('#pointer-check');
+    assert.match(await evaluate('document.querySelector("#pointer-feedback").textContent'),/Try again/);
+    await click('[data-commit="'+predictions[i].target+'"]');await click('#pointer-check');
+    assert.match(await evaluate('document.querySelector("#pointer-feedback").textContent'),/Correct/);
+  }
+  // Optional drag interaction and keyboard fallback both set the same prediction.
+  await change('#pointer-challenge','0');
+  await evaluate('(()=>{const data=new DataTransfer();data.setData("text/plain","git-studio-ref");document.querySelector("[data-commit=C]").dispatchEvent(new DragEvent("drop",{dataTransfer:data,bubbles:true,cancelable:true}));})()');
+  assert.equal(await evaluate('document.querySelector("[data-commit=C]").getAttribute("aria-pressed")'),'true');
+  await evaluate('document.querySelector("[data-commit=B]").focus()');
+  await send('Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter',text:'\r',windowsVirtualKeyCode:13});
+  await send('Input.dispatchKeyEvent',{type:'keyUp',key:'Enter',code:'Enter',windowsVirtualKeyCode:13});
+  assert.equal(await evaluate('document.querySelector("[data-commit=B]").getAttribute("aria-pressed")'),'true');
+  const cases=await evaluate('GitStudio.incidents.map(c=>c.steps.map(q=>q.correct))');
+  for(let i=0;i<cases.length;i++) {
+    await change('#incident-select',String(i));
+    await click('#incident-evidence summary');
+    assert.equal(await evaluate('document.querySelector("#incident-evidence details").open'),true);
+    for(const correct of cases[i]) {
+      await click('[data-decision="'+((correct+1)%3)+'"]');
+      assert.equal(await evaluate('document.querySelector("#incident-next").disabled'),true);
+      await click('[data-decision="'+correct+'"]');
+      assert.match(await evaluate('document.querySelector("#incident-feedback").textContent'),/Correct/);
+      await click('#incident-next');
+    }
+    assert.equal(await evaluate('document.querySelectorAll(".case-solved").length'),1);
+  }
+  await click('[data-command]');
+  assert.match(await evaluate('document.querySelector("#match-feedback").textContent'),/intention first/);
+  await click('[data-task="staged"]');await click('[data-command="fetch"]');
+  assert.match(await evaluate('document.querySelector("#match-feedback").textContent'),/another intention/);
+  const pairIDs=await evaluate('GitStudio.pairs.map(p=>p.id)');
+  for(const id of pairIDs){await click('[data-task="'+id+'"]');await click('[data-command="'+id+'"]');}
+  assert.match(await evaluate('document.querySelector("#match-count").textContent'),/8 of 8/);
+  assert.equal(await evaluate('document.querySelectorAll("#match-studio button:disabled").length'),16);
+  const originalQuiz=await evaluate('JSON.stringify(JSON.parse(localStorage.getItem("git-learning-v1")).answers)');
+  await click('#recall-start');
+  await evaluate('document.querySelector("#recall-form").requestSubmit()');
+  assert.match(await evaluate('document.querySelector("#recall-feedback").textContent'),/Choose an answer/);
+  for(let i=0;i<5;i++) {
+    const q=await evaluate('GIT_DATA.questions.find(q=>q.prompt===document.querySelector("#recall-form legend").textContent)');
+    const answer=i===0?(q.correct+1)%3:q.correct;
+    await click('#recall-form input[value="'+answer+'"]');
+    await evaluate('document.querySelector("#recall-form").requestSubmit()');
+    await click('#recall-next');
+  }
+  assert.match(await evaluate('document.querySelector("#recall-status").textContent'),/4 of 5/);
+  assert.equal(await evaluate('Object.values(GitLearning.recallResults()).filter(x=>!x).length'),1);
+  await click('#recall-retry');
+  const retry=await evaluate('GIT_DATA.questions.find(q=>q.prompt===document.querySelector("#recall-form legend").textContent)');
+  await click('#recall-form input[value="'+retry.correct+'"]');
+  await evaluate('document.querySelector("#recall-form").requestSubmit()');
+  await click('#recall-next');
+  assert.match(await evaluate('document.querySelector("#recall-status").textContent'),/1 of 1/);
+  assert.equal(await evaluate('JSON.stringify(JSON.parse(localStorage.getItem("git-learning-v1")).answers)'),originalQuiz);
+  assert.equal(await evaluate('JSON.parse(localStorage.getItem("git-learning-v1")).missions.length'),18);
+  await evaluate('GitLearning.recordRecall("q3",false)');
+  await visit('studio');await click('#recall-start');
+  assert.equal(await evaluate('document.querySelector("#recall-form legend").textContent'),await evaluate('GIT_DATA.questions.find(q=>q.id==="q3").prompt'));
+  assert.match(await evaluate('document.querySelector("#studio-progress").textContent'),/14 of 14/);
+  await visit('recap');
+  await evaluate('(()=>{const state=JSON.parse(localStorage.getItem("git-learning-v1"));state.studioRecall={q3:false,q4:true,q5:"invalid",unknown:true};state.missions.push(999);const backup={format:"git-learning-progress",progress:state},transfer=new DataTransfer();transfer.items.add(new File([JSON.stringify(backup)],"studio.json",{type:"application/json"}));const input=document.querySelector("#import-progress");input.files=transfer.files;input.dispatchEvent(new Event("change"));})()');
+  await until('document.querySelector("#progress-message").textContent.startsWith("Progress imported")');
+  assert.deepEqual(await evaluate('GitLearning.recallResults()'),{q3:false,q4:true});
+  assert.equal(await evaluate('JSON.parse(localStorage.getItem("git-learning-v1")).missions.length'),18);
+  assert.match(await evaluate('document.querySelector("#progress-summary").textContent'),/1 studio questions to revisit/);
+  console.log('PASS: beginner history, all 14 studio goals, wrong-answer paths, drag/keyboard choices, separate recall scoring and persisted weak-question priority.');
   await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
   for(const id of ids){
     await visit(id);
@@ -215,14 +316,36 @@ try {
   assert.equal(await evaluate('document.querySelector(".mobile-menu").getAttribute("aria-expanded")'),'true');
   await click('.mobile-menu');
   await evaluate('document.querySelector("#conflict-tool").scrollIntoView({behavior:"instant",block:"start"})');await screenshot('kt-git-mobile.png');
-  console.log('PASS: all 21 pages at 390px, responsive navigation and mobile screenshot.');
+  await visit('why-git');
+  await evaluate('document.querySelector("#story").scrollIntoView({behavior:"instant",block:"start"})');
+  await screenshot('kt-git-beginner-mobile.png');
+  await visit('studio');
+  await click('[data-snapshot="editA"]');await click('[data-snapshot="stage"]');
+  await click('[data-snapshot="editB"]');await click('[data-snapshot="commit"]');
+  assert.equal(await evaluate('document.querySelector("#snapshot-status").textContent'),' M notes.txt');
+  await click('[data-commit="C"]');await click('#pointer-check');
+  assert.match(await evaluate('document.querySelector("#pointer-feedback").textContent'),/Correct/);
+  for(let i=0;i<6;i++) {
+    await change('#pointer-challenge',String(i));
+    assert.equal(await evaluate('(()=>{const b=document.querySelector("#pointer-board").getBoundingClientRect();return Array.from(document.querySelectorAll("[data-commit]")).every(n=>{const r=n.getBoundingClientRect();return r.left>=b.left&&r.right<=b.right});})()'),true,'all graph nodes fit on mobile');
+  }
+  await change('#pointer-challenge','1');await click('[data-commit="M"]');await click('#pointer-check');
+  await evaluate('document.querySelector("#pointers").scrollIntoView({behavior:"instant",block:"start"})');
+  await screenshot('kt-git-studio-mobile.png');
+  console.log('PASS: all 23 pages at 390px, responsive navigation and mobile screenshot.');
   // Core content and module navigation remain available without JavaScript.
   await send('Emulation.setScriptExecutionDisabled',{value:true});
   await send('Page.navigate',{url:base+'foundations.html'});await sleep(300);
   await send('Emulation.setScriptExecutionDisabled',{value:false});
   assert.equal(await evaluate('document.documentElement.classList.contains("js")'),false);
   assert.ok(await evaluate('document.querySelector("main").textContent.includes("Three places where your content can exist")'));
-  assert.equal(await evaluate('document.querySelectorAll("#course-nav a").length'),21);
+  assert.equal(await evaluate('document.querySelectorAll("#course-nav a").length'),23);
+  await send('Emulation.setScriptExecutionDisabled',{value:true});
+  await send('Page.navigate',{url:base+'why-git.html'});await sleep(300);
+  await send('Emulation.setScriptExecutionDisabled',{value:false});
+  assert.equal(await evaluate('document.documentElement.classList.contains("js")'),false);
+  assert.match(await evaluate('document.querySelector("#meaning").textContent'),/deliberately record/);
+  assert.match(await evaluate('document.querySelector("#time-machine").textContent'),/A: correct fact/);
   // Malformed and denied storage both degrade to a usable in-memory experience.
   await visit('index');
   await evaluate('localStorage.setItem("git-learning-v1","not-json")');
@@ -231,11 +354,15 @@ try {
   const injection=await send('Page.addScriptToEvaluateOnNewDocument',{source:'Object.defineProperty(window,"localStorage",{get(){throw new Error("storage denied for test")}});'});
   await visit('recap');await click('#mark-done');await click('#flashcard');await click('#card-known');
   assert.match(await evaluate('document.querySelector("#course-progress").textContent'),/this visit only/);
+  await visit('why-git');await click('#beginner-mistake');await click('#beginner-save');
+  assert.equal(await evaluate('document.querySelectorAll("[data-version]").length'),2);
+  await visit('studio');await click('#recall-start');
+  assert.equal(await evaluate('document.querySelectorAll("#recall-form input").length'),3);
   await send('Page.removeScriptToEvaluateOnNewDocument',{identifier:injection.identifier});
   console.log('PASS: no-JavaScript reading, malformed progress and storage-denied fallback.');
   assert.deepEqual(errors,[],'Uncaught browser exceptions');
   assert.deepEqual(missing,[],'Missing resources');
-  console.log('PASS: no browser runtime errors or failed local resources. Screenshots: /tmp/kt-git-{desktop,playground,mobile}.png');
+  console.log('PASS: no browser runtime errors or failed local resources. Screenshots: /tmp/kt-git-*.png');
 }finally{
   if(ws)ws.close();
   for(const p of pending.values()){clearTimeout(p.timer);}

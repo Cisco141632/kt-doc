@@ -14,12 +14,20 @@ JavaScript. JavaScript adds the exercises, filters, recall cards and local progr
 
 ## Included
 
-- 21 modules covering setup, everyday workflow, ancestry, remotes, merge,
+- 23 modules starting with a school-project introduction for learners with no
+  coding knowledge, then covering setup, everyday workflow, ancestry, remotes, merge,
   conflicts, rebase, force pushes, recovery, history investigation, collaboration,
   permissions, rules, automation, advanced tools, practice and recap.
 - Eight commit-graph stories with step controls.
 - Three scored visual exercises: conflict resolution, concurrent push decisions,
   and a deliberately simplified permission/rules model.
+- A first-lesson save/mistake/recovery model, illustrated Git-versus-GitHub
+  explanation, and six expandable vocabulary cards before commands.
+- A five-station Practice Studio: three snapshot challenges, six branch-pointer
+  predictions, three guided incidents, eight intention/command matches, and
+  five-question recall rounds that prioritise previously missed questions.
+  These contribute 14 studio goals; together with the beginner model and original
+  exercises, 18 practice goals can be completed.
 - 60 questions across 15 topics, with explanations for every answer choice,
   topic filters, missed-answer retries and lesson-level checks.
 - 48 recall cards, review scheduling and a searchable command reference.
@@ -35,11 +43,15 @@ JavaScript. JavaScript adds the exercises, filters, recall cards and local progr
 Edit the authored sources rather than the generated HTML/data:
 
 - course.py: lessons, diagrams, reference commands and page markup
+- beginner_content.py and studio_content.py: the illustrated introduction and
+  practice-station reading companions
 - practice_content.py: incidents and real-lab instructions
 - questions.py: quiz questions and explanations
 - build.py: static page template and data generator
 - assets/app.js: shared learning interactions
 - assets/visuals.js: pure exercise models and browser controls
+- assets/studio.js: beginner model, snapshot transitions, graph predictions,
+  guided decisions, command matching and recall-round selection
 - examples/create-labs.py: isolated repository fixture builder
 
 Regenerate from the repository root:
@@ -54,6 +66,11 @@ Progress uses the separate localStorage key git-learning-v1; theme uses
 git-learning-theme. It does not modify other learning paths' progress. Storage
 can be denied or cleared by the browser, so export a backup for durable records.
 Lab checkboxes record the learner's observations, not automatic repository checks.
+Studio recall results are separate from the full quiz. The optional studioRecall
+field extends the existing version-1 export: older exports still import, and valid
+existing lesson/quiz/lab/card records are preserved. Only the most recent
+correct/incorrect result per studio question is retained; there is no countdown
+or penalty for practising again.
 
 ## Create the real labs
 
@@ -70,23 +87,27 @@ Examples use a POSIX shell; Windows learners can use Git Bash or WSL.
 From the repository root:
 
     python3 git/tests/validate.py
-    node --test git/tests/visuals.test.cjs
+    node --test git/tests/visuals.test.cjs git/tests/studio.test.cjs
     python3 git/tests/labs.py
     node git/tests/browser.mjs
 
 The first check validates local links, anchors, page IDs and content counts.
 The model tests cover graph ancestry, resolution requirements, lease races
-and permission gates. The Git tests execute all twelve labs inside a temporary
+and permission gates, plus snapshot state transitions, recorded recovery,
+pointer ancestry, incident decisions and weak-question recall ordering.
+The Git tests execute all twelve labs inside a temporary
 directory, including both rejected and accepted lease outcomes against local
 remotes; the directory is cleaned afterward.
 
 The browser check requires Node 22+ and Chromium (an optional executable path
 can be passed as its argument). It starts its own temporary local server and
-browser profile, checks all 21 pages at desktop and 390px mobile widths,
+browser profile, checks all 23 pages at desktop and 390px mobile widths,
 exercises every quiz answer and the visual tools, and verifies no-JavaScript
 reading plus denied/malformed storage recovery. It also checks progress imports,
-recall scheduling, filtering, persistence and keyboard activation.
-Screenshots are saved under /tmp/kt-git-{desktop,playground,mobile}.png.
+recall scheduling, filtering, persistence, every studio goal, wrong-answer paths,
+optional drag input, keyboard activation, and independent studio/full-quiz scores.
+Screenshots are saved under /tmp/kt-git-*.png, including beginner and studio
+desktop/mobile views.
 The test closes its owned server and browser when finished.
 
 Validated on Git 2.43.0, Python 3.12, Node 24 and Chromium 156.
