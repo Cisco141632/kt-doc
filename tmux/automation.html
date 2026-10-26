@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Turn a fragile list of commands into a repeatable project launcher with explicit targets and observable results.">
+  <meta name="color-scheme" content="light dark">
+  <title>Script repeatable workspaces · tmux learning path</title>
+  <link rel="icon" href="assets/terminal.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/data.js" defer></script>
+  <script src="assets/app.js" defer></script>
+
+</head>
+<body data-module="automation">
+<a class="skip-link" href="#main">Skip to lesson</a>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">&gt;_</span><span>tmux learning path<small>A terminal workspace you understand</small></span></a>
+    <div class="toolbar"><a href="../index.html" class="meta">← All learning paths</a><button class="btn btn-small mobile-menu" aria-expanded="false" aria-controls="course-nav">Modules</button></div>
+    <div class="progress"><progress id="course-meter" max="18" value="0" aria-label="Lessons marked complete"></progress><span id="course-progress">18 modules · learn at your pace</span></div>
+    <nav id="course-nav" aria-label="Course modules"><ol class="modules"><li class=""><a href="index.html" data-lesson="index"><span class="num">1</span><span class="t">Make your terminal a workspace.</span><span class="mins">10m</span></a></li><li class=""><a href="installation.html" data-lesson="installation"><span class="num">2</span><span class="t">Install, verify &amp; take the first step</span><span class="mins">20m</span></a></li><li class=""><a href="mental-model.html" data-lesson="mental-model"><span class="num">3</span><span class="t">See the server, sessions, windows &amp; panes</span><span class="mins">20m</span></a></li><li class=""><a href="sessions.html" data-lesson="sessions"><span class="num">4</span><span class="t">Sessions &amp; the persistence lifecycle</span><span class="mins">25m</span></a></li><li class=""><a href="windows.html" data-lesson="windows"><span class="num">5</span><span class="t">Windows: organize a project</span><span class="mins">20m</span></a></li><li class=""><a href="panes.html" data-lesson="panes"><span class="num">6</span><span class="t">Panes, layouts &amp; focus</span><span class="mins">30m</span></a></li><li class=""><a href="copy-mode.html" data-lesson="copy-mode"><span class="num">7</span><span class="t">Scroll, search, copy &amp; the clipboard</span><span class="mins">30m</span></a></li><li class=""><a href="configuration.html" data-lesson="configuration"><span class="num">8</span><span class="t">Build a configuration you understand</span><span class="mins">35m</span></a></li><li class=""><a href="workflow.html" data-lesson="workflow"><span class="num">9</span><span class="t">Everyday development &amp; real work</span><span class="mins">25m</span></a></li><li class=""><a href="remote.html" data-lesson="remote"><span class="num">10</span><span class="t">SSH, nested tmux &amp; collaboration</span><span class="mins">30m</span></a></li><li class="is-active"><a href="automation.html" aria-current="page" data-lesson="automation"><span class="num">11</span><span class="t">Script repeatable workspaces</span><span class="mins">40m</span></a></li><li class=""><a href="advanced.html" data-lesson="advanced"><span class="num">12</span><span class="t">Advanced tools &amp; version boundaries</span><span class="mins">35m</span></a></li><li class=""><a href="troubleshooting.html" data-lesson="troubleshooting"><span class="num">13</span><span class="t">The troubleshooting clinic</span><span class="mins">40m</span></a></li><li class=""><a href="practice.html" data-lesson="practice"><span class="num">14</span><span class="t">Eight real-world terminal labs</span><span class="mins">60m</span></a></li><li class=""><a href="playground.html" data-lesson="playground"><span class="num">15</span><span class="t">The visual tmux playground</span><span class="mins">25m</span></a></li><li class=""><a href="quiz.html" data-lesson="quiz"><span class="num">16</span><span class="t">Knowledge check: explain your choice</span><span class="mins">30m</span></a></li><li class=""><a href="recap.html" data-lesson="recap"><span class="num">17</span><span class="t">Recall, review &amp; keep your progress</span><span class="mins">15m</span></a></li><li class=""><a href="reference.html" data-lesson="reference"><span class="num">18</span><span class="t">The field reference</span><span class="mins">15m</span></a></li></ol></nav>
+    <button class="btn btn-small theme-toggle only-js" type="button">Change theme</button>
+  </aside>
+  <main class="content" id="main">
+    <header class="page-head ">
+      <p class="eyebrow">Module 11 / 18 · about 40 minutes</p>
+      <h1>Script repeatable workspaces</h1><p class="lead">Turn a fragile list of commands into a repeatable project launcher with explicit targets and observable results.</p>
+    </header>
+    <div class="objectives"><h2>By the end, you can…</h2><ul><li>Create a workspace without duplicate windows.</li><li>Capture IDs instead of guessing indexes.</li><li>Understand send-keys, quoting, exit status and synchronization.</li></ul></div>
+    <section class="lesson-section" id="recipe"><h2>Start with an inspectable launcher</h2><p>A launcher should handle both first run and later runs. Check whether the session exists, create it only if missing, capture the created pane ID, and use that ID for the split. The <a href="examples/workspace.sh" download>downloadable workspace script</a> uses a named server and a known config, so it cannot modify your ordinary server.</p><div class="snippet"><div class="code-caption"><span>Illustrative shell script — run outside tmux; directory must exist</span></div><pre><code>#!/bin/sh
+set -eu
+project_dir=&quot;$1&quot;
+session=&quot;kt-project&quot;
+if ! tmux -L kt-tmux has-session -t &quot;=$session&quot; 2&gt;/dev/null; then
+  pane=$(tmux -L kt-tmux -f /dev/null new-session -d -P \
+    -F &#x27;#{pane_id}&#x27; -s &quot;$session&quot; -n editor -c &quot;$project_dir&quot;)
+  tmux -L kt-tmux split-window -h -t &quot;$pane&quot; -c &quot;$project_dir&quot;
+  tmux -L kt-tmux new-window -t &quot;$session:&quot; -n tests -c &quot;$project_dir&quot;
+  tmux -L kt-tmux select-window -t &quot;$session:editor&quot;
+fi
+tmux -L kt-tmux attach-session -t &quot;=$session&quot;</code></pre></div><p><code>-d</code> creates detached; <code>-P -F</code> prints the requested format. Capture that output immediately instead of assuming the first pane is <code>%0</code>. The downloadable version also validates the directory and avoids accidental nesting. Run it from another terminal if you are already attached to a different tmux server.</p>
+    <p>This is repeatable for sequential runs, not a transactional or race-free deployment system. Two simultaneous launchers can both pass the existence check. Partially created sessions also need inspection before reuse. For concurrency, introduce a lock or synchronize creation explicitly.</p></section><section class="lesson-section" id="sending"><h2>Sending text is not a job API</h2><div class="snippet"><div class="code-caption"><span>Run in your shell</span></div><pre><code>tmux send-keys -t %3 -l &#x27;printf &quot;hello from tmux\n&quot;&#x27;
+tmux send-keys -t %3 Enter</code></pre></div><p><code>-l</code> sends literal text; the separate Enter submits it. Without <code>-l</code>, key names such as <code>Enter</code> and <code>C-c</code> are interpreted as keys. The target might contain an editor, a password prompt or a busy shell. A successful <code>send-keys</code> means input was sent, not that the intended command ran or succeeded.</p>
+    <p>For deterministic jobs, create a pane with a known command, record its exit status, and use a real completion signal. With <code>remain-on-exit</code>, a finished pane stays visible and can expose <code>pane_dead_status</code>. Validate the workflow on your version before using it for important automation.</p></section><section class="lesson-section" id="formats"><h2>Formats give you structured observations</h2><div class="snippet"><div class="code-caption"><span>Run in your shell</span></div><pre><code>tmux list-panes -a -F &#x27;#{pane_id} | #{pane_current_command} | #{pane_current_path}&#x27;
+tmux display-message -p -t %3 &#x27;#{session_name}:#{window_index}.#{pane_index}&#x27;
+tmux display-message -p &#x27;#{version}&#x27;
+tmux show-hooks -g</code></pre></div><p>A format expression is expanded by tmux, not your shell. Single-quote it in shell commands. Formats also support conditionals and comparisons; a status example is <code>#{?pane_in_mode,COPY,TYPE}</code>. Inspect actual values before building complex expressions.</p>
+    <p><code>if-shell</code> runs a shell test by default. With <code>-F</code> it evaluates a tmux format instead. <code>run-shell</code> executes a command outside a pane; <code>-b</code> runs it in the background. Never interpolate untrusted text into shell commands in status formats, hooks or scripts.</p></section><section class="lesson-section" id="sync"><h2>Wait for a signal, not an arbitrary sleep</h2><div class="snippet"><div class="code-caption"><span>Run in your shell</span></div><pre><code># In one shell:
+tmux wait-for task-finished
+# In another shell using the SAME server:
+tmux wait-for -S task-finished</code></pre></div><p><code>wait-for</code> coordinates commands through a channel; <code>-S</code> signals it, and <code>-L</code>/<code>-U</code> lock and unlock a channel. Waiting does not prove success. Your worker should write an exit code and reliably signal on both success and failure. An absent signal can leave a waiter blocked indefinitely, so use your automation environment’s timeout.</p>
+    <p>Hooks such as <code>after-new-window</code> run tmux commands after events. They can enforce a layout or notify you, but expensive or recursive hooks create hard-to-explain behavior. Inspect <code>show-hooks</code> while debugging. Command sequences run in order; a launched background job is not automatically finished when the next command runs.</p></section><section id="check"><h2>Pause and test your understanding</h2><div data-lesson-check="automation"></div><noscript><p>Open the <a href="quiz.html">readable question bank</a> for this topic.</p></noscript></section>
+    <section class="takeaways" id="remember"><h2>Remember in 30 seconds</h2><ul><li>Capture IDs and quote paths instead of assuming indexes.</li><li>A successful send-keys call is not a successful job.</li><li>Make completion, failure, concurrency and cleanup explicit.</li></ul></section>
+    <footer class="pager"><a class="btn" href="remote.html">← Previous</a><button class="btn only-js" id="mark-done">Mark lesson complete</button><a class="btn btn-primary" href="advanced.html">Next: Advanced tools &amp; version boundaries →</a></footer>
+    <p class="source-foot">tmux learning path · Browser-local progress · Core: tmux 3.2+ · <a href="reference.html#sources">Documentation, version notes &amp; sources</a> · <a href="recap.html#progress">Manage progress</a></p>
+  </main>
+</div>
+</body></html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Try a safe model of sessions, windows, panes and detachment. Every action changes a visible workspace and explains its effect.">
+  <meta name="color-scheme" content="light dark">
+  <title>The visual tmux playground · tmux learning path</title>
+  <link rel="icon" href="assets/terminal.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/data.js" defer></script>
+  <script src="assets/app.js" defer></script>
+  <script src="assets/simulator.js" defer></script>
+</head>
+<body data-module="playground">
+<a class="skip-link" href="#main">Skip to lesson</a>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true">&gt;_</span><span>tmux learning path<small>A terminal workspace you understand</small></span></a>
+    <div class="toolbar"><a href="../index.html" class="meta">← All learning paths</a><button class="btn btn-small mobile-menu" aria-expanded="false" aria-controls="course-nav">Modules</button></div>
+    <div class="progress"><progress id="course-meter" max="18" value="0" aria-label="Lessons marked complete"></progress><span id="course-progress">18 modules · learn at your pace</span></div>
+    <nav id="course-nav" aria-label="Course modules"><ol class="modules"><li class=""><a href="index.html" data-lesson="index"><span class="num">1</span><span class="t">Make your terminal a workspace.</span><span class="mins">10m</span></a></li><li class=""><a href="installation.html" data-lesson="installation"><span class="num">2</span><span class="t">Install, verify &amp; take the first step</span><span class="mins">20m</span></a></li><li class=""><a href="mental-model.html" data-lesson="mental-model"><span class="num">3</span><span class="t">See the server, sessions, windows &amp; panes</span><span class="mins">20m</span></a></li><li class=""><a href="sessions.html" data-lesson="sessions"><span class="num">4</span><span class="t">Sessions &amp; the persistence lifecycle</span><span class="mins">25m</span></a></li><li class=""><a href="windows.html" data-lesson="windows"><span class="num">5</span><span class="t">Windows: organize a project</span><span class="mins">20m</span></a></li><li class=""><a href="panes.html" data-lesson="panes"><span class="num">6</span><span class="t">Panes, layouts &amp; focus</span><span class="mins">30m</span></a></li><li class=""><a href="copy-mode.html" data-lesson="copy-mode"><span class="num">7</span><span class="t">Scroll, search, copy &amp; the clipboard</span><span class="mins">30m</span></a></li><li class=""><a href="configuration.html" data-lesson="configuration"><span class="num">8</span><span class="t">Build a configuration you understand</span><span class="mins">35m</span></a></li><li class=""><a href="workflow.html" data-lesson="workflow"><span class="num">9</span><span class="t">Everyday development &amp; real work</span><span class="mins">25m</span></a></li><li class=""><a href="remote.html" data-lesson="remote"><span class="num">10</span><span class="t">SSH, nested tmux &amp; collaboration</span><span class="mins">30m</span></a></li><li class=""><a href="automation.html" data-lesson="automation"><span class="num">11</span><span class="t">Script repeatable workspaces</span><span class="mins">40m</span></a></li><li class=""><a href="advanced.html" data-lesson="advanced"><span class="num">12</span><span class="t">Advanced tools &amp; version boundaries</span><span class="mins">35m</span></a></li><li class=""><a href="troubleshooting.html" data-lesson="troubleshooting"><span class="num">13</span><span class="t">The troubleshooting clinic</span><span class="mins">40m</span></a></li><li class=""><a href="practice.html" data-lesson="practice"><span class="num">14</span><span class="t">Eight real-world terminal labs</span><span class="mins">60m</span></a></li><li class="is-active"><a href="playground.html" aria-current="page" data-lesson="playground"><span class="num">15</span><span class="t">The visual tmux playground</span><span class="mins">25m</span></a></li><li class=""><a href="quiz.html" data-lesson="quiz"><span class="num">16</span><span class="t">Knowledge check: explain your choice</span><span class="mins">30m</span></a></li><li class=""><a href="recap.html" data-lesson="recap"><span class="num">17</span><span class="t">Recall, review &amp; keep your progress</span><span class="mins">15m</span></a></li><li class=""><a href="reference.html" data-lesson="reference"><span class="num">18</span><span class="t">The field reference</span><span class="mins">15m</span></a></li></ol></nav>
+    <button class="btn btn-small theme-toggle only-js" type="button">Change theme</button>
+  </aside>
+  <main class="content" id="main">
+    <header class="page-head ">
+      <p class="eyebrow">Module 15 / 18 · about 25 minutes</p>
+      <h1>The visual tmux playground</h1><p class="lead">Try a safe model of sessions, windows, panes and detachment. Every action changes a visible workspace and explains its effect.</p>
+    </header>
+    <div class="objectives"><h2>By the end, you can…</h2><ul><li>Complete six missions using buttons or supported commands.</li><li>Observe focus, zoom and session lifecycle changes.</li><li>Transfer the practice to the real terminal labs.</li></ul></div>
+    <section class="lesson-section" id="simulator"><h2>Learn by changing the workspace</h2><div class="callout tip"><b class="callout-title">A learning simulation</b><p>This is not a shell or a real tmux process. It models a documented subset of commands, defaults and key sequences. It does not run programs, access your files, connect with SSH, or model advanced targeting/configuration. Unsupported commands return an explanation.</p></div><div id="playground"></div><noscript><p>The simulator needs JavaScript. Use the <a href="practice.html">real-terminal labs</a> instead; every lab remains readable here.</p></noscript></section><section class="lesson-section" id="supported"><h2>The simulator’s command vocabulary</h2><div class="snippet"><div class="code-caption"><span>Supported simulated commands — explicit aliases are listed by help</span></div><pre><code>tmux new-session -s api
+tmux list-sessions
+tmux attach-session -t api
+tmux switch-client -t api
+tmux detach-client
+tmux new-window -n tests
+tmux rename-window editor
+tmux select-window -t 0
+tmux split-window -h
+tmux split-window -v
+tmux select-pane -t 0
+tmux resize-pane -Z
+tmux select-layout tiled
+tmux next-layout
+tmux kill-pane
+tmux kill-session -t api
+help</code></pre></div><p>Inside the simulator, the visible buttons are equivalent actions. The command field also accepts supported tmux commands without the leading <code>tmux</code>. Targets are limited to the simple names and indexes shown in the model. Shell pipelines, compound commands, arbitrary flags, configuration, full-screen applications and filesystem paths are not interpreted.</p>
+    <p>Keyboard practice is scoped to the playground: focus its command input, then press Ctrl+b followed by %, double quote, c, o, n, p, l, z, d, a window digit or Space (cycle layouts). The on-screen buttons provide the same actions if your browser captures a key. Ctrl+b outside the playground is never intercepted.</p></section>
+    <section class="takeaways" id="remember"><h2>Remember in 30 seconds</h2><ul><li>A session groups windows; a window arranges panes.</li><li>Focus, zoom and detach change different parts of the model.</li><li>The simulator teaches state changes; real labs teach your terminal environment.</li></ul></section>
+    <footer class="pager"><a class="btn" href="practice.html">← Previous</a><button class="btn only-js" id="mark-done">Mark lesson complete</button><a class="btn btn-primary" href="quiz.html">Next: Knowledge check: explain your choice →</a></footer>
+    <p class="source-foot">tmux learning path · Browser-local progress · Core: tmux 3.2+ · <a href="reference.html#sources">Documentation, version notes &amp; sources</a> · <a href="recap.html#progress">Manage progress</a></p>
+  </main>
+</div>
+</body></html>
