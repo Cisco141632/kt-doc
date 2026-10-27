@@ -88,13 +88,37 @@ try {
     await visit(id);
     assert.equal(await evaluate('document.querySelectorAll("h1").length'),1);
     assert.equal(await evaluate('document.documentElement.scrollWidth <= innerWidth+1'),true,'desktop overflow: '+id);
+    const walkthroughs=await evaluate('document.querySelectorAll("[data-walk]").length');
+    for(let w=0;w<walkthroughs;w++) {
+      // Locate by index rather than surrounding section structure.
+      const current='document.querySelectorAll("[data-walk]")['+w+']';
+      const count=await evaluate(current+'.querySelectorAll(".walk-frame").length');
+      assert.equal(await evaluate(current+'.querySelector("[data-walk-prev]").disabled'),true);
+      for(let step=0;step<count;step++) {
+        assert.equal(await evaluate(current+'.querySelectorAll(".walk-frame:not([hidden])").length'),1);
+        assert.equal(await evaluate(current+'.querySelectorAll(".walk-frame")['+step+'].hidden'),false);
+        if(step<count-1)await evaluate(current+'.querySelector("[data-walk-next]").click()');
+      }
+      assert.equal(await evaluate(current+'.querySelector("[data-walk-next]").disabled'),true);
+      await evaluate(current+'.querySelector("[data-walk-prev]").click()');
+      assert.equal(await evaluate(current+'.querySelectorAll(".walk-frame")['+(count-2)+'].hidden'),false);
+      await evaluate(current+'.querySelector("[data-walk-reset]").click()');
+      assert.equal(await evaluate(current+'.querySelectorAll(".walk-frame")[0].hidden'),false);
+    }
   }
   await visit('index');await screenshot('kt-git-desktop.png');
   console.log('PASS: all 23 desktop pages, scripts and local resources.');
   await click('#mark-done');
   await visit('foundations');
   assert.match(await evaluate('document.querySelector("#course-progress").textContent'),/1 of 23/);
+  await evaluate('document.querySelector("#areas").scrollIntoView({behavior:"instant",block:"start"})');
+  await screenshot('kt-git-foundations-desktop.png');
   await click('.theme-toggle');
+  await screenshot('kt-git-foundations-dark.png');
+  await send('Emulation.setEmulatedMedia',{media:'print'});
+  assert.equal(await evaluate('Array.from(document.querySelectorAll("#areas .walk-frame")).filter(n=>getComputedStyle(n).display!=="none").length'),6);
+  assert.equal(await evaluate('getComputedStyle(document.querySelector(".file-box pre")).color'),'rgb(17, 17, 17)');
+  await send('Emulation.setEmulatedMedia',{media:'screen'});
   const theme=await evaluate('document.documentElement.dataset.theme');
   await visit('quiz');
   assert.equal(await evaluate('document.documentElement.dataset.theme'),theme);
@@ -268,9 +292,9 @@ try {
     assert.equal(await evaluate('document.querySelectorAll(".case-solved").length'),1);
   }
   await click('[data-command]');
-  assert.match(await evaluate('document.querySelector("#match-feedback").textContent'),/intention first/);
+  assert.match(await evaluate('document.querySelector("#match-feedback").textContent'),/task first/);
   await click('[data-task="staged"]');await click('[data-command="fetch"]');
-  assert.match(await evaluate('document.querySelector("#match-feedback").textContent'),/another intention/);
+  assert.match(await evaluate('document.querySelector("#match-feedback").textContent'),/another task/);
   const pairIDs=await evaluate('GitStudio.pairs.map(p=>p.id)');
   for(const id of pairIDs){await click('[data-task="'+id+'"]');await click('[data-command="'+id+'"]');}
   assert.match(await evaluate('document.querySelector("#match-count").textContent'),/8 of 8/);
@@ -332,19 +356,23 @@ try {
   await change('#pointer-challenge','1');await click('[data-commit="M"]');await click('#pointer-check');
   await evaluate('document.querySelector("#pointers").scrollIntoView({behavior:"instant",block:"start"})');
   await screenshot('kt-git-studio-mobile.png');
+  await visit('foundations');
+  await evaluate('document.querySelector("#areas").scrollIntoView({behavior:"instant",block:"start"})');
+  await screenshot('kt-git-foundations-mobile.png');
   console.log('PASS: all 23 pages at 390px, responsive navigation and mobile screenshot.');
   // Core content and module navigation remain available without JavaScript.
   await send('Emulation.setScriptExecutionDisabled',{value:true});
   await send('Page.navigate',{url:base+'foundations.html'});await sleep(300);
   await send('Emulation.setScriptExecutionDisabled',{value:false});
   assert.equal(await evaluate('document.documentElement.classList.contains("js")'),false);
-  assert.ok(await evaluate('document.querySelector("main").textContent.includes("Three places where your content can exist")'));
+  assert.ok(await evaluate('document.querySelector("main").textContent.includes("Watch one file in three places")'));
+  assert.equal(await evaluate('document.querySelectorAll("#areas .walk-frame:not([hidden])").length'),6);
   assert.equal(await evaluate('document.querySelectorAll("#course-nav a").length'),23);
   await send('Emulation.setScriptExecutionDisabled',{value:true});
   await send('Page.navigate',{url:base+'why-git.html'});await sleep(300);
   await send('Emulation.setScriptExecutionDisabled',{value:false});
   assert.equal(await evaluate('document.documentElement.classList.contains("js")'),false);
-  assert.match(await evaluate('document.querySelector("#meaning").textContent'),/deliberately record/);
+  assert.match(await evaluate('document.querySelector("#meaning").textContent'),/choose to save/);
   assert.match(await evaluate('document.querySelector("#time-machine").textContent'),/A: correct fact/);
   // Malformed and denied storage both degrade to a usable in-memory experience.
   await visit('index');

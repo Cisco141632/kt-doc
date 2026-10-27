@@ -18,6 +18,11 @@ JavaScript. JavaScript adds the exercises, filters, recall cards and local progr
   coding knowledge, then covering setup, everyday workflow, ancestry, remotes, merge,
   conflicts, rebase, force pushes, recovery, history investigation, collaboration,
   permissions, rules, automation, advanced tools, practice and recap.
+- Plain-English lessons with one action, its purpose, and the result to check.
+  HEAD, index, staging, and diff use one text file throughout the explanation.
+  Step controls show exactly which file content changes after each action.
+- Before/after pictures, deeper explanations of Git storage and commit links,
+  and problem tables with checks, fixes, and final verification.
 - Eight commit-graph stories with step controls.
 - Three scored visual exercises: conflict resolution, concurrent push decisions,
   and a deliberately simplified permission/rules model.
@@ -42,7 +47,11 @@ JavaScript. JavaScript adds the exercises, filters, recall cards and local progr
 
 Edit the authored sources rather than the generated HTML/data:
 
-- course.py: lessons, diagrams, reference commands and page markup
+- course.py: lesson order and the start page
+- core_lessons.py: the 14 main Git and GitHub lessons
+- lesson_parts.py: shared markup for small steps, before/after pictures, and controls
+- support_content.py: problem-solving, real labs, visual tools, quiz, and review pages
+- reference_content.py: the command reference, word list, and review-card text
 - beginner_content.py and studio_content.py: the illustrated introduction and
   practice-station reading companions
 - practice_content.py: incidents and real-lab instructions
@@ -58,7 +67,8 @@ Regenerate from the repository root:
 
     python3 git/build.py
 
-The stylesheet intentionally reuses the existing tmux/Docker style foundation.
+The stylesheet reuses the tmux/Docker layout with a Git-only blue reading theme,
+clearer spacing, and matching light/dark colors. Sibling themes are unchanged.
 Keep those sibling folders when moving or serving this module. All assets are
 local; no CDN, analytics, font service or third-party script is required.
 
@@ -106,6 +116,8 @@ exercises every quiz answer and the visual tools, and verifies no-JavaScript
 reading plus denied/malformed storage recovery. It also checks progress imports,
 recall scheduling, filtering, persistence, every studio goal, wrong-answer paths,
 optional drag input, keyboard activation, and independent studio/full-quiz scores.
+It also checks every new step control, including first/last boundaries, restart,
+and the full six-step file example without JavaScript.
 Screenshots are saved under /tmp/kt-git-*.png, including beginner and studio
 desktop/mobile views.
 The test closes its owned server and browser when finished.

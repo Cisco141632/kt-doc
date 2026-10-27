@@ -75,6 +75,25 @@
   });
   $('.modules .is-active')?.append(toc);
 
+  // Static steps are all readable without JS; with JS, show one clear step at a time.
+  $$('[data-walk]').forEach(root => {
+    const frames = $$('.walk-frame', root);
+    const controls = $('.walk-controls', root);
+    if (!frames.length || !controls) return;
+    let position = 0;
+    const render = () => {
+      frames.forEach((frame, i) => { frame.hidden = i !== position; });
+      $('[data-walk-count]', root).textContent = 'Step ' + (position + 1) + ' of ' + frames.length;
+      $('[data-walk-prev]', root).disabled = position === 0;
+      $('[data-walk-next]', root).disabled = position === frames.length - 1;
+    };
+    controls.hidden = false;
+    $('[data-walk-prev]', root).addEventListener('click', () => { position = Math.max(0, position - 1); render(); });
+    $('[data-walk-next]', root).addEventListener('click', () => { position = Math.min(frames.length - 1, position + 1); render(); });
+    $('[data-walk-reset]', root).addEventListener('click', () => { position = 0; render(); });
+    render();
+  });
+
   function updateProgress() {
     const total = state.done.length;
     if ($('#course-meter')) $('#course-meter').value = total;

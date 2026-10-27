@@ -9,29 +9,29 @@
   const step = (text,nodes) => ({text,nodes});
   const scenes = [
     {id:'fast-forward',title:'Fast-forward: move the name',steps:[
-      step('Main points at B. Feature adds C, a descendant of B. No commits have diverged.',[A(),B(['main']),node('C',330,105,['B'],['feature'])]),
+      step('Main points at B. Feature adds C, a later commit whose parent is B. No commits have diverged.',[A(),B(['main']),node('C',330,105,['B'],['feature'])]),
       step('git merge --ff-only feature moves main to C. It creates no merge commit. Both names now point at the same existing commit.',[A(),B(),node('C',330,105,['B'],['main','feature'])])
     ]},
     {id:'merge',title:'Three-way merge: keep both histories',steps:[
       step('Main added D; feature added C. B is their common ancestor. Git compares base B, current D and incoming C.',[A(),B(),C(),D()]),
       step('Resolve any conflicts and test the combined behavior. Merge commit M has two parents: D first, C second. Main moves to M; feature stays at C.',[A(),B(),C(),D([]),node('M',490,105,['D','C'],['main'])])
     ]},
-    {id:'rebase',title:'Rebase: replay changes on a new base',steps:[
-      step('Feature C diverged from main D. Save a backup before rewriting work. Rebasing will replay the change B → C on D.',[A(),B(),C(),D()]),
-      step('During replay, ours is the new base D plus any commits already replayed. Theirs is the original feature commit being replayed. Resolve for intended behavior, then continue.',[A(),B(),C(),D()]),
+    {id:'rebase',title:'Rebase: apply changes after a newer starting point',steps:[
+      step('Feature has C and main has D, both after B. Save a backup before rewriting work. Rebasing will apply the change again B → C on D.',[A(),B(),C(),D()]),
+      step('While applying a change again, ours is the new base D plus any commits already applied again. Theirs is the original feature commit being applied again. Resolve for needed behavior, then continue.',[A(),B(),C(),D()]),
       step('C′ has a different parent and therefore a different ID. Feature moves to C′. C still exists via a backup or reflog for some time; rebase is not instant object deletion.',[A(),B(),C(['backup'],true),D(),node('C′',490,105,['D'],['feature'])])
     ]},
     {id:'squash',title:'Squash merge: one combined change',steps:[
       step('Feature has C and E. Main has D. A squash can stage their combined result on main.',[A(),B(),C([]),D(),node('E',460,205,['C'],['feature'])]),
       step('git merge --squash feature stages a result; it does not commit or record a merge parent. After you commit, S has only D as its parent. Feature history remains separate.',[A(),B(),C([]),D([]),node('E',460,205,['C'],['feature']),node('S',580,105,['D'],['main'])])
     ]},
-    {id:'revert',title:'Revert: record an inverse change',steps:[
+    {id:'revert',title:'Revert: add a correcting commit',steps:[
       step('C introduced a bug. D adds unrelated useful work after C. Main is already shared.',[A(),B(),node('C',330,105,['B']),node('D',460,105,['C'],['main'])]),
       step('git revert C creates R that reverses C’s change in the current context. C and D remain ancestors. Conflicts are possible; test the outcome. No branch history is rewritten.',[A(),B(),node('C',330,105,['B']),node('D',460,105,['C']),node('R',590,105,['D'],['main'])])
     ]},
     {id:'reset',title:'Reset: move the current branch back',steps:[
       step('Local main points to C. First distinguish committed work from staged and unstaged work.',[A(),B(),node('C',330,105,['B'],['main'])]),
-      step('git reset --soft B moves main to B and preserves the index and working tree. Mixed also resets the index. Hard resets both and can overwrite local work. The branch movement is the same; the file effects differ.',[A(),B(['main']),node('C',330,105,['B'],['old tip · reflog'],true)])
+      step('git reset --soft B moves main to B and keeps staging and working files. Mixed also resets staging. Hard resets both and can overwrite local work. The branch movement is the same; the file effects differ.',[A(),B(['main']),node('C',330,105,['B'],['old tip · reflog'],true)])
     ]},
     {id:'fetch',title:'Fetch: learn what the server has',steps:[
       step('Your local main and cached origin/main point at B. The actual server has advanced to T. Remote-tracking names are your local records, not live server pointers.',[A(),B(['main','origin/main']),node('T',440,105,['B'],['server main'])]),
@@ -54,22 +54,22 @@
   }
   function simulatePush({mode,remote='T',tracking='C',expected='C',protectedBranch=false}) {
     if (!['normal','force','lease','explicit'].includes(mode)) throw new Error('Unknown push mode');
-    if (mode==='normal') return {allowed:false,lost:false,message:'Rejected: C′ does not descend from the live remote tip. A normal push cannot replace this history.'};
+    if (mode==='normal') return {allowed:false,lost:false,message:'Rejected: C′ does not descend from the current server commit. A normal push cannot replace this history.'};
     if (protectedBranch) return {allowed:false,lost:false,message:'Rejected by the modeled server rule: force pushes are disabled. A lease does not bypass repository policy.'};
-    if (mode==='lease' && tracking!==remote) return {allowed:false,lost:false,message:'Rejected: the live remote tip differs from your local remote-tracking expectation. Fetch and inspect the teammate’s changes before deciding what to do.'};
-    if (mode==='explicit' && expected!==remote) return {allowed:false,lost:false,message:'Rejected: the live remote tip differs from pinned expected C. The teammate’s T remains on the server branch, even if a background fetch updated origin/feature.'};
+    if (mode==='lease' && tracking!==remote) return {allowed:false,lost:false,message:'Rejected: the current server commit differs from your local last-known server position. Fetch and inspect the teammate’s changes before deciding what to do.'};
+    if (mode==='explicit' && expected!==remote) return {allowed:false,lost:false,message:'Rejected: the current server commit differs from saved exact expected C. The teammate’s T remains on the server branch, even if a background fetch updated origin/feature.'};
     return {allowed:true,lost:remote==='T',message:remote==='T' ?
       'Accepted in this model: server feature now points at C′. Teammate commit T is no longer reachable from that branch. A tracking-based lease allowed this after fetch because it expected T; it never checked that you incorporated T.' :
-      'Accepted in this model: the expected remote state still matches. C is replaced by C′ on this branch. A lease checks concurrent movement, not whether the rewrite preserves everyone’s intent.'};
+      'Accepted in this model: the expected remote state still matches. C is replaced by C′ on this branch. A lease checks concurrent movement, not whether the rewrite keeps everyone’s intent.'};
   }
   function evaluatePermission(s) {
     const canWrite=['write','maintain','admin'].includes(s.role);
     const gates=[
-      {name:'Authenticated identity',ok:s.identity,why:'The credential must authenticate a valid identity.'},
-      {name:'Repository selected',ok:s.selected,why:'This fine-grained PAT model requires the correct repository to be included.'},
+      {name:'Signed-in account',ok:s.identity,why:'The credential must sign in as a valid account.'},
+      {name:'Repository selected',ok:s.selected,why:'This limited personal token must include the correct repository.'},
       {name:'Organization approval',ok:s.approved,why:'This scenario requires approval of the token by the organization.'},
       {name:'Repository role',ok:canWrite,why:'This action needs Write or higher; a token cannot elevate a Read or Triage user.'},
-      {name:'Credential capability',ok:s.scope==='write',why:'The modeled operation needs Contents: write. A broader repository role cannot add missing token permissions.'}
+      {name:'Token access',ok:s.scope==='write',why:'The modeled operation needs Contents: write. A broader repository role cannot add missing token permissions.'}
     ];
     if(s.action==='direct') gates.push({name:'Required pull request',ok:!s.requirePR||s.bypass,why:'A required-PR rule blocks direct pushes unless the actor has an explicitly applicable bypass.'});
     if(s.action==='merge') {
@@ -89,7 +89,7 @@
   const badge=id=>root.GitLearning.missionDone(id) ? '✓ Exercise completed' : 'Exercise not completed yet';
   const graphRoot=$('#graph-explorer');
   if(graphRoot) {
-    graphRoot.innerHTML='<h3>Follow the commit pointers</h3><label class="field">Operation<select id="graph-scene">'+options(scenes.map(s=>[s.id,s.title]))+'</select></label><div id="graph-picture" class="graph-scroll"></div><p id="graph-explanation" role="status"></p><p id="graph-position" class="meta"></p><div class="actions"><button class="btn" id="graph-prev">← Previous step</button><button class="btn btn-primary" id="graph-next">Next step →</button><button class="btn" id="graph-reset">Restart</button></div><p class="meta">Lines connect each commit to its parents on the left. Labels name refs; faded circles are old history. These graphs are schematic and do not run Git.</p>';
+    graphRoot.innerHTML='<h3>Watch where the branch names point</h3><label class="field">Operation<select id="graph-scene">'+options(scenes.map(s=>[s.id,s.title]))+'</select></label><div id="graph-picture" class="graph-scroll"></div><p id="graph-explanation" role="status"></p><p id="graph-position" class="meta"></p><div class="actions"><button class="btn" id="graph-prev">← Previous step</button><button class="btn btn-primary" id="graph-next">Next step →</button><button class="btn" id="graph-reset">Restart</button></div><p class="meta">Lines connect each commit to its parents on the left. Labels name branches or saved positions. Faded circles show older history. These are simplified pictures; no Git commands run here.</p>';
     let index=0;
     const render=()=>{
       const scene=scenes.find(s=>s.id===$('#graph-scene').value), current=scene.steps[index];
@@ -115,8 +115,8 @@
     conflictRoot.innerHTML='<h3>Keep both requirements</h3><p>Product requirement: main’s approved timeout <b>20</b> and feature’s retries <b>3</b>. Remove markers and produce valid JSON.</p><label class="field">Operation<select id="conflict-operation"><option value="merge">On main: git merge feature</option><option value="rebase">On feature: git rebase main</option></select></label><div class="tool-grid"><div><b>Base</b><pre>{"timeout": 10, "retries": 1}</pre></div><div><b>Main</b><pre>{"timeout": 20, "retries": 1}</pre></div><div><b>Feature</b><pre>{"timeout": 30, "retries": 3}</pre></div></div><p id="conflict-context" class="note"></p><label class="field" for="conflict-input">config.json — edit the conflict</label><textarea id="conflict-input" spellcheck="false" autocapitalize="off"></textarea><div class="actions"><button class="btn btn-primary" id="conflict-check">Check resolution</button><button class="btn" id="conflict-ours">Try whole ours</button><button class="btn" id="conflict-theirs">Try whole theirs</button><button class="btn" id="conflict-reset">Reset conflict</button></div><p id="conflict-feedback" role="status"></p><p id="conflict-complete" class="meta"></p>';
     const reset=()=>{
       const rebase=$('#conflict-operation').value==='rebase';
-      $('#conflict-context').textContent=rebase?'Rebase: ours = main (the new base), theirs = the feature commit being replayed. Stage and run git rebase --continue after testing.':'Merge on main: ours = current main, theirs = incoming feature. Stage and run git merge --continue after testing.';
-      $('#conflict-input').value='{\n<<<<<<< HEAD\n  "timeout": 20,\n  "retries": 1\n||||||| base\n  "timeout": 10,\n  "retries": 1\n=======\n  "timeout": 30,\n  "retries": 3\n>>>>>>> '+(rebase?'feature commit being replayed':'feature')+'\n}\n';
+      $('#conflict-context').textContent=rebase?'Rebase: ours = main (the new base), theirs = the feature commit being applied again. Stage and run git rebase --continue after testing.':'Merge on main: ours = current main, theirs = incoming feature. Stage and run git merge --continue after testing.';
+      $('#conflict-input').value='{\n<<<<<<< HEAD\n  "timeout": 20,\n  "retries": 1\n||||||| base\n  "timeout": 10,\n  "retries": 1\n=======\n  "timeout": 30,\n  "retries": 3\n>>>>>>> '+(rebase?'feature commit being applied again':'feature')+'\n}\n';
       $('#conflict-feedback').textContent='Both whole-side choices are valid JSON but fail one requirement. Try them, then combine the intended values.';
       $('#conflict-complete').textContent=badge(0);
     };
@@ -133,10 +133,10 @@
   }
   const pushRoot=$('#push-tool');
   if(pushRoot) {
-    pushRoot.innerHTML='<h3>Predict a concurrent push</h3><p>Your rewritten feature tip is C′, with parent B. Previously the remote was B → C. A teammate may have added T after C. Your pinned expected ID remains C.</p><div class="tool-grid"><label class="field">Push mode<select id="push-mode">'+options([['normal','Normal push'],['force','--force'],['lease','--force-with-lease (tracking-based)'],['explicit','--force-with-lease=refs/heads/feature:C']])+'</select></label><label class="field">Your prediction<select id="push-prediction"><option value="reject">Reject</option><option value="accept">Accept</option></select></label></div><label class="answer"><input type="checkbox" id="push-race" checked> Teammate has pushed T</label><label class="answer"><input type="checkbox" id="push-protected"> Server prohibits force pushes</label><div class="actions"><button class="btn" id="push-fetch">Simulate background fetch</button><button class="btn" id="push-reset">Reset tracking to C</button></div><div id="push-refs" class="tool-grid"></div><button class="btn btn-primary" id="push-evaluate">Evaluate this push</button><p id="push-feedback" role="status"></p><p id="push-complete" class="meta"></p><p class="meta">C/C′/T stand for full commit IDs here. Each evaluation starts from the displayed state; it does not mutate a repository. Goal: predict the explicit lease rejecting T, with force pushes otherwise allowed.</p>';
+    pushRoot.innerHTML='<h3>Predict a push after a teammate changed the branch</h3><p>Your rewritten feature tip is C′, with parent B. Previously the remote was B → C. A teammate may have added T after C. Your saved exact expected ID remains C.</p><div class="tool-grid"><label class="field">Push mode<select id="push-mode">'+options([['normal','Normal push'],['force','--force'],['lease','--force-with-lease (tracking-based)'],['explicit','--force-with-lease=refs/heads/feature:C']])+'</select></label><label class="field">Your prediction<select id="push-prediction"><option value="reject">Reject</option><option value="accept">Accept</option></select></label></div><label class="answer"><input type="checkbox" id="push-race" checked> Teammate has pushed T</label><label class="answer"><input type="checkbox" id="push-protected"> Server blocks force pushes</label><div class="actions"><button class="btn" id="push-fetch">Simulate background fetch</button><button class="btn" id="push-reset">Reset tracking to C</button></div><div id="push-refs" class="tool-grid"></div><button class="btn btn-primary" id="push-evaluate">Evaluate this push</button><p id="push-feedback" role="status"></p><p id="push-complete" class="meta"></p><p class="meta">C/C′/T stand for full commit IDs here. Each check starts from the displayed state and changes no real project. Goal: predict the explicit lease rejecting T, with force pushes otherwise allowed.</p>';
     let tracking='C';
     const render=()=>{
-      $('#push-refs').innerHTML='<p>Local feature<br><strong>C′</strong></p><p>Actual server feature<br><strong>'+($('#push-race').checked?'T':'C')+'</strong></p><p>Local origin/feature<br><strong>'+tracking+'</strong></p><p>Pinned expected<br><strong>C</strong></p>';
+      $('#push-refs').innerHTML='<p>Local feature<br><strong>C′</strong></p><p>Actual server feature<br><strong>'+($('#push-race').checked?'T':'C')+'</strong></p><p>Local origin/feature<br><strong>'+tracking+'</strong></p><p>Saved expected ID<br><strong>C</strong></p>';
       $('#push-feedback').textContent='Choose your prediction, then evaluate.';
       $('#push-complete').textContent=badge(1);
     };
@@ -154,7 +154,7 @@
   }
   const permissionRoot=$('#permission-tool');
   if(permissionRoot) {
-    permissionRoot.innerHTML='<h3>Find the missing access gate</h3><p>Scenario: a same-repository pull request, authenticated with a fine-grained PAT. Goal: allow the merge with the <b>Write</b> role, Contents: write, two approvals, passing checks, a required-PR rule, and no bypass.</p><div class="tool-grid"><label class="field">Repository role<select id="perm-role">'+options(['read','triage','write','maintain','admin'].map(x=>[x,x]))+'</select></label><label class="field">Token Contents permission<select id="perm-scope">'+options([['read','Read'],['write','Write'],['none','None']])+'</select></label><label class="field">Action<select id="perm-action">'+options([['merge','Merge the PR'],['direct','Push directly to main'],['feature','Push an ordinary feature branch']])+'</select></label><label class="field">Current approvals<select id="perm-approvals">'+options([['0','0'],['1','1'],['2','2']])+'</select></label></div><div class="tool-grid">'+[['identity','Valid authenticated identity',true],['selected','Token includes this repository',true],['approved','Token approved by organization',true],['require','Require PR for main',true],['checks','Required checks passed',false],['bypass','Actor explicitly has applicable bypass',false]].map(([id,label,checked])=>'<label class="answer"><input type="checkbox" id="perm-'+id+'"'+(checked?' checked':'')+'>'+label+'</label>').join('')+'</div><button class="btn btn-primary" id="perm-evaluate">Check access</button><div id="perm-gates" class="gate-list"></div><p id="perm-feedback" role="status"></p><p id="perm-complete" class="meta"></p><p class="meta">Simplified policy model, not a live authorization check. Real access can also depend on SSO, IP policy, endpoint-specific scopes, workflow-file permissions, rule targets, merge queue and other rules. Here only main has PR/check rules; bypass affects only the modeled rules, never authentication or credential capabilities.</p>';
+    permissionRoot.innerHTML='<h3>Find the missing access gate</h3><p>Scenario: a same-repository pull request, authenticated with a fine-grained PAT. Goal: allow the merge with the <b>Write</b> role, Contents: write, two approvals, passing checks, a required-PR rule, and no bypass.</p><div class="tool-grid"><label class="field">Repository role<select id="perm-role">'+options(['read','triage','write','maintain','admin'].map(x=>[x,x]))+'</select></label><label class="field">Token Contents permission<select id="perm-scope">'+options([['read','Read'],['write','Write'],['none','None']])+'</select></label><label class="field">Action<select id="perm-action">'+options([['merge','Merge the PR'],['direct','Push directly to main'],['feature','Push an ordinary feature branch']])+'</select></label><label class="field">Current approvals<select id="perm-approvals">'+options([['0','0'],['1','1'],['2','2']])+'</select></label></div><div class="tool-grid">'+[['identity','Signed in as a valid account',true],['selected','Token includes this repository',true],['approved','Token approved by organization',true],['require','Require PR for main',true],['checks','Required checks passed',false],['bypass','This account has an allowed exception',false]].map(([id,label,checked])=>'<label class="answer"><input type="checkbox" id="perm-'+id+'"'+(checked?' checked':'')+'>'+label+'</label>').join('')+'</div><button class="btn btn-primary" id="perm-evaluate">Check access</button><div id="perm-gates" class="gate-list"></div><p id="perm-feedback" role="status"></p><p id="perm-complete" class="meta"></p><p class="meta">This example checks only the settings shown here. Real access can also depend on SSO, IP policy, endpoint-specific scopes, workflow-file permissions, rule targets, merge queue and other rules. Here only main has PR/check rules; bypass affects only the modeled rules, never sign-in or credential capabilities.</p>';
     $('#perm-evaluate').onclick=()=>{
       const s={role:$('#perm-role').value,scope:$('#perm-scope').value,action:$('#perm-action').value,approvals:Number($('#perm-approvals').value),identity:$('#perm-identity').checked,selected:$('#perm-selected').checked,approved:$('#perm-approved').checked,requirePR:$('#perm-require').checked,checks:$('#perm-checks').checked,bypass:$('#perm-bypass').checked};
       const result=evaluatePermission(s);

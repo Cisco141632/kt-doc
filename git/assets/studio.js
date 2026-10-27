@@ -4,9 +4,9 @@
   const clone = value => JSON.parse(JSON.stringify(value));
   const versions={base:'Our solar system\nEight planets orbit the Sun.',A:'Our amazing solar system\nEight planets orbit the Sun.',B:'Our amazing solar system\nEight planets orbit the Sun.\nThe Sun is a star.'};
   const snapshotMissions=[
-    {id:3,title:'Commit A while keeping B as an unstaged edit',start:{head:'base',index:'base',work:'base'},hint:'Edit to A → stage → edit to B → commit. The index remembers A.',cue:'A commit takes its content from the index, even if the working file has changed again.'},
-    {id:4,title:'Unstage A without losing the working version B',start:{head:'base',index:'A',work:'B'},hint:'Unstage changes the index. The working file should remain B.',cue:'Unstage changes the next proposed snapshot, not your working edits.'},
-    {id:5,title:'Restore working content from the staged version A',start:{head:'base',index:'A',work:'B'},hint:'Restore the working file. In this operation, the source is the index, not HEAD.',cue:'Plain git restore -- path copies from the index by default. Here it restores A, not base.'}
+    {id:3,title:'Commit A while keeping B as an unstaged edit',start:{head:'base',index:'base',work:'base'},hint:'Edit to A → stage → edit to B → commit. Staging remembers A.',cue:'A commit takes its content from staging, even if the working file has changed again.'},
+    {id:4,title:'Unstage A without losing the working version B',start:{head:'base',index:'A',work:'B'},hint:'Unstage changes staging. The working file should remain B.',cue:'Unstage changes the next proposed chosen version, not your file edits.'},
+    {id:5,title:'Restore working content from the staged version A',start:{head:'base',index:'A',work:'B'},hint:'Restore the working file. In this operation, the source is staging, not HEAD.',cue:'Plain git restore -- path copies from staging by default. Here it restores A, not the original saved text.'}
   ];
   function snapshotStart(mission=0) {
     return {...snapshotMissions[mission].start,commits:0,message:'Choose a command and watch which lane changes.'};
@@ -16,10 +16,10 @@
     const messages={
       editA:'Editor: only the working file changed to A.',
       editB:'Editor: only the working file changed to B.',
-      stage:'git add: copied the current working content into the index.',
-      unstage:'git restore --staged: copied HEAD into the index; working edits remain.',
-      restore:'git restore: replaced working content with the index version.',
-      commit:s.index===s.head?'Nothing staged to commit.':'git commit: recorded the index as a new commit; the working file did not change.'
+      stage:'git add: copied the current working content into staging.',
+      unstage:'git restore --staged: restored the current saved content in staging; working edits remain.',
+      restore:'git restore: replaced your file with the staged version.',
+      commit:s.index===s.head?'Nothing staged to commit.':'git commit: saved the chosen content as a new commit; the working file did not change.'
     };
     if(!(action in messages)) throw new Error('Unknown snapshot action');
     if(action==='editA') s.work='A';
@@ -42,31 +42,31 @@
     {id:6,title:'Fast-forward',command:'On main at B: git merge --ff-only feature',ref:'main',start:'B',target:'C',topic:'merge',
       nodes:[n('A',65,130),n('B',230,130,['A']),n('C',410,130,['B'])],
       before:'Feature points at C. Main has no separate new commits.',
-      why:'Main moves to the existing descendant C. No merge commit is created.',cue:'Fast-forward = move the name.'},
+      why:'Main moves to the existing commit C, which follows B. No merge commit is created.',cue:'Fast-forward = move the name.'},
     {id:7,title:'Three-way merge',command:'On main at D: git merge feature',ref:'main',start:'D',target:'M',topic:'merge',
       nodes:[...diverged(),n('M',510,120,['D','C'],true)],
-      before:'Feature points at C. D and C diverged from B. Assume you resolve conflicts, test and complete the merge.',
-      why:'Main moves to M, whose parents are D and C. Both ancestry lines are preserved.',cue:'Merge = two histories meet.'},
+      before:'Feature points at C. D and C are separate new commits after B. Assume you resolve conflicts, test and complete the merge.',
+      why:'Main moves to M, whose parents are D and C. Both histories stay included.',cue:'Merge = two histories meet.'},
     {id:8,title:'Rebase',command:'On feature at C: git rebase main',ref:'feature',start:'C',target:'C′',topic:'rebase',
       nodes:[...diverged(),n('C′',510,70,['D'],true)],
-      before:'Main points at D. Assume replay succeeds with a nonempty change and any conflicts are resolved.',
-      why:'Feature moves to C′, which replays the change on D and has a different parent and ID. Main remains at D.',cue:'Rebase = replay, then move the feature name.'},
+      before:'Main points at D. Assume applying the change succeeds with a nonempty change and any conflicts are resolved.',
+      why:'Feature moves to C′, which applies the change again on D and has a different parent and ID. Main remains at D.',cue:'Rebase = replay, then move the feature name.'},
     {id:9,title:'Revert a shared mistake',command:'On main at D: git revert C',ref:'main',start:'D',target:'R',topic:'undo-recovery',
       nodes:[n('A',55,130),n('B',175,130,['A']),n('C',295,130,['B']),n('D',415,130,['C']),n('R',545,130,['D'],true)],
       before:'C introduced a mistake. D is useful later work. Assume the revert is resolved and committed.',
-      why:'Main moves forward to R, the corrective commit. C and D remain in the ancestry.',cue:'Revert = add a correction.'},
+      why:'Main moves forward to R, the corrective commit. C and D remain in the earlier history.',cue:'Revert = add a correction.'},
     {id:10,title:'Soft reset private work',command:'On main at C: git reset --soft B',ref:'main',start:'C',target:'B',topic:'undo-recovery',
       nodes:[n('A',65,130),n('B',230,130,['A']),n('C',410,130,['B'])],
-      before:'This is private disposable history. You intend to move the branch while retaining the index and working file.',
-      why:'Main moves back to B. Soft reset leaves the index and working content intact; it does not automatically delete C’s object.',cue:'Soft reset = move the name, keep staged and working content.'},
+      before:'This is private practice history. You intend to move the branch while keeping staging and your file.',
+      why:'Main moves back to B. Soft reset leaves staging and working content intact; it does not automatically delete C’s object.',cue:'Soft reset = move the name, keep staged and working content.'},
     {id:11,title:'Fetch the teammate’s update',command:'On main at B: git fetch origin',ref:'main',start:'B',target:'B',topic:'branches-remotes',
       nodes:[n('A',65,130),n('B',230,130,['A']),n('T',410,130,['B'])],
       before:'The server’s main is T. The usual fetch mapping updates origin/main to T. Where does your local main point afterward?',
-      why:'Local main stays at B. The remote-tracking reference origin/main moves to T. Fetch alone does not integrate T into main.',cue:'Fetch = learn about remote history.'}
+      why:'Local main stays at B. The local record of the remote branch origin/main moves to T. Fetch alone does not integrate T into main.',cue:'Fetch = learn about remote history.'}
   ];
   const incidents=[
     {id:12,title:'The rejected push',topic:'branches-remotes',summary:'Your feature works locally. Git rejects your ordinary push because your teammate pushed first.',
-      evidence:[['Status','On branch feature\nworking tree clean'],['After inspection','origin/feature has commit T\nyour feature has commit L\nboth descend from B'],['Team agreement','Shared feature branch.\nKeep the teammate’s work.\nUse merge to integrate.']],
+      evidence:[['Status','On branch feature\nworking files clean'],['After inspection','origin/feature has commit T\nyour feature has commit L\nboth descend from B'],['Team agreement','Shared feature branch.\nKeep the teammate’s work.\nUse merge to integrate.']],
       steps:[
         {prompt:'What should you do before choosing an integration action?',choices:[
           ['Force push immediately','This can remove the teammate’s commits from the branch. A rejection is a signal to inspect.'],
@@ -75,54 +75,54 @@
         {prompt:'You confirm that T and L both matter. The team uses merges on this shared branch. Next?',choices:[
           ['Merge the fetched teammate branch, resolving for both intentions','Correct. Integrate the inspected origin/feature into your feature, resolving conflicts and reviewing the result.'],
           ['Reset hard to origin/feature','That replaces local state with the teammate’s tip and abandons your local line of work.'],
-          ['Refresh the lease and push the same replacement','A newer expectation does not prove you preserved the teammate’s content.']],correct:0},
+          ['Refresh the lease and push the same replacement','A newer expectation does not prove you kept the teammate’s content.']],correct:0},
         {prompt:'The merge is complete. How do you finish?',choices:[
           ['Push with --force so it is faster','Force does not make this safer. The integration should permit a normal fast-forward update.'],
-          ['Assume a clean text merge means correct behavior','Semantic conflicts can remain. Check the combined behavior.'],
+          ['Assume a clean text merge means correct behavior','Behavior problems can remain. Check the combined behavior.'],
           ['Review the combined diff, run tests, then push normally','Correct. If someone pushes again, another rejection means inspect that newer state.']],correct:2}],
       cue:'Rejected push → inspect → integrate → test → normal push.',
       commands:'git fetch origin\ngit log --graph --oneline --all\ngit merge origin/feature\n# Resolve as needed; inspect and test.\ngit push origin feature'},
-    {id:13,title:'The missing committed project',topic:'undo-recovery',summary:'In a disposable repository, a mistaken reset moved your branch backward. A useful committed file vanished from the checkout.',
-      evidence:[['What was recorded','The file was included in a commit.\nIt was not just an unsaved editor tab.'],['Current state','working tree clean\nmain points at an older commit'],['Clue','Local reflog still includes the earlier tip.\nNo cleanup or object pruning has run.']],
+    {id:13,title:'The missing committed project',topic:'undo-recovery',summary:'In a practice repository, a mistaken reset moved your branch backward. A useful committed file vanished from the checkout.',
+      evidence:[['What was recorded','The file was included in a commit.\nIt was not just an unsaved editor tab.'],['Current state','working files clean\nmain points at an older commit'],['Clue','Local reflog still includes the earlier commit.\nNo cleanup or object pruning has run.']],
       steps:[
-        {prompt:'Where do you look for evidence of the old branch tip?',choices:[
+        {prompt:'Where do you look for evidence of the old branch’s last commit?',choices:[
           ['Run cleanup to simplify the repository','Cleanup can remove recovery evidence. Inspect first.'],
-          ['Inspect local reflog and show the candidate commit','Correct. Reflog records local reference movement; inspect the content to identify the right tip.'],
+          ['Inspect local reflog and show the candidate commit','Correct. Reflog records local branch movement; inspect the content to identify the right saved commit.'],
           ['Assume all recorded history is gone','Moving a branch name does not immediately erase every old commit object.']],correct:1},
-        {prompt:'You found the exact commit and confirmed it contains the file. First preserve it how?',choices:[
-          ['Guess HEAD@{1} and hard reset','The reflog position may have changed. A destructive reset is unnecessary just to preserve a found commit.'],
-          ['Create a rescue branch at the inspected commit ID','Correct. A named reference makes the discovered commit reachable while you plan recovery.'],
+        {prompt:'You found the exact commit and confirmed it contains the file. First keep it how?',choices:[
+          ['Guess HEAD@{1} and hard reset','The reflog position may have changed. A destructive reset is unnecessary just to keep a found commit.'],
+          ['Create a rescue branch at the inspected commit ID','Correct. A branch name keeps the found commit available while you plan recovery.'],
           ['Force push the old tip to main','There is no evidence that replacing a shared remote branch is needed.']],correct:1},
         {prompt:'The rescued content is now reachable. What is the next decision?',choices:[
-          ['Compare rescued and current work, then choose a reviewed integration','Correct. You may need a selected file, a cherry-pick or another deliberate integration; preserve unrelated work.'],
+          ['Compare rescued and current work, then choose a reviewed integration','Correct. You may need a selected file, a cherry-pick or another deliberate integration; keep unrelated work.'],
           ['Delete every newer commit','Later work may still be valuable. Recovery is not a reason to discard it.'],
           ['Promise this also recovers any never-saved file','Git cannot recover content it never recorded.']],correct:0}],
-      cue:'Find → inspect → name the rescued tip → integrate deliberately.',
+      cue:'Find → inspect → name the rescued commit → integrate deliberately.',
       commands:'git reflog --date=iso\ngit show OLD_TIP\ngit branch rescue/project OLD_TIP\ngit log --graph --oneline --all'},
     {id:14,title:'The rebase with two “correct” answers',topic:'conflicts',summary:'Rebasing your feature onto main stops in config.json. The main timeout must stay 20; the feature must increase retries to 3.',
-      evidence:[['Base','timeout: 10\nretries: 1'],['Main / new base','timeout: 20\nretries: 1'],['Feature commit being replayed','timeout: 30\nretries: 3']],
+      evidence:[['Base','timeout: 10\nretries: 1'],['Main / new base','timeout: 20\nretries: 1'],['Feature commit being applied again','timeout: 30\nretries: 3']],
       steps:[
         {prompt:'During this rebase, what does “ours” mean?',choices:[
           ['My original feature, because I wrote it','During rebase, that intuition is reversed. Check the operation and actual stage content.'],
-          ['The new base plus commits already replayed','Correct. Theirs is the original commit being replayed.'],
+          ['The new base plus commits already applied again','Correct. Theirs is the original commit being applied again.'],
           ['Whichever file has the newest timestamp','Ours/theirs are operation roles, not timestamps.']],correct:1},
-        {prompt:'Which resolution preserves the two stated requirements?',choices:[
+        {prompt:'Which resolution keeps the two stated requirements?',choices:[
           ['Use timeout 20 and retries 3','Correct. Neither whole side contains both requirements; construct the intended combination.'],
           ['Accept the complete main side: 20 / 1','This loses the requested retry change.'],
-          ['Accept both conflicting JSON blocks','Duplicate settings or invalid JSON do not resolve the intended behavior.']],correct:0},
+          ['Accept both conflicting JSON blocks','Duplicate settings or invalid JSON do not resolve the needed behavior.']],correct:0},
         {prompt:'After editing the correct result, what comes next?',choices:[
-          ['Skip the replayed commit','Skip omits its replay. It is not a generic conflict-fixing command.'],
+          ['Skip the commit being applied','Skip omits its replay. It is not a generic conflict-fixing command.'],
           ['Run merge --continue','This operation is a rebase. Use the matching continuation.'],
-          ['Stage, inspect, test and rebase --continue','Correct. Later replayed commits may need their own contextual resolution.']],correct:2}],
-      cue:'Identify the operation → preserve intent → stage → test → continue.',
+          ['Stage, inspect, test and rebase --continue','Correct. Later commits may stop at their own conflicts; read each needed change.']],correct:2}],
+      cue:'Identify the operation → keep the needed behavior → stage → test → continue.',
       commands:'git rebase --show-current-patch\ngit show :2:config.json\ngit show :3:config.json\n# Edit to timeout 20 / retries 3.\ngit add config.json\n# Inspect and test.\ngit rebase --continue'}
   ];
   const pairs=[
-    {id:'staged',task:'Inspect what the next ordinary commit will contain',command:'git diff --staged',why:'Compare the index with HEAD before committing.'},
+    {id:'staged',task:'Inspect what the next ordinary commit will contain',command:'git diff --staged',why:'Compare the current saved commit with staging before making a commit.'},
     {id:'fetch',task:'Download remote updates without integrating them',command:'git fetch origin',why:'Learn the remote state; your local branch normally stays put.'},
-    {id:'revert',task:'Record an inverse of a shared bad commit',command:'git revert COMMIT',why:'Add a corrective commit and retain existing ancestry.'},
-    {id:'reflog',task:'Find earlier local reference movements',command:'git reflog',why:'Use local recorded movements to find a candidate recovery tip.'},
-    {id:'unstage',task:'Unstage a file while keeping working edits',command:'git restore --staged -- file',why:'Reset the index path from HEAD without discarding working content.'},
+    {id:'revert',task:'Undo a shared bad change with a new commit',command:'git revert COMMIT',why:'Add a corrective commit and retain existing ancestry.'},
+    {id:'reflog',task:'Find earlier local branch movements',command:'git reflog',why:'Use local recorded movements to find a saved commit you may need to recover.'},
+    {id:'unstage',task:'Unstage a file while keeping working edits',command:'git restore --staged -- file',why:'Reset staging path from HEAD without discarding working content.'},
     {id:'rescue',task:'Keep an inspected old commit reachable by name',command:'git branch rescue/work COMMIT',why:'Create a reference before attempting more recovery operations.'},
     {id:'bisect',task:'Start searching for the commit that introduced a regression',command:'git bisect start',why:'Then supply good/bad boundaries and a repeatable classification test.'},
     {id:'continue',task:'Continue after resolving and staging a rebase conflict',command:'git rebase --continue',why:'Continue the matching operation; later commits may conflict too.'}
@@ -162,7 +162,7 @@
   const beginner=$('#beginner-lab');
   if(beginner) {
     let s=beginnerStart(),message='Version A is already recorded. Make a mistake to see why history helps.';
-    beginner.innerHTML='<div class="beginner-goal"><span class="chip">Your first Git idea</span><h3>Keep the story, repair the sentence</h3><p id="beginner-goal" role="status"></p></div><div class="beginner-columns"><div class="paper-preview"><span class="eyebrow">Working project · what you are editing</span><h3>Our solar system</h3><p id="beginner-work"></p><span id="beginner-state" class="chip"></span></div><div class="paper-preview"><span class="eyebrow">Selected saved version</span><h3 id="beginner-selected"></h3><p id="beginner-saved"></p><button class="btn" id="beginner-restore">Use this version in the working project</button></div></div><div class="actions"><button class="btn" id="beginner-mistake">1 · Make a mistaken edit</button><button class="btn btn-primary" id="beginner-save">2 · Record a snapshot</button><button class="btn" id="beginner-reset">Start over</button></div><p class="meta">3 · Choose A below, use its saved content, then record the correction.</p><div id="beginner-history" class="snapshot-timeline" aria-label="Saved versions"></div><p id="beginner-feedback" class="studio-feedback" role="status"></p>';
+    beginner.innerHTML='<div class="beginner-goal"><span class="chip">Your first Git idea</span><h3>Keep the story, repair the sentence</h3><p id="beginner-goal" role="status"></p></div><div class="beginner-columns"><div class="paper-preview"><span class="eyebrow">Working project · what you are editing</span><h3>Our solar system</h3><p id="beginner-work"></p><span id="beginner-state" class="chip"></span></div><div class="paper-preview"><span class="eyebrow">Selected saved version</span><h3 id="beginner-selected"></h3><p id="beginner-saved"></p><button class="btn" id="beginner-restore">Use this version in the working project</button></div></div><div class="actions"><button class="btn" id="beginner-mistake">1 · Make a mistaken edit</button><button class="btn btn-primary" id="beginner-save">2 · Save a version</button><button class="btn" id="beginner-reset">Start over</button></div><p class="meta">3 · Choose A below, use its saved content, then record the correction.</p><div id="beginner-history" class="snapshot-timeline" aria-label="Saved versions"></div><p id="beginner-feedback" class="studio-feedback" role="status"></p>';
     const render=()=>{
       const selected=s.history.find(v=>v.id===s.selected);
       $('#beginner-work').textContent=s.work; $('#beginner-saved').textContent=selected.text;
@@ -176,7 +176,7 @@
     };
     ['mistake','restore','save'].forEach(action=>$('#beginner-'+action).onclick=()=>{
       s=beginnerStep(s,action);
-      message=action==='save'?'Snapshot recorded. Earlier saved versions remain available.':action==='restore'?'The working sentence now matches the selected version. Record a snapshot to save the correction.':'The working sentence changed. Your saved history has not changed yet.';
+      message=action==='save'?'Version saved. Earlier saved versions remain available.':action==='restore'?'The working sentence now matches the selected version. Save a version to save the correction.':'The working sentence changed. Your saved history has not changed yet.';
       if(beginnerGoal(s))complete(17);render();
     });
     $('#beginner-reset').onclick=()=>{s=beginnerStart();message='Fresh model. Your recorded learning completion is kept.';render();};
@@ -185,13 +185,13 @@
   const snapshot=$('#snapshot-studio');
   if(snapshot) {
     let mission=0,s=snapshotStart(),history=[],last='',log=[];
-    snapshot.innerHTML='<div class="station-heading"><span class="chip">Manipulate the model</span><label class="field">Practice goal<select id="snapshot-mission">'+snapshotMissions.map((m,i)=>option(i,m.title)).join('')+'</select></label></div><div id="snapshot-lanes" class="snapshot-lanes"></div><div class="snapshot-status"><b>git status --short</b><code id="snapshot-status"></code></div><div class="command-pad"><button class="btn" data-snapshot="editA">Edit title → A</button><button class="btn" data-snapshot="editB">Add a fact → B</button><button class="btn" data-snapshot="stage">git add → stage</button><button class="btn btn-primary" data-snapshot="commit">git commit</button><button class="btn" data-snapshot="unstage">Unstage</button><button class="btn" data-snapshot="restore">Restore working file</button><button class="btn" id="snapshot-undo">Undo model step</button><button class="btn" id="snapshot-reset">Reset model</button></div><p id="snapshot-feedback" class="studio-feedback" role="status"></p><p id="snapshot-goal" role="status"></p><details class="reveal"><summary>Show a hint</summary><p id="snapshot-hint"></p></details><details><summary>Read the recent command trail</summary><ol id="snapshot-log"></ol></details><p class="meta">One tracked file, notes.txt. The restore button replaces working edits in this model. In a real repository, preserve needed edits before restoring.</p>';
+    snapshot.innerHTML='<div class="station-heading"><span class="chip">Try one action at a time</span><label class="field">Practice goal<select id="snapshot-mission">'+snapshotMissions.map((m,i)=>option(i,m.title)).join('')+'</select></label></div><div id="snapshot-lanes" class="snapshot-lanes"></div><div class="snapshot-status"><b>git status --short</b><code id="snapshot-status"></code></div><div class="command-pad"><button class="btn" data-snapshot="editA">Edit title → A</button><button class="btn" data-snapshot="editB">Add a fact → B</button><button class="btn" data-snapshot="stage">git add → stage</button><button class="btn btn-primary" data-snapshot="commit">git commit</button><button class="btn" data-snapshot="unstage">Unstage</button><button class="btn" data-snapshot="restore">Restore working file</button><button class="btn" id="snapshot-undo">Undo model step</button><button class="btn" id="snapshot-reset">Reset model</button></div><p id="snapshot-feedback" class="studio-feedback" role="status"></p><p id="snapshot-goal" role="status"></p><details class="reveal"><summary>Show a hint</summary><p id="snapshot-hint"></p></details><details><summary>Read the recent actions</summary><ol id="snapshot-log"></ol></details><p class="meta">One tracked file, notes.txt. The restore button replaces working edits in this model. In a real repository, keep needed edits before restoring.</p>';
     const render=()=>{
       const changed=last?['work','index','head'].filter(k=>s[k]!==last[k]):[];
-      $('#snapshot-lanes').innerHTML=[['work','Working file','What you are editing'],['index','Staging area / index','Selected for the next commit'],['head','HEAD snapshot','What the latest commit recorded']].map(([key,title,sub],i)=>'<article class="snapshot-lane '+(changed.includes(key)?'just-changed':'')+'"><span class="lane-number">0'+(i+1)+'</span><h3>'+title+'</h3><small>'+sub+'</small><div class="version-tag">Version '+esc(s[key])+'</div><pre>'+esc(versions[s[key]])+'</pre></article>').join('');
+      $('#snapshot-lanes').innerHTML=[['work','Working file','What you are editing'],['index','Chosen for the next commit','Selected for the next commit'],['head','Current saved commit','The commit HEAD leads to']].map(([key,title,sub],i)=>'<article class="snapshot-lane '+(changed.includes(key)?'just-changed':'')+'"><span class="lane-number">0'+(i+1)+'</span><h3>'+title+'</h3><small>'+sub+'</small><div class="version-tag">Version '+esc(s[key])+'</div><pre>'+esc(versions[s[key]])+'</pre></article>').join('');
       const status=(s.index===s.head?' ':'M')+(s.work===s.index?' ':'M');
-      $('#snapshot-status').textContent=status==='  '?'Clean working tree':status+' notes.txt';
-      $('#snapshot-status').title='First column: index versus HEAD. Second column: working file versus index.';
+      $('#snapshot-status').textContent=status==='  '?'Clean working files':status+' notes.txt';
+      $('#snapshot-status').title='First column: chosen content versus current commit. Second column: working file versus index.';
       $('#snapshot-feedback').textContent=s.message;
       $('#snapshot-goal').textContent=badge(snapshotMissions[mission].id)+' · '+snapshotMissions[mission].cue;
       $('#snapshot-hint').textContent=snapshotMissions[mission].hint;
@@ -224,7 +224,7 @@
         const parent=c.nodes.find(n=>n.id===id);
         return '<path d="M'+parent.x+' '+parent.y+'L'+node.x+' '+node.y+'"/>';
       })).join('');
-      $('#pointer-board').innerHTML='<svg viewBox="0 0 640 280" preserveAspectRatio="none" aria-hidden="true">'+lines+'</svg>'+c.nodes.map(node=>'<button class="commit-target '+(node.candidate?'candidate ':'')+(selected===node.id?'selected':'')+'" style="left:'+(node.x/640*100)+'%;top:'+(node.y/280*100)+'%" data-commit="'+node.id+'" aria-label="Predict '+esc(c.ref)+' at commit '+node.id+(node.candidate?', possible new commit':'')+'" aria-pressed="'+(selected===node.id)+'">'+node.id+(selected===node.id?'<span class="placed-ref">'+esc(c.ref)+'</span>':'')+'</button>').join('');
+      $('#pointer-board').innerHTML='<svg viewBox="0 0 640 280" keepAspectRatio="none" aria-hidden="true">'+lines+'</svg>'+c.nodes.map(node=>'<button class="commit-target '+(node.candidate?'candidate ':'')+(selected===node.id?'selected':'')+'" style="left:'+(node.x/640*100)+'%;top:'+(node.y/280*100)+'%" data-commit="'+node.id+'" aria-label="Predict '+esc(c.ref)+' at commit '+node.id+(node.candidate?', possible new commit':'')+'" aria-pressed="'+(selected===node.id)+'">'+node.id+(selected===node.id?'<span class="placed-ref">'+esc(c.ref)+'</span>':'')+'</button>').join('');
       $$('[data-commit]',pointer).forEach(button=>{
         const choose=()=>{selected=button.dataset.commit;feedback='Your prediction is set. Check it to compare with the operation’s effect.';render();$('[data-commit="'+selected+'"]',pointer).focus();};
         button.onclick=choose;
@@ -262,7 +262,7 @@
       $('#incident-complete').textContent=badge(c.id);
       $('#incident-next').disabled=!passed||phase===3;
       if(phase===3) {
-        $('#incident-step').innerHTML='<div class="case-solved"><span class="chip">Case reviewed</span><h3>'+esc(c.cue)+'</h3><p>Explain why each step preserves the intended work. Then try the related real lab.</p><pre>'+esc(c.commands)+'</pre><a href="'+c.topic+'.html">Review the full lesson →</a></div>';
+        $('#incident-step').innerHTML='<div class="case-solved"><span class="chip">Case reviewed</span><h3>'+esc(c.cue)+'</h3><p>Explain why each step keeps the needed work. Then try the related real lab.</p><pre>'+esc(c.commands)+'</pre><a href="'+c.topic+'.html">Review the full lesson →</a></div>';
         return;
       }
       const q=c.steps[phase];
@@ -280,7 +280,7 @@
   }
   const match=$('#match-studio');
   if(match) {
-    let left=shuffle(pairs),right=shuffle(pairs),selected=null,matched=[],attempts=0,feedback='Choose an intention on the left, then its command on the right.';
+    let left=shuffle(pairs),right=shuffle(pairs),selected=null,matched=[],attempts=0,feedback='Choose a task on the left, then its command on the right.';
     match.innerHTML='<div class="match-grid"><div><h3>What do you need?</h3><div id="match-tasks"></div></div><div><h3>Which command fits?</h3><div id="match-commands"></div></div><p id="match-feedback" class="studio-feedback" role="status" tabindex="-1"></p><p id="match-count" role="status"></p><button class="btn" id="match-reset">Shuffle and practise again</button>';
     const render=()=>{
       $('#match-tasks').innerHTML=left.map(p=>'<button class="match-card" data-task="'+p.id+'" aria-pressed="'+(selected===p.id)+'"'+(matched.includes(p.id)?' disabled':'')+'><span class="match-icon">'+(matched.includes(p.id)?'✓':'○')+'</span>'+esc(p.task)+'</button>').join('');
@@ -288,11 +288,11 @@
       $('#match-feedback').textContent=feedback;$('#match-count').textContent=matched.length+' of 8 connected · '+attempts+' attempts';
       $$('[data-task]',match).forEach(b=>b.onclick=()=>{selected=b.dataset.task;feedback='Selected: '+pairs.find(p=>p.id===selected).task+'. Now choose its command.';render();$('[data-task="'+selected+'"]',match).focus();});
       $$('[data-command]',match).forEach(b=>b.onclick=()=>{
-        if(!selected){feedback='Choose an intention first.';render();$('#match-feedback').focus();return;}
+        if(!selected){feedback='Choose a task first.';render();$('#match-feedback').focus();return;}
         attempts++;
         const p=pairs.find(p=>p.id===b.dataset.command);
         if(selected===p.id){matched.push(p.id);selected=null;feedback='Connected. '+p.why;if(matched.length===8){complete(15);feedback='All eight connected. '+attempts+' attempts. Say the effect before saying the command.';}}
-        else feedback='That command serves another intention. '+p.why+' Keep your selected intention and try another command.';
+        else feedback='That command serves another task. '+p.why+' Keep your selected task and try another command.';
         render();$('#match-feedback').focus();
       });
     };
@@ -306,7 +306,7 @@
     const pool=()=>root.GIT_DATA.questions.filter(q=>$('#recall-level').value==='all'||['foundations','daily-workflow','branches-remotes','merge'].includes(q.topic));
     const readiness=()=>{
       const results=L.recallResults(),missed=pool().filter(q=>results[q.id]===false).length;
-      $('#recall-status').textContent=missed+' previously missed question'+(missed===1?'':'s')+' in this level will be prioritised. No countdown.';
+      $('#recall-status').textContent=missed+' previously missed question'+(missed===1?'':'s')+' in this level will be shown first. No countdown.';
     };
     const render=()=>{
       if(!started){readiness();return;}

@@ -3,9 +3,9 @@ window.GIT_DATA = {
   "modules": [
     {
       "id": "index",
-      "title": "Git, explained one picture at a time.",
-      "minutes": 15,
-      "description": "Start with a school project and discover what Git does, why it matters, and how GitHub helps people work together. Build confidence with pictures, hands-on practice and short recall sessions."
+      "title": "Learn Git and GitHub, step by step",
+      "minutes": 10,
+      "description": "Start with one file. See what each command changes, learn how Git keeps your work, and practise fixing mistakes."
     },
     {
       "id": "why-git",
@@ -15,148 +15,148 @@ window.GIT_DATA = {
     },
     {
       "id": "foundations",
-      "title": "Snapshots, the index, HEAD & objects",
-      "minutes": 25,
-      "description": "Understand what Git stores, what a branch actually is, and why staged and unstaged changes are different."
+      "title": "Your file, staging, and HEAD",
+      "minutes": 35,
+      "description": "Use one small text file to see what Git saves. Learn HEAD, index, staging, and diff by watching the file change."
     },
     {
       "id": "daily-workflow",
-      "title": "A reliable daily development loop",
+      "title": "Save a change, one step at a time",
       "minutes": 25,
-      "description": "Move from an issue to a coherent commit, with intentional staging, useful messages and a reviewable diff."
+      "description": "Follow a small change from editing to a saved commit. Check exactly what will be included before you save it."
     },
     {
       "id": "branches-remotes",
-      "title": "Branches, remotes, fetch, pull & push",
-      "minutes": 30,
-      "description": "Separate your branch, your cached view of the remote and the actual server branch."
+      "title": "Branches and sharing with GitHub",
+      "minutes": 35,
+      "description": "Try work on a branch, send commits to GitHub, and bring a teammate’s changes back. See why fetch, pull, and push do different jobs."
     },
     {
       "id": "merge",
-      "title": "Merge and the three-way comparison",
+      "title": "Merge: put two sets of work together",
       "minutes": 35,
-      "description": "See how Git combines two lines of development and why the common ancestor matters."
+      "description": "See how Git uses the shared starting version to combine changes. Learn what to check when the merge finishes."
     },
     {
       "id": "conflicts",
-      "title": "Resolve conflicts without losing intent",
-      "minutes": 45,
-      "description": "Follow a repeatable conflict-resolution procedure and learn what the editor’s buttons actually choose."
+      "title": "Fix a conflict, one file at a time",
+      "minutes": 40,
+      "description": "A conflict means Git needs your help choosing the final file. Read both changes, edit the result, and finish the right operation."
     },
     {
       "id": "rebase",
-      "title": "Rebase: replay changes onto a new base",
+      "title": "Rebase: put your changes after newer work",
       "minutes": 40,
-      "description": "Understand which commits are recreated, how conflicts are replayed, and what collaborators see after a rewrite."
+      "description": "Follow each change as Git applies it again after a newer starting commit. See why commit IDs change and how to recover from a stopped rebase."
     },
     {
       "id": "force-push",
-      "title": "Force push, leases & shared-history safety",
-      "minutes": 45,
-      "description": "Learn exactly what a force push replaces, why teammates can lose reachability, and what a lease does and does not protect."
+      "title": "When push is refused, and what force changes",
+      "minutes": 40,
+      "description": "Understand why Git refuses to replace shared commits. Learn the expected-ID check used by force-with-lease and what to do when it fails."
     },
     {
       "id": "undo-recovery",
-      "title": "Undo, reset, revert & recover",
+      "title": "Undo a mistake and find saved work",
       "minutes": 40,
-      "description": "Choose an undo operation based on what must move and whether other people already depend on the history."
+      "description": "Choose an undo command by what you want to keep. Learn how files, staging, commits, and shared history change in each case."
     },
     {
       "id": "history",
-      "title": "Trace history, explain changes & find regressions",
+      "title": "Find what changed and why something broke",
       "minutes": 40,
-      "description": "Turn commit history into evidence with log, diff, show, blame, range-diff and bisect."
+      "description": "Read saved changes, search a file’s history, and use a repeatable test to find when a bug first appeared."
     },
     {
       "id": "collaboration",
-      "title": "GitHub pull requests & team integration",
+      "title": "Ask a teammate to review your change",
       "minutes": 30,
-      "description": "Connect local Git habits to reviews, checks, merge methods and clear collaboration."
+      "description": "Follow a change from your branch to a GitHub pull request, review, checks, and merge. Learn what each step proves."
     },
     {
       "id": "github-permissions",
-      "title": "GitHub identity, roles & permissions",
-      "minutes": 40,
-      "description": "Understand who you authenticate as, which repository actions that identity can perform, and why a powerful token cannot grant missing access."
+      "title": "Who can read, push, and change settings?",
+      "minutes": 35,
+      "description": "Understand account access and tokens through a failed-push example. Check the missing permission without giving everyone admin access."
     },
     {
       "id": "rules",
-      "title": "Set team rules and enforce them",
-      "minutes": 40,
-      "description": "Turn team expectations into repository controls that can be tested, explained and maintained."
+      "title": "Team rules that GitHub can check",
+      "minutes": 35,
+      "description": "Turn “review before merge” into a working rule. Check the target branches, required tests, and exceptions with a small practice change."
     },
     {
       "id": "security-automation",
-      "title": "Secrets, signatures & GitHub automation",
+      "title": "Passwords, job access, and signed commits",
       "minutes": 35,
-      "description": "Keep credentials out of history, separate trusted automation from untrusted contributions, and understand what verification proves."
+      "description": "See what to do if a secret enters Git, how GitHub Actions gets access, and what a verified signature actually tells you."
     },
     {
       "id": "advanced",
-      "title": "Advanced workflows you will encounter",
-      "minutes": 35,
-      "description": "Recognize the tools for moving selected changes, parallel work, large repositories and repeated conflict resolution."
+      "title": "More tools for real project problems",
+      "minutes": 40,
+      "description": "Copy one fix, work in a second folder, reuse a conflict fix, and understand projects with large files or limited history."
     },
     {
       "id": "troubleshooting",
-      "title": "The development incident clinic",
-      "minutes": 40,
-      "description": "Thirty common Git and GitHub problems, organized by symptom, evidence, correction and a result you can verify."
+      "title": "Something went wrong: check and fix it",
+      "minutes": 35,
+      "description": "Find the message you see. Learn why it can happen, what to check first, how to fix it, and how to confirm the result."
     },
     {
       "id": "practice",
-      "title": "Twelve real Git labs",
+      "title": "Try 12 exercises with real Git",
       "minutes": 75,
-      "description": "Practise staging, integration, conflicts, leases and recovery in disposable repositories, with expected failures and concrete verification."
+      "description": "Create new practice folders and try each command in small steps. Some conflicts and rejected pushes are expected parts of the exercise."
     },
     {
       "id": "playground",
-      "title": "Visual history and decision labs",
+      "title": "See what the commands change",
       "minutes": 35,
-      "description": "Step through history changes, resolve a three-way conflict, simulate a lease race and diagnose a permissions gate."
+      "description": "Move through history pictures, fix a settings conflict, and find why a push or access check is refused."
     },
     {
       "id": "studio",
-      "title": "Practice Studio: make Git stick",
+      "title": "Practise with pictures and buttons",
       "minutes": 40,
-      "description": "Move snapshots, place branch pointers, investigate incidents and retrieve what you know. A visual practice session with room to experiment."
+      "description": "Watch a file change, choose where a branch moves, and work through a mistake. Each choice explains its result."
     },
     {
       "id": "quiz",
-      "title": "Scenario quiz: explain the result",
+      "title": "Check your understanding",
       "minutes": 35,
-      "description": "Sixty questions across fifteen topics test Git behavior, recovery, collaboration and GitHub controls, with an explanation for every choice."
+      "description": "Try 60 questions about files, saved changes, team work, and mistakes. Every choice includes a reason."
     },
     {
       "id": "recap",
-      "title": "Recall cards and a skill-building plan",
+      "title": "Review what you learned",
       "minutes": 20,
-      "description": "Recall the right tool for the situation, review weak areas and preserve your browser-local learning progress."
+      "description": "Try short command cards, choose your next practice step, and back up progress saved in this browser."
     },
     {
       "id": "reference",
-      "title": "Commands, glossary & trusted references",
+      "title": "Find a command or a word",
       "minutes": 20,
-      "description": "Find the command by intent, understand its scope and continue into official Git and GitHub documentation."
+      "description": "Look up a task and check what its command changes. Find plain meanings for Git words and links to the full manuals."
     }
   ],
   "questions": [
     {
       "id": "q1",
       "topic": "foundations",
-      "prompt": "You stage version A of a file, edit it to B, then run ordinary git commit. What is recorded?",
+      "prompt": "You choose text A with git add, then edit the file to B. What does git commit save?",
       "options": [
         {
-          "text": "Version A from the index",
-          "why": "Commit records the staged snapshot. Later unstaged edits remain in the working tree."
+          "text": "A, the content chosen for this commit",
+          "why": "Git saves staging, which still holds A. The later edit B stays in your file."
         },
         {
-          "text": "Version B because it is on disk",
-          "why": "The working file is not automatically restaged at commit time."
+          "text": "B, because it is the newest file text",
+          "why": "Editing the file does not update staging. Run add again only if B should be chosen."
         },
         {
-          "text": "Both versions as two commits",
-          "why": "One commit is created from one index snapshot; Git does not invent a second commit."
+          "text": "A and B as two commits",
+          "why": "One commit saves one chosen project version. Git does not make a second commit for the later edit."
         }
       ],
       "correct": 0
@@ -164,19 +164,19 @@ window.GIT_DATA = {
     {
       "id": "q2",
       "topic": "foundations",
-      "prompt": "What is a branch in Git?",
+      "prompt": "What does HEAD tell Git?",
       "options": [
         {
-          "text": "An independent full copy of all project files",
-          "why": "Branches share objects; a separate working directory is a different concept."
+          "text": "Which edits are chosen for the next commit",
+          "why": "That is the staging area, also called the index. HEAD points to saved history."
         },
         {
-          "text": "A permanently fixed label",
-          "why": "Published tags are conventionally stable; a branch is designed to move."
+          "text": "Which project is open on the GitHub website",
+          "why": "HEAD belongs to your local Git state. It does not describe your browser page."
         },
         {
-          "text": "A movable reference to a commit",
-          "why": "Its tip moves as commits are recorded or references are deliberately updated."
+          "text": "Which saved commit you are using, usually through your current branch",
+          "why": "For example, HEAD names main and main points to commit A. A new commit on main moves main forward."
         }
       ],
       "correct": 2
@@ -184,19 +184,19 @@ window.GIT_DATA = {
     {
       "id": "q3",
       "topic": "foundations",
-      "prompt": "You amend only the commit message. Why does the commit ID change?",
+      "prompt": "Are the index and the staging area two different places?",
       "options": [
         {
-          "text": "The server must have changed the files",
-          "why": "Amend is local and does not require a server."
+          "text": "Yes. The index is your current saved commit",
+          "why": "The current saved commit is found through HEAD. Staging can hold different content."
         },
         {
-          "text": "The message is part of the commit object",
-          "why": "Amend creates a replacement object, even if its tree content is unchanged."
+          "text": "No. They are two names for the content chosen for the next commit",
+          "why": "git add updates the index, which is the staging area. A later file edit does not change this chosen content."
         },
         {
-          "text": "Git renames the original object in place",
-          "why": "Existing content-addressed objects are not edited in place."
+          "text": "Yes. The index is the GitHub copy",
+          "why": "The index is local staging. It is not a GitHub repository."
         }
       ],
       "correct": 1
@@ -204,19 +204,19 @@ window.GIT_DATA = {
     {
       "id": "q4",
       "topic": "foundations",
-      "prompt": "Setting user.email to a teammate’s GitHub address gives you what?",
+      "prompt": "At one point, HEAD has Hello, staging has Hi, and your file has Good morning. What does git diff show?",
       "options": [
         {
-          "text": "Commit metadata, not their repository permissions",
-          "why": "Authentication and authorization are independent of author-name/email fields."
+          "text": "Hi changed to Good morning",
+          "why": "Plain git diff compares staging with your file. Use git diff --staged to compare Hello with Hi."
         },
         {
-          "text": "Their GitHub write permission",
-          "why": "A metadata string cannot authenticate as that account."
+          "text": "Hello changed to Hi",
+          "why": "That is git diff --staged: the current saved commit compared with chosen content."
         },
         {
-          "text": "A verified cryptographic signature",
-          "why": "A signature requires a signing key and verification, not merely an email field."
+          "text": "Every old version of the file",
+          "why": "Diff compares two versions. Git log lists saved commits."
         }
       ],
       "correct": 0
@@ -224,7 +224,7 @@ window.GIT_DATA = {
     {
       "id": "q5",
       "topic": "daily-workflow",
-      "prompt": "What should you inspect to review the next ordinary commit’s content?",
+      "prompt": "Which command shows the changes chosen for your next commit?",
       "options": [
         {
           "text": "Only git diff",
@@ -236,7 +236,7 @@ window.GIT_DATA = {
         },
         {
           "text": "git diff --staged",
-          "why": "It compares the index with HEAD, showing the staged changes."
+          "why": "It compares the current saved commit with staging. Plain git diff compares staging with your file."
         }
       ],
       "correct": 2
@@ -244,15 +244,15 @@ window.GIT_DATA = {
     {
       "id": "q6",
       "topic": "daily-workflow",
-      "prompt": "A tracked .env file was added to .gitignore. Why does Git still show modifications?",
+      "prompt": "You put an already tracked .env file in .gitignore. Why does Git still report its edits?",
       "options": [
         {
           "text": "A force push is required for ignore rules",
           "why": "Force push moves a remote reference; it does not change tracked-file semantics."
         },
         {
-          "text": "Ignore rules do not untrack existing paths",
-          "why": "Remove it from tracking deliberately and handle any historically exposed credentials separately."
+          "text": "Ignore rules do not stop tracking an existing file",
+          "why": "Remove it from tracking with a reviewed git rm --cached if needed. If it held a secret, disable the secret too."
         },
         {
           "text": "The ignore file must always be global",
@@ -264,11 +264,11 @@ window.GIT_DATA = {
     {
       "id": "q7",
       "topic": "daily-workflow",
-      "prompt": "Your working directory mixes an urgent fix with an unrelated experiment. What is a useful next step?",
+      "prompt": "Your files include a bug fix and an unrelated experiment. What helps you save just the fix?",
       "options": [
         {
-          "text": "Stage selected paths/hunks and inspect the staged diff",
-          "why": "A coherent commit lets the reviewer and future debugger understand one change."
+          "text": "Choose only the fix’s files or changed lines, then read the staged diff",
+          "why": "A commit with one purpose is easier to review and undo. git add -p lets you choose small groups of lines."
         },
         {
           "text": "Stage everything because commits are always harmless",
@@ -276,7 +276,7 @@ window.GIT_DATA = {
         },
         {
           "text": "Hide the experiment by changing the commit message",
-          "why": "The message cannot remove unwanted content from the index."
+          "why": "The message cannot remove unwanted content from the staging area."
         }
       ],
       "correct": 0
@@ -284,7 +284,7 @@ window.GIT_DATA = {
     {
       "id": "q8",
       "topic": "daily-workflow",
-      "prompt": "A switch would overwrite your uncommitted work. What should you do first?",
+      "prompt": "Git says switching branches would overwrite your edits. What should you do first?",
       "options": [
         {
           "text": "Use reset --hard immediately",
@@ -295,8 +295,8 @@ window.GIT_DATA = {
           "why": "Deleting a branch does not safely resolve the working-tree conflict."
         },
         {
-          "text": "Preserve and inspect the work, or use another worktree",
-          "why": "Commit, reviewed stash or a separate checkout avoids losing the original edits."
+          "text": "Keep the edits with a commit, a checked stash, or a second working folder",
+          "why": "Read the edits first, then choose how to save them. Do not discard the work Git is trying to protect."
         }
       ],
       "correct": 2
@@ -304,19 +304,19 @@ window.GIT_DATA = {
     {
       "id": "q9",
       "topic": "branches-remotes",
-      "prompt": "origin/feature says you are up to date. Does that guarantee the live server has no new commits?",
+      "prompt": "origin/feature says you are up to date. Could someone still have pushed new work?",
       "options": [
         {
-          "text": "Yes, if the branch has an upstream",
-          "why": "Upstream configuration names a comparison target; it does not continuously query the server."
+          "text": "No, if an upstream is set",
+          "why": "An upstream names the remote branch to follow. It does not keep a live connection."
         },
         {
-          "text": "No; the remote-tracking ref may be stale",
-          "why": "Fetch before using it as current evidence of the server’s state."
+          "text": "Yes. origin/feature is only your last-known server position",
+          "why": "Fetch to update it. It does not check the server continuously."
         },
         {
-          "text": "Yes; it is a live network pointer",
-          "why": "It is a local reference updated by operations such as fetch."
+          "text": "No. It reads GitHub every time you look at it",
+          "why": "This is a local saved position. Someone can push after your last fetch."
         }
       ],
       "correct": 1
@@ -324,19 +324,19 @@ window.GIT_DATA = {
     {
       "id": "q10",
       "topic": "branches-remotes",
-      "prompt": "What does git fetch normally do to your checked-out branch?",
+      "prompt": "What does git fetch origin do to your current branch and files?",
       "options": [
         {
-          "text": "It updates remote information without integrating into that branch",
-          "why": "It retrieves objects and updates refs according to fetch configuration."
+          "text": "Downloads shared history but leaves this branch and files as they are",
+          "why": "It updates your last-known remote positions. Combining the downloaded work is a separate action."
         },
         {
-          "text": "It automatically rebases your local commits",
-          "why": "Rebase is a separate integration step or configured pull behavior."
+          "text": "Automatically rebases your changes",
+          "why": "Fetch only gets information. Rebase would be another operation."
         },
         {
-          "text": "It discards all unstaged files",
-          "why": "Fetch does not normally overwrite the checked-out working files."
+          "text": "Discards all file edits",
+          "why": "Fetch does not normally replace your current working files."
         }
       ],
       "correct": 0
@@ -344,19 +344,19 @@ window.GIT_DATA = {
     {
       "id": "q11",
       "topic": "branches-remotes",
-      "prompt": "Why might git pull --ff-only refuse after fetching?",
+      "prompt": "Why can git pull --ff-only refuse even after a successful fetch?",
       "options": [
         {
-          "text": "The only solution is a force push",
-          "why": "A rejected local integration does not authorize replacing remote history."
+          "text": "Because you must force-push",
+          "why": "A refused pull does not require replacing shared history."
         },
         {
-          "text": "The repository must be recloned",
-          "why": "Divergence is ordinary Git state, not evidence of corruption."
+          "text": "Because the repository is broken",
+          "why": "Separate work on both sides is normal and can be combined."
         },
         {
-          "text": "The branches diverged and cannot be integrated only by moving the tip",
-          "why": "Inspect and choose merge or rebase deliberately."
+          "text": "Both sides made new commits, so moving the name alone cannot combine them",
+          "why": "Read both sides and choose a merge or a suitable rebase."
         }
       ],
       "correct": 2
@@ -364,19 +364,19 @@ window.GIT_DATA = {
     {
       "id": "q12",
       "topic": "branches-remotes",
-      "prompt": "What does normal git fetch --prune remove?",
+      "prompt": "What does normal git fetch --prune clean up?",
       "options": [
         {
-          "text": "Your uncommitted source changes",
-          "why": "Those belong to the working tree and index, not stale tracking refs."
+          "text": "Your uncommitted file edits",
+          "why": "Those edits are in your files and staging, not old remote branch records."
         },
         {
-          "text": "Stale local tracking refs covered by the fetch refspec",
-          "why": "It cleans your cached view of deleted remote refs; tag behavior needs separate configuration awareness."
+          "text": "Your local records of remote branches deleted on the server",
+          "why": "It tidies the usual branch tracking records. Tags and custom fetch mappings can need separate settings."
         },
         {
-          "text": "Every teammate’s inactive branch on the server",
-          "why": "Pruning tracking refs is not a server-branch deletion command."
+          "text": "Every inactive teammate branch on GitHub",
+          "why": "Pruning local records does not delete those live server branches."
         }
       ],
       "correct": 1
@@ -384,19 +384,19 @@ window.GIT_DATA = {
     {
       "id": "q13",
       "topic": "merge",
-      "prompt": "When is a fast-forward possible?",
+      "prompt": "Main is at B and feature is A → B → C. Can main fast-forward to C?",
       "options": [
         {
-          "text": "The current target tip is an ancestor of the incoming tip",
-          "why": "The branch can move to the descendant without creating a merge commit."
+          "text": "Yes, because C already includes B in its earlier history",
+          "why": "Git can move main to C without creating a new merge commit."
         },
         {
-          "text": "The incoming branch has a later timestamp",
-          "why": "Ancestry, not date order, determines fast-forward eligibility."
+          "text": "Only if C has the newest date",
+          "why": "The earlier-commit links decide this, not the date."
         },
         {
-          "text": "Both branches have the same name",
-          "why": "Names do not prove an ancestry relationship."
+          "text": "Only if the two branches have the same name",
+          "why": "Different branch names can point to commits in the same line."
         }
       ],
       "correct": 0
@@ -404,19 +404,19 @@ window.GIT_DATA = {
     {
       "id": "q14",
       "topic": "merge",
-      "prompt": "Which three snapshots matter in a simple three-way merge?",
+      "prompt": "Which three file versions does a simple three-way merge use?",
       "options": [
         {
-          "text": "Working tree, remote URL and GitHub account",
-          "why": "Those are useful context, but not the three snapshots in the merge algorithm."
+          "text": "Your file, the remote URL, and your GitHub account",
+          "why": "The URL and account are not project-file versions."
         },
         {
-          "text": "The three most recent commits by date",
-          "why": "Date ordering is not how the common ancestor and tips are selected."
+          "text": "The last three commits by date",
+          "why": "Date order does not identify the shared starting version."
         },
         {
-          "text": "Common base, current side and incoming side",
-          "why": "The base explains what each side changed independently."
+          "text": "The shared starting version and the two branch versions",
+          "why": "The starting version lets Git see what each side changed."
         }
       ],
       "correct": 2
@@ -424,19 +424,19 @@ window.GIT_DATA = {
     {
       "id": "q15",
       "topic": "merge",
-      "prompt": "A merge reports no conflicts. What have you learned?",
+      "prompt": "Git combined the text without a conflict. What should you do next?",
       "options": [
         {
-          "text": "Both branches’ tests were automatically run",
-          "why": "Git merge does not automatically supply your project’s test strategy."
+          "text": "Assume Git ran all project tests",
+          "why": "A normal merge does not supply or run the project’s tests for you."
         },
         {
-          "text": "Git found a textual combination, but behavior still needs testing",
-          "why": "Different files or nonoverlapping edits can introduce semantic incompatibility."
+          "text": "Read the result and test the combined behavior",
+          "why": "Two text changes can fit together but make incompatible assumptions in the program."
         },
         {
-          "text": "The combined application must be correct",
-          "why": "Automatic textual integration is not an application proof."
+          "text": "Assume the program must work",
+          "why": "Git can combine text without knowing the program’s requirements."
         }
       ],
       "correct": 1
@@ -444,19 +444,19 @@ window.GIT_DATA = {
     {
       "id": "q16",
       "topic": "merge",
-      "prompt": "After a squash commit, are the original feature commits necessarily ancestors of main?",
+      "prompt": "After a squash saves one combined change, is feature recorded as a second parent?",
       "options": [
         {
-          "text": "No; the squash records combined content with a different parent relationship",
-          "why": "The source branch ancestry is not preserved as a merge parent."
+          "text": "No. The squash commit has one parent",
+          "why": "It can include the file changes without keeping the source branch as a merge parent."
         },
         {
-          "text": "Yes, because all their lines are present",
-          "why": "Content inclusion and commit reachability are different."
+          "text": "Yes, because all the lines are present",
+          "why": "The same file contents do not mean the same history links."
         },
         {
-          "text": "Only if you delete the feature branch",
-          "why": "Deleting a reference does not change existing commit parents."
+          "text": "Only after you delete feature",
+          "why": "Deleting a name does not change a saved commit’s parents."
         }
       ],
       "correct": 0
@@ -464,7 +464,7 @@ window.GIT_DATA = {
     {
       "id": "q17",
       "topic": "conflicts",
-      "prompt": "During rebase, which side is normally called ours?",
+      "prompt": "During rebase, which side is called ours?",
       "options": [
         {
           "text": "Always your original feature tip",
@@ -475,8 +475,8 @@ window.GIT_DATA = {
           "why": "These labels describe local operation state, not a live server query."
         },
         {
-          "text": "The new base plus commits already replayed",
-          "why": "The original commit currently being replayed is the theirs side."
+          "text": "The new starting work plus changes already applied onto it",
+          "why": "Theirs is the original commit being applied now. Read both contents rather than guessing from the names."
         }
       ],
       "correct": 2
@@ -484,15 +484,15 @@ window.GIT_DATA = {
     {
       "id": "q18",
       "topic": "conflicts",
-      "prompt": "Your editor offers Accept both for conflicting JSON values. What should you do?",
+      "prompt": "Your editor offers Accept both for two conflicting settings blocks. What should you do?",
       "options": [
         {
           "text": "Choose the side with the newest timestamp",
           "why": "Intent and context, not timestamps, determine the resolution."
         },
         {
-          "text": "Construct one valid result that satisfies both intended requirements",
-          "why": "Concatenation can create invalid JSON or duplicate contradictory keys."
+          "text": "Write one valid result with the required values from both changes",
+          "why": "Keeping both text blocks can create duplicate keys or invalid JSON. Check the final values and format."
         },
         {
           "text": "Always accept both because it cannot lose information",
@@ -504,11 +504,11 @@ window.GIT_DATA = {
     {
       "id": "q19",
       "topic": "conflicts",
-      "prompt": "What does git add do to a manually resolved conflict?",
+      "prompt": "After you fix a conflict, what does git add do?",
       "options": [
         {
-          "text": "Records your chosen resolution in the index",
-          "why": "It marks the path resolved; you must still review and test it."
+          "text": "Chooses your final file and marks that file as resolved",
+          "why": "You still need to read the chosen change, run tests, and continue the operation."
         },
         {
           "text": "Proves the application now works",
@@ -524,19 +524,19 @@ window.GIT_DATA = {
     {
       "id": "q20",
       "topic": "conflicts",
-      "prompt": "A delete/modify conflict appears. What is the correct general response?",
+      "prompt": "One branch deleted a file and the other edited it. What should you decide?",
       "options": [
         {
-          "text": "Always retain the file to avoid losing any lines",
-          "why": "That can undo an intentional deletion and leave obsolete behavior."
+          "text": "Always keep the file to avoid losing any lines",
+          "why": "That can undo an intended deletion and leave obsolete behavior."
         },
         {
           "text": "Always delete it because deletion has priority",
-          "why": "Git needs your resolution precisely because the intent is not mechanically settled."
+          "why": "Git needs your resolution precisely because the needed behavior is not automatically settled."
         },
         {
-          "text": "Decide whether the final design needs the file, then stage deletion or retained content",
-          "why": "A delete/modify conflict is a product decision, not merely a marker cleanup."
+          "text": "Whether the final project needs the file, then stage that choice",
+          "why": "For an intended deletion use git rm; for an intended file, edit and add it. Read the task requirements first."
         }
       ],
       "correct": 2
@@ -544,19 +544,19 @@ window.GIT_DATA = {
     {
       "id": "q21",
       "topic": "rebase",
-      "prompt": "Rebasing feature onto main changes which branch in the normal workflow?",
+      "prompt": "You run git rebase main while on feature. Which branch normally moves?",
       "options": [
         {
           "text": "Every remote copy of feature immediately",
           "why": "Rebase is local until a separate server update is performed."
         },
         {
-          "text": "The feature branch being replayed",
-          "why": "Main supplies the new base; rebase does not automatically move main."
+          "text": "Feature, the branch whose changes are being applied again",
+          "why": "Main is the new starting point and stays where it is. The rebase is local until you separately push."
         },
         {
           "text": "Main always moves to feature",
-          "why": "That is a different integration operation."
+          "why": "That is a different combining work operation."
         }
       ],
       "correct": 1
@@ -564,19 +564,19 @@ window.GIT_DATA = {
     {
       "id": "q22",
       "topic": "rebase",
-      "prompt": "A rebase stops on a conflict in the second commit. What does --skip do?",
+      "prompt": "Rebase pauses on the second commit. What does --skip do?",
       "options": [
         {
-          "text": "Omits that commit’s replayed change",
-          "why": "Use it only when the change is verified redundant or deliberately unwanted."
+          "text": "Leaves out that commit’s change from the new list",
+          "why": "Use it only if you checked that the change is already present or is no longer wanted."
         },
         {
           "text": "Automatically combines both sides correctly",
-          "why": "Skip avoids applying a commit; it does not solve its intent."
+          "why": "Skip avoids applying a commit; it does not solve its needed behavior."
         },
         {
           "text": "Keeps the same patch but ignores the error message",
-          "why": "Dropping a replay is a real history/content decision."
+          "why": "Dropping a apply again is a real history/content decision."
         }
       ],
       "correct": 0
@@ -584,19 +584,19 @@ window.GIT_DATA = {
     {
       "id": "q23",
       "topic": "rebase",
-      "prompt": "Why keep a backup tip and use range-diff after a rebase?",
+      "prompt": "Why keep a backup branch and read range-diff after rebase?",
       "options": [
         {
-          "text": "To preserve the old commit IDs on the rebased branch",
-          "why": "New parents require new objects; the backup retains the old line separately."
+          "text": "To keep the old commit IDs on the rebased branch",
+          "why": "New parents require new objects; the backup keeps the old line separately."
         },
         {
           "text": "To make force-pushing shared main automatically safe",
           "why": "A backup does not grant permission or protect every collaborator."
         },
         {
-          "text": "To compare the old and new patch series and inspect changed or omitted work",
-          "why": "This supports review and recovery, but tests are still needed."
+          "text": "To compare the old and new changes and spot a missing or changed step",
+          "why": "The backup keeps the old commits. Range-diff helps review the changes, and tests check the resulting behavior."
         }
       ],
       "correct": 2
@@ -604,19 +604,19 @@ window.GIT_DATA = {
     {
       "id": "q24",
       "topic": "rebase",
-      "prompt": "What is a key difference between rebase --abort and --quit?",
+      "prompt": "How do rebase --abort and --quit differ?",
       "options": [
         {
           "text": "Quit publishes the partial history to GitHub",
           "why": "Neither command inherently pushes to a remote."
         },
         {
-          "text": "Abort attempts to restore the pre-rebase state; quit leaves the current state",
-          "why": "Choose based on the actual operation and desired recovery."
+          "text": "Abort returns toward the starting state; quit leaves the current state",
+          "why": "Quit stops managing the rebase but leaves the current files, staging, and commit position. Read status before choosing."
         },
         {
           "text": "They always do exactly the same thing",
-          "why": "The distinction matters when HEAD/index/working files are mid-replay."
+          "why": "The distinction matters when HEAD/index/working files are mid-apply again."
         }
       ],
       "correct": 1
@@ -624,15 +624,15 @@ window.GIT_DATA = {
     {
       "id": "q25",
       "topic": "force-push",
-      "prompt": "What does an accepted force push principally change?",
+      "prompt": "What does an accepted force push mainly change?",
       "options": [
         {
-          "text": "The targeted remote reference",
-          "why": "Old objects may remain elsewhere, but the branch may stop reaching teammates’ commits."
+          "text": "The position of the targeted server branch",
+          "why": "Earlier commits may remain in other copies, but that branch can stop including a teammate’s work."
         },
         {
           "text": "Every clone’s working directory immediately",
-          "why": "Clones retain their own state until separate local operations occur."
+          "why": "Clones keep their own state until separate local operations occur."
         },
         {
           "text": "All old object copies everywhere",
@@ -644,19 +644,19 @@ window.GIT_DATA = {
     {
       "id": "q26",
       "topic": "force-push",
-      "prompt": "Why is an explicit --force-with-lease=ref:EXPECTED useful?",
+      "prompt": "Why give force-with-lease an exact EXPECTED commit ID?",
       "options": [
         {
-          "text": "It proves every known teammate change is preserved",
-          "why": "A lease checks identity, not whether your proposed tree/history retains intended content."
+          "text": "It proves every known teammate change is kept",
+          "why": "A lease checks identity, not whether your proposed tree/history keeps intended content."
         },
         {
           "text": "It bypasses GitHub rules and permissions",
-          "why": "Server authorization and rules still apply."
+          "why": "Server access decision and rules still apply."
         },
         {
-          "text": "It requires the live remote tip to match the pinned object ID",
-          "why": "It detects concurrent tip changes regardless of a later tracking-ref update."
+          "text": "It accepts only if the server branch is still at that saved ID",
+          "why": "If a teammate pushes after you checked, the ID differs and the replacement is refused. A later fetch does not change your saved exact ID."
         }
       ],
       "correct": 2
@@ -664,15 +664,15 @@ window.GIT_DATA = {
     {
       "id": "q27",
       "topic": "force-push",
-      "prompt": "Your editor fetched a teammate’s new commit in the background. What can happen with a default lease?",
+      "prompt": "Your editor fetches a teammate’s new commit in the background. Why can a default lease become weaker?",
       "options": [
         {
           "text": "It becomes stricter than every explicit lease",
           "why": "Its safety depends on what the tracking ref now represents."
         },
         {
-          "text": "Its tracking-based expectation may advance without your review",
-          "why": "An unqualified lease can accept replacing that newly observed tip; pin the reviewed expectation."
+          "text": "The last-known server position can advance before you read the new work",
+          "why": "A lease without an exact expected ID may then permit replacing that new position. It has not checked whether you kept the new changes."
         },
         {
           "text": "It automatically rebases your local work onto the teammate’s commit",
@@ -684,19 +684,19 @@ window.GIT_DATA = {
     {
       "id": "q28",
       "topic": "force-push",
-      "prompt": "An explicit lease was rejected. What should you do?",
+      "prompt": "An exact-ID lease was rejected. What next?",
       "options": [
         {
-          "text": "Inspect the new remote commits and account for them before retrying",
-          "why": "Refreshing the expected ID without preserving work defeats the reason for the rejection."
+          "text": "Read the new remote commits and decide how to keep the needed changes",
+          "why": "Do not just update the expected ID and resend the same replacement. That can remove the work the rejection protected."
         },
         {
           "text": "Add --force to keep the lease but silence the error",
           "why": "Force disables the lease protection rather than preserving it."
         },
         {
-          "text": "Assume the new remote commit is disposable",
-          "why": "Only collaboration and content inspection establish that."
+          "text": "Assume the new remote commit is practice",
+          "why": "Only collaboration and content checkion establish that."
         }
       ],
       "correct": 0
@@ -704,7 +704,7 @@ window.GIT_DATA = {
     {
       "id": "q29",
       "topic": "undo-recovery",
-      "prompt": "Which operation usually undoes a public bad change while preserving shared ancestry?",
+      "prompt": "Which command usually undoes a shared bad commit while keeping the old history?",
       "options": [
         {
           "text": "reset --hard followed by force push",
@@ -716,7 +716,7 @@ window.GIT_DATA = {
         },
         {
           "text": "git revert",
-          "why": "It records a new inverse change; resolve conflicts and test the resulting behavior."
+          "why": "It adds a correction that reverses the selected change in the current files. Resolve conflicts and test if needed."
         }
       ],
       "correct": 2
@@ -724,15 +724,15 @@ window.GIT_DATA = {
     {
       "id": "q30",
       "topic": "undo-recovery",
-      "prompt": "You found a missing committed tip in reflog. What is a useful first recovery action?",
+      "prompt": "You found a lost commit in reflog. What is a useful first recovery step?",
       "options": [
         {
           "text": "Run garbage collection to remove ambiguity",
-          "why": "Unreachable-object cleanup can reduce recovery options."
+          "why": "Unavailable through a saved name-object cleanup can reduce recovery options."
         },
         {
-          "text": "Inspect it and create a rescue branch at that ID",
-          "why": "A named reference protects the candidate before more state changes."
+          "text": "Read it with show, then give it a rescue branch name",
+          "why": "The name keeps the found commit available while you decide how to recover it. Main and your current files need not move."
         },
         {
           "text": "Immediately reset every branch to HEAD@{1}",
@@ -744,15 +744,15 @@ window.GIT_DATA = {
     {
       "id": "q31",
       "topic": "undo-recovery",
-      "prompt": "Can reflog reliably recover a never-tracked file removed by a cleanup command?",
+      "prompt": "Can reflog reliably recover a deleted file Git never stored?",
       "options": [
         {
-          "text": "No; Git may never have recorded its contents",
-          "why": "Use external backups or editor/filesystem recovery where available."
+          "text": "No. Git may never have saved its contents",
+          "why": "Reflog records branch movements, not every editor change. Check editor history or other backups."
         },
         {
           "text": "Yes, reflog stores every working-tree byte",
-          "why": "Reflog records ref movements, not continuous filesystem snapshots."
+          "why": "Reflog records branch movements, not continuous filesystem snapshots."
         },
         {
           "text": "Yes, if the filename existed in .gitignore",
@@ -764,19 +764,19 @@ window.GIT_DATA = {
     {
       "id": "q32",
       "topic": "undo-recovery",
-      "prompt": "A stash application conflicts. Which statement is correct?",
+      "prompt": "Applying a stash gives conflicts. What is true?",
       "options": [
         {
           "text": "All conflicts mean the stash was permanently deleted",
-          "why": "A failed pop/application normally retains the saved entry."
+          "why": "A failed pop/application normally keeps the saved entry."
         },
         {
           "text": "reset --hard is always safe here",
-          "why": "There may be unrelated uncommitted work that must be preserved first."
+          "why": "There may be unrelated uncommitted work that must be kept first."
         },
         {
-          "text": "The stash can remain, and there is no stash --abort command",
-          "why": "Preserve pre-existing work and resolve or recover deliberately."
+          "text": "The saved stash can remain, and there is no stash --abort",
+          "why": "Keep any edits that existed before applying it. Resolve and test, or carefully undo only the attempted application."
         }
       ],
       "correct": 2
@@ -784,19 +784,19 @@ window.GIT_DATA = {
     {
       "id": "q33",
       "topic": "history",
-      "prompt": "How does git diff A...B differ from git log A...B?",
+      "prompt": "What does git diff main...feature show?",
       "options": [
         {
-          "text": "Diff always compares B back to A",
-          "why": "The three-dot comparison is based on the merge base and is asymmetric."
+          "text": "Always feature’s files compared with main’s files",
+          "why": "That endpoint comparison is git diff feature main. Three-dot diff uses a common base."
         },
         {
-          "text": "Diff compares merge-base to B; log selects the symmetric difference",
-          "why": "Dot syntax must be interpreted in the command’s context."
+          "text": "The shared starting files compared with feature’s files",
+          "why": "For diff, three dots compare the merge base with the branch on the right. For log, three dots select separate commits from both sides."
         },
         {
-          "text": "Both show exactly the same unordered set of files",
-          "why": "Log selects commits; diff compares snapshots."
+          "text": "Exactly the same commits as git log main...feature",
+          "why": "Log selects commits. Diff compares file versions."
         }
       ],
       "correct": 1
@@ -804,11 +804,11 @@ window.GIT_DATA = {
     {
       "id": "q34",
       "topic": "history",
-      "prompt": "A blame entry names a developer. What does it establish?",
+      "prompt": "A blame entry names a developer. What does that tell you?",
       "options": [
         {
-          "text": "The selected line’s last modifying commit under that blame calculation",
-          "why": "Read the commit and context; formatting and moves can affect attribution."
+          "text": "Which commit last changed the selected line under that calculation",
+          "why": "Read that commit and its reason. Formatting or moved lines can affect the result; it does not by itself identify who caused a bug."
         },
         {
           "text": "Who caused every present-day bug involving that line",
@@ -824,19 +824,19 @@ window.GIT_DATA = {
     {
       "id": "q35",
       "topic": "history",
-      "prompt": "A bisect revision cannot build because a historical dependency is unavailable. How should it be classified?",
+      "prompt": "An old commit cannot be tested because a required package is unavailable. What should bisect do?",
       "options": [
         {
           "text": "Always bad",
-          "why": "That can identify an irrelevant commit as the regression source."
+          "why": "That can identify an irrelevant commit as the bug that appeared after working before source."
         },
         {
           "text": "Always good",
           "why": "Lack of a test result does not establish correct behavior."
         },
         {
-          "text": "As untestable when appropriate, using skip/exit 125",
-          "why": "Do not confuse an environment failure with the regression you are searching for."
+          "text": "Mark it untestable when appropriate, using skip or exit 125",
+          "why": "A setup failure is not proof of the bug you are searching for. Use the same reliable test across the range."
         }
       ],
       "correct": 2
@@ -844,19 +844,19 @@ window.GIT_DATA = {
     {
       "id": "q36",
       "topic": "history",
-      "prompt": "What question does git log -S 'text' help answer?",
+      "prompt": "What does git log -S 'text' help find?",
       "options": [
         {
           "text": "Which remote has the fastest connection?",
           "why": "This is a history search, not a transport measurement."
         },
         {
-          "text": "Which changes altered the occurrence count of that text?",
-          "why": "Use -G for matching added/removed lines by regex; inspect the relevant path/range."
+          "text": "Commits that changed how many times that text occurs",
+          "why": "Read the matching commits. Use -G for a pattern search in added or removed lines instead."
         },
         {
-          "text": "Which commits have signed metadata?",
-          "why": "Signature inspection uses different commands/options."
+          "text": "Which commits have signed recorded labels and details?",
+          "why": "Signature checkion uses different commands/options."
         }
       ],
       "correct": 1
@@ -864,11 +864,11 @@ window.GIT_DATA = {
     {
       "id": "q37",
       "topic": "collaboration",
-      "prompt": "A pull request is approved but a required test failed. Is it ready to merge?",
+      "prompt": "A reviewer approved, but a required test failed. Can the PR normally merge under that rule?",
       "options": [
         {
-          "text": "Not under a policy requiring that check to pass",
-          "why": "Human review and automated checks are independent evidence."
+          "text": "No. The required test must pass too",
+          "why": "Approval and test results are separate requirements. Opening or approving a PR does not merge it."
         },
         {
           "text": "Yes; one approval bypasses all checks",
@@ -876,7 +876,7 @@ window.GIT_DATA = {
         },
         {
           "text": "Yes; Git has already merged it when the PR opened",
-          "why": "Opening a PR proposes changes; it does not itself integrate them."
+          "why": "Opening a PR proposes changes; it does not itself combine them."
         }
       ],
       "correct": 0
@@ -884,19 +884,19 @@ window.GIT_DATA = {
     {
       "id": "q38",
       "topic": "collaboration",
-      "prompt": "After squash-merging a feature, where should ordinary new work usually start?",
+      "prompt": "After a squash merge, where should ordinary new work start?",
       "options": [
         {
-          "text": "Always continue the old feature branch without inspecting main",
-          "why": "That can carry old ancestry into future PRs."
+          "text": "Always continue the old feature branch without checking main",
+          "why": "That can carry old earlier-commit links into future PRs."
         },
         {
           "text": "From a detached release tag without a branch",
           "why": "That may lose a convenient reference to new work and use the wrong base."
         },
         {
-          "text": "From the updated base branch on a new feature branch",
-          "why": "The old feature IDs were not preserved as main’s ancestors; endless reuse can complicate later comparisons."
+          "text": "On a new branch from the updated base, usually main",
+          "why": "The old feature commits were not kept as parents of the squash commit. Reusing the old branch can confuse the next PR."
         }
       ],
       "correct": 2
@@ -904,15 +904,15 @@ window.GIT_DATA = {
     {
       "id": "q39",
       "topic": "collaboration",
-      "prompt": "What is a good reason to include range-diff after rewriting a PR branch?",
+      "prompt": "Why share range-diff after rewriting a PR branch?",
       "options": [
         {
           "text": "It guarantees unchanged runtime behavior",
           "why": "Patch comparison still needs contextual review and tests."
         },
         {
-          "text": "It helps reviewers compare the old and new patch series",
-          "why": "Reviewers can focus on conflict resolutions, omissions and changes introduced during the rewrite."
+          "text": "It helps reviewers compare the old and new lists of changes",
+          "why": "They can check conflict fixes, missing work, and edits made during rebase. It does not replace tests or approval."
         },
         {
           "text": "It prevents anyone from requesting more review",
@@ -924,11 +924,11 @@ window.GIT_DATA = {
     {
       "id": "q40",
       "topic": "collaboration",
-      "prompt": "Which practice most improves practical Git skill?",
+      "prompt": "What helps you build practical Git skill?",
       "options": [
         {
-          "text": "Predict state changes, execute in a disposable repo, then verify the graph and content",
-          "why": "This builds a transferable mental model rather than a fragile command memory."
+          "text": "Predict the result, try it in a practice project, and check files and history",
+          "why": "Explaining the observed change helps you use the command in a new situation too."
         },
         {
           "text": "Memorize destructive aliases without reading their expansion",
@@ -936,7 +936,7 @@ window.GIT_DATA = {
         },
         {
           "text": "Avoid ever reading a diff because CI covers everything",
-          "why": "CI cannot replace review of intent, secrets and unintended changes."
+          "why": "CI cannot replace review of needed behavior, secrets and unintended changes."
         }
       ],
       "correct": 0
@@ -944,7 +944,7 @@ window.GIT_DATA = {
     {
       "id": "q41",
       "topic": "github-permissions",
-      "prompt": "A Read-only user creates a PAT with broad requested scopes. Can it give them repository Write access?",
+      "prompt": "A person has Read access. Can a personal token give them Write access just by asking for it?",
       "options": [
         {
           "text": "Yes; token scope always overrides the account role",
@@ -952,11 +952,11 @@ window.GIT_DATA = {
         },
         {
           "text": "Only if the author email matches an admin",
-          "why": "Commit metadata does not grant access."
+          "why": "The labels on your commits does not grant access."
         },
         {
-          "text": "No; a user token cannot exceed the owner’s access",
-          "why": "Scopes further constrain identity capabilities; they do not grant missing repository roles."
+          "text": "No. A user token cannot add access its owner does not have",
+          "why": "Token permissions limit the owner’s existing access. The project grant must allow the action as well."
         }
       ],
       "correct": 2
@@ -964,15 +964,15 @@ window.GIT_DATA = {
     {
       "id": "q42",
       "topic": "github-permissions",
-      "prompt": "Who normally needs code push capability without full sensitive administration?",
+      "prompt": "Which usual organization-project role allows code pushes without full settings control?",
       "options": [
         {
-          "text": "Triage grants the same code-writing capability",
+          "text": "Triage grants the same code-writing allowed action",
           "why": "Triage manages collaboration items without ordinary push privilege."
         },
         {
-          "text": "A contributor with Write access, subject to rules",
-          "why": "Grant only the task’s needed repository role and credential permissions."
+          "text": "Write, with the branch rules still applying",
+          "why": "Choose the access needed for the task. Write is different from Admin, and Triage does not grant ordinary code pushes."
         },
         {
           "text": "Everyone must be an organization owner",
@@ -984,11 +984,11 @@ window.GIT_DATA = {
     {
       "id": "q43",
       "topic": "github-permissions",
-      "prompt": "The browser can view a private repo but terminal Git says not found. What should you check?",
+      "prompt": "A private project opens in your browser, but terminal Git says not found. What should you check?",
       "options": [
         {
-          "text": "Whether the terminal credential is the same identity and has that repo selected",
-          "why": "Browser sessions and CLI/SSH credentials can represent different accounts."
+          "text": "The terminal account and whether its credential can reach that project",
+          "why": "The browser login and terminal key can represent different accounts. A token may also have the wrong project selected."
         },
         {
           "text": "Whether you should force push",
@@ -996,7 +996,7 @@ window.GIT_DATA = {
         },
         {
           "text": "Whether setting user.name to the repo owner fixes it",
-          "why": "Author metadata is not authentication."
+          "why": "Author recorded labels and details is not sign-in."
         }
       ],
       "correct": 0
@@ -1004,7 +1004,7 @@ window.GIT_DATA = {
     {
       "id": "q44",
       "topic": "github-permissions",
-      "prompt": "Removing an employee from a team is enough to revoke every automation credential they possessed. True?",
+      "prompt": "Does removing someone from one team disable every key they held?",
       "options": [
         {
           "text": "Yes; team membership is the only access source",
@@ -1015,8 +1015,8 @@ window.GIT_DATA = {
           "why": "Deploy keys are repository credentials, not simply a reflection of current team membership."
         },
         {
-          "text": "No; review other grants, deploy keys and app/automation access too",
-          "why": "Effective access and standalone credentials may have additional ownership/lifecycle paths."
+          "text": "No. Check other grants, deploy keys, apps, and job credentials too",
+          "why": "Other teams, direct access, or separate project keys may still work. Verify that the old access is removed."
         }
       ],
       "correct": 2
@@ -1024,15 +1024,15 @@ window.GIT_DATA = {
     {
       "id": "q45",
       "topic": "rules",
-      "prompt": "A CODEOWNERS file exists. Are code-owner approvals automatically required to merge?",
+      "prompt": "Does creating CODEOWNERS automatically make its approval required?",
       "options": [
         {
           "text": "Only if every owner has Admin",
           "why": "Appropriate code-owner access is needed, but universal admin is not the solution."
         },
         {
-          "text": "No; enable the relevant required-review policy too",
-          "why": "The file routes ownership; enforcement is a separate repository rule."
+          "text": "No. Enable the required code-owner review rule too",
+          "why": "The file chooses reviewers. A separate rule makes their approval a condition for merging."
         },
         {
           "text": "Yes; the file is a universal merge lock",
@@ -1044,11 +1044,11 @@ window.GIT_DATA = {
     {
       "id": "q46",
       "topic": "rules",
-      "prompt": "You require linear history but allow only merge-commit integration. What is wrong?",
+      "prompt": "You require a single-parent history but allow only merge commits. What is wrong?",
       "options": [
         {
-          "text": "The policies conflict; allow a compatible squash or rebase method",
-          "why": "Linear history rejects merge commits on the protected target."
+          "text": "The settings conflict; allow a suitable squash or rebase method",
+          "why": "The linear-history rule rejects merge commits because those normally have two parents."
         },
         {
           "text": "Linear history means newest timestamps first",
@@ -1064,7 +1064,7 @@ window.GIT_DATA = {
     {
       "id": "q47",
       "topic": "rules",
-      "prompt": "Why test rules using a non-bypass contributor?",
+      "prompt": "Why test branch rules with a normal writer who has no allowed exception?",
       "options": [
         {
           "text": "Only read-only accounts can see rule outcomes",
@@ -1075,8 +1075,8 @@ window.GIT_DATA = {
           "why": "Bypass is precisely an explicit exception that needs review."
         },
         {
-          "text": "An admin or configured bypass actor may not experience the intended restrictions",
-          "why": "A saved setting is not proof that normal contributors are gated correctly."
+          "text": "An admin or exception account may not see the intended block",
+          "why": "Check both a refused direct push and a successful approved PR. Saving a rule alone does not prove it works."
         }
       ],
       "correct": 2
@@ -1084,15 +1084,15 @@ window.GIT_DATA = {
     {
       "id": "q48",
       "topic": "rules",
-      "prompt": "A required check is forever pending for merge-queue commits. What is a plausible cause?",
+      "prompt": "A required test stays pending for merge-queue commits. What could be missing?",
       "options": [
         {
           "text": "The branch must always be force-pushed",
           "why": "History replacement does not fix an absent workflow event."
         },
         {
-          "text": "The workflow does not report the required check for the merge-group event",
-          "why": "Inspect exact event, job/check name and trusted source."
+          "text": "A workflow reporting that check for the merge_group event",
+          "why": "Read the exact required name, event, and check source. The job must report for the revision GitHub is evaluating."
         },
         {
           "text": "Every pending check should be removed from the ruleset immediately",
@@ -1104,11 +1104,11 @@ window.GIT_DATA = {
     {
       "id": "q49",
       "topic": "security-automation",
-      "prompt": "A token was committed and then deleted in a later commit. What is the first security action?",
+      "prompt": "You committed a token and later deleted its text. What should you do first?",
       "options": [
         {
-          "text": "Revoke or rotate the exposed token",
-          "why": "Old commits and external copies may still contain it; visibility cleanup does not invalidate credentials."
+          "text": "Disable or replace the exposed token at its provider",
+          "why": "Old commits and other copies may still hold it. Removing visible text does not stop the old credential working."
         },
         {
           "text": "Assume it is safe because HEAD no longer contains it",
@@ -1124,7 +1124,7 @@ window.GIT_DATA = {
     {
       "id": "q50",
       "topic": "security-automation",
-      "prompt": "What is dangerous about checking out fork PR code in a privileged pull_request_target job and running its build?",
+      "prompt": "Why is it dangerous to run a fork PR’s build in a powerful pull_request_target job?",
       "options": [
         {
           "text": "The commit graph becomes automatically circular",
@@ -1135,8 +1135,8 @@ window.GIT_DATA = {
           "why": "It can affect repository and external-service access."
         },
         {
-          "text": "Untrusted code can execute with the trusted job’s secrets or write capability",
-          "why": "Build/install/configuration steps can run attacker-controlled behavior."
+          "text": "The contributor’s code may get the job’s secrets or write access",
+          "why": "Builds, package installs, and config files can run code. Keep untrusted code away from powerful credentials."
         }
       ],
       "correct": 2
@@ -1144,15 +1144,15 @@ window.GIT_DATA = {
     {
       "id": "q51",
       "topic": "security-automation",
-      "prompt": "What does a verified commit signature establish?",
+      "prompt": "What does a verified commit signature tell you?",
       "options": [
         {
           "text": "The code can never contain a vulnerability",
           "why": "A valid signer can still make mistakes or sign harmful code."
         },
         {
-          "text": "Evidence about the object and a signing key under the verifier’s policy",
-          "why": "It does not replace review or prove functional correctness."
+          "text": "The exact commit matches an accepted signing key under the verification rules",
+          "why": "It does not tell you that tests passed, someone reviewed it, or the code is free of bugs."
         },
         {
           "text": "All required tests passed",
@@ -1164,11 +1164,11 @@ window.GIT_DATA = {
     {
       "id": "q52",
       "topic": "security-automation",
-      "prompt": "Only the release job needs package publishing. How should workflow permissions be designed?",
+      "prompt": "Only the release job needs to publish packages. How should you grant that access?",
       "options": [
         {
-          "text": "Grant that capability narrowly to the job that needs it",
-          "why": "Minimize credentials available to other jobs, especially untrusted validation."
+          "text": "Give it only to the job that needs it",
+          "why": "Test jobs do not need publishing access. Limiting their credentials reduces what a mistake or untrusted step could do."
         },
         {
           "text": "Give every job all write permissions",
@@ -1184,7 +1184,7 @@ window.GIT_DATA = {
     {
       "id": "q53",
       "topic": "advanced",
-      "prompt": "A cherry-picked commit has a new ID. Is that unexpected?",
+      "prompt": "A cherry-picked fix has a new commit ID. Is that expected?",
       "options": [
         {
           "text": "Yes; cherry-pick always moves the original object without changing parents",
@@ -1195,8 +1195,8 @@ window.GIT_DATA = {
           "why": "Object identity depends on more than file content."
         },
         {
-          "text": "No; applying the patch in another parent context creates a new commit",
-          "why": "Inspect dependencies and test the new context."
+          "text": "Yes. Applying the change after a different parent usually makes a new commit",
+          "why": "Read the fix’s required earlier changes and test it in the destination branch."
         }
       ],
       "correct": 2
@@ -1204,15 +1204,15 @@ window.GIT_DATA = {
     {
       "id": "q54",
       "topic": "advanced",
-      "prompt": "What does a linked worktree provide?",
+      "prompt": "What does a linked worktree give you?",
       "options": [
         {
           "text": "A security sandbox for running untrusted code",
           "why": "It does not isolate permissions or execution privileges."
         },
         {
-          "text": "Another working directory/index while sharing repository objects and refs",
-          "why": "It is useful for parallel tasks without overwriting the first checkout’s files."
+          "text": "Another working folder with separate files, staging, and HEAD",
+          "why": "The folders share stored commits and branch names. Your first folder’s edits can stay while you work on a separate task."
         },
         {
           "text": "A separate GitHub organization",
@@ -1224,15 +1224,15 @@ window.GIT_DATA = {
     {
       "id": "q55",
       "topic": "advanced",
-      "prompt": "Why review a rerere-reused resolution?",
+      "prompt": "Why check a conflict fix reused by rerere?",
       "options": [
         {
-          "text": "It may repeat an incorrect or contextually outdated decision",
-          "why": "Reusing text is not a correctness proof."
+          "text": "It may repeat a wrong answer or an answer that no longer fits",
+          "why": "Remembering old text does not prove it is correct with the new surrounding changes. Read and test it."
         },
         {
           "text": "Because rerere can never reproduce any previous result",
-          "why": "Reuse is its purpose; contextual correctness is the remaining question."
+          "why": "Reuse is its purpose; whether the answer still fits is the remaining question."
         },
         {
           "text": "Because it always force-pushes automatically",
@@ -1244,7 +1244,7 @@ window.GIT_DATA = {
     {
       "id": "q56",
       "topic": "advanced",
-      "prompt": "How does merge -s ours differ from merge -X ours?",
+      "prompt": "How do merge -s ours and merge -X ours differ?",
       "options": [
         {
           "text": "They are interchangeable spellings",
@@ -1252,11 +1252,11 @@ window.GIT_DATA = {
         },
         {
           "text": "Both guarantee a valid combined application",
-          "why": "Neither strategy replaces an intent-based review and tests."
+          "why": "Neither strategy replaces an needed behavior-based review and tests."
         },
         {
-          "text": "-s ours keeps our tree while recording ancestry; -X ours favors ours in conflicting hunks",
-          "why": "The latter can still incorporate the other side’s nonconflicting changes."
+          "text": "-s ours keeps all our files; -X ours favors ours only for conflicting parts",
+          "why": "The -s strategy records the other history but ignores its file contents. The -X option can still take nonconflicting edits from the other side."
         }
       ],
       "correct": 2
@@ -1264,15 +1264,15 @@ window.GIT_DATA = {
     {
       "id": "q57",
       "topic": "troubleshooting",
-      "prompt": "Git reports index.lock exists. What is the correct first response?",
+      "prompt": "Git says index.lock exists. What should you check first?",
       "options": [
         {
           "text": "Force push to release the lock",
           "why": "A remote update does not resolve a local index writer."
         },
         {
-          "text": "Check whether an active Git process is using the repository",
-          "why": "Only a confirmed stale lock should be removed; concurrent writers can corrupt intended state."
+          "text": "Whether another Git process is still writing in the project",
+          "why": "The lock may protect an active command. Remove only a confirmed leftover lock when no process uses it, then read status."
         },
         {
           "text": "Delete every lock file immediately",
@@ -1284,11 +1284,11 @@ window.GIT_DATA = {
     {
       "id": "q58",
       "topic": "troubleshooting",
-      "prompt": "A clean merge made the application fail. What kind of problem may this be?",
+      "prompt": "Text merged without conflicts, but the program fails. What could explain it?",
       "options": [
         {
-          "text": "A semantic conflict",
-          "why": "The text combined mechanically while assumptions or interfaces became incompatible."
+          "text": "The two changes disagree in behavior even though the text fits",
+          "why": "For example, one change renames a function while another calls the old name. Read and test the combined program."
         },
         {
           "text": "Proof that every conflict must have visible markers",
@@ -1304,7 +1304,7 @@ window.GIT_DATA = {
     {
       "id": "q59",
       "topic": "troubleshooting",
-      "prompt": "After reverting a merge, merging the same old branch does not restore its change. Why?",
+      "prompt": "After reverting a merge, why might merging the same old branch not restore its change?",
       "options": [
         {
           "text": "Revert erased the entire source branch everywhere",
@@ -1312,11 +1312,11 @@ window.GIT_DATA = {
         },
         {
           "text": "Git ignored every future commit automatically",
-          "why": "New descendants and their differences can still be integrated; the old ancestry explains the specific result."
+          "why": "New later commit that follows its and their differences can still be combined; the old earlier-commit links explains the specific result."
         },
         {
-          "text": "The original merge ancestry remains recorded",
-          "why": "Revert changed content; plan new corrective commits or a reviewed revert of the revert."
+          "text": "The old merge links still exist even though revert changed the files",
+          "why": "Plan a new corrective commit or a reviewed revert of the revert. Do not assume the old merge will be applied again."
         }
       ],
       "correct": 2
@@ -1324,15 +1324,15 @@ window.GIT_DATA = {
     {
       "id": "q60",
       "topic": "troubleshooting",
-      "prompt": "Your clone lacks history needed for merge-base analysis. What should you inspect?",
+      "prompt": "Your copy lacks older commits needed to find a merge base. What should you check?",
       "options": [
         {
-          "text": "Whether a hard reset can manufacture missing ancestors",
+          "text": "Whether a hard reset can manufacture missing earlier commits",
           "why": "Moving a reference does not download absent history."
         },
         {
-          "text": "Whether it is shallow and whether the necessary refs/ancestors were fetched",
-          "why": "Fetch appropriate depth/refs before interpreting an incomplete graph."
+          "text": "Whether it has limited history and whether the needed branches were fetched",
+          "why": "A shallow clone downloads limited history. Fetch the missing depth or branches before relying on the comparison."
         },
         {
           "text": "Whether the terminal theme is correct",
@@ -1346,338 +1346,338 @@ window.GIT_DATA = {
     {
       "id": "card1",
       "topic": "daily-workflow",
-      "prompt": "Inspect repository state",
+      "prompt": "See what is saved and what is waiting",
       "answer": "git status",
-      "why": "Read the operation in progress, branch and all change categories."
+      "why": "Read the branch, paused operation, chosen changes, and edits still in your files."
     },
     {
       "id": "card2",
       "topic": "foundations",
-      "prompt": "See unstaged changes",
+      "prompt": "Read edits not yet chosen for a commit",
       "answer": "git diff",
-      "why": "Working tree compared with index; untracked file contents are not shown."
+      "why": "Compares staging with your file. New untracked file contents are not shown."
     },
     {
       "id": "card3",
       "topic": "foundations",
-      "prompt": "Review the next commit",
+      "prompt": "Read changes chosen for the next commit",
       "answer": "git diff --staged",
-      "why": "Index compared with HEAD."
+      "why": "Compares the current saved commit with staging."
     },
     {
       "id": "card4",
       "topic": "daily-workflow",
-      "prompt": "Stage selected hunks",
+      "prompt": "Choose only some changed lines",
       "answer": "git add -p -- path",
-      "why": "Read each hunk; later edits are not automatically restaged."
+      "why": "Replace path with a file. Read each group of lines before choosing it."
     },
     {
       "id": "card5",
       "topic": "daily-workflow",
-      "prompt": "Record a coherent change",
+      "prompt": "Save the chosen changes",
       "answer": "git commit -m 'Describe behavior'",
-      "why": "The commit records the index, not every file on disk."
+      "why": "Commit saves staging. Later file edits are not chosen automatically."
     },
     {
       "id": "card6",
       "topic": "branches-remotes",
-      "prompt": "Start a feature branch",
+      "prompt": "Create and enter a branch",
       "answer": "git switch -c feature/name",
-      "why": "Check the starting commit and working tree first."
+      "why": "Check the starting commit and waiting edits first."
     },
     {
       "id": "card7",
       "topic": "branches-remotes",
-      "prompt": "Refresh remote knowledge",
+      "prompt": "Download shared history without combining it",
       "answer": "git fetch origin",
-      "why": "Does not integrate remote changes into your current branch."
+      "why": "Your current branch and files stay as they are."
     },
     {
       "id": "card8",
       "topic": "branches-remotes",
-      "prompt": "Require fast-forward pull",
+      "prompt": "Fetch and update only if no separate work needs combining",
       "answer": "git pull --ff-only",
-      "why": "Refusal means inspect divergence, not remove the guard."
+      "why": "If refused, read both sides before choosing merge or rebase."
     },
     {
       "id": "card9",
       "topic": "branches-remotes",
-      "prompt": "Inspect tracking relationships",
+      "prompt": "See which remote branch each local branch follows",
       "answer": "git branch -vv",
-      "why": "Ahead/behind compares local tracking refs; fetch for current evidence."
+      "why": "Ahead/behind counts use last-known positions. Fetch for a newer view."
     },
     {
       "id": "card10",
       "topic": "branches-remotes",
-      "prompt": "Push and set upstream",
+      "prompt": "Send a branch and remember its destination",
       "answer": "git push -u origin feature",
-      "why": "Confirm the intended branch and remote."
+      "why": "Check the remote address and branch name first."
     },
     {
       "id": "card11",
       "topic": "history",
-      "prompt": "Read the commit graph",
+      "prompt": "See a picture of saved history",
       "answer": "git log --graph --oneline --decorate --all",
-      "why": "Walks reachable local refs, not every historical object everywhere."
+      "why": "Shows history reached through locally known names. Fetch if the server matters."
     },
     {
       "id": "card12",
       "topic": "merge",
-      "prompt": "Find a common merge base",
+      "prompt": "Find the shared starting commit",
       "answer": "git merge-base main feature",
-      "why": "Complex histories can have more than one best base."
+      "why": "A complex history can have more than one suitable common base."
     },
     {
       "id": "card13",
       "topic": "merge",
-      "prompt": "Fast-forward only",
+      "prompt": "Move forward without a new merge commit",
       "answer": "git merge --ff-only feature",
-      "why": "Current tip must be an ancestor of the incoming tip."
+      "why": "Your current commit must be in feature’s earlier history."
     },
     {
       "id": "card14",
       "topic": "merge",
-      "prompt": "Record a merge boundary",
+      "prompt": "Combine with a merge commit",
       "answer": "git merge --no-ff feature",
-      "why": "Creates a merge commit when integration is needed."
+      "why": "Records both branches as parents when work needs combining."
     },
     {
       "id": "card15",
       "topic": "merge",
-      "prompt": "Prepare a squash integration",
+      "prompt": "Choose one combined change from a branch",
       "answer": "git merge --squash feature",
-      "why": "Review and commit separately; source ancestry is not a merge parent."
+      "why": "Inspect and commit separately. Feature is not recorded as a second parent."
     },
     {
       "id": "card16",
       "topic": "conflicts",
-      "prompt": "List unresolved paths",
+      "prompt": "List files still needing a conflict choice",
       "answer": "git diff --name-only --diff-filter=U",
-      "why": "An empty result is necessary but not a correctness proof."
+      "why": "No output means none are listed. It does not prove the program works."
     },
     {
       "id": "card17",
       "topic": "conflicts",
-      "prompt": "Inspect unmerged index stages",
+      "prompt": "List the stored conflict versions",
       "answer": "git ls-files -u",
-      "why": "Stages may be absent for add/add or delete/modify cases."
+      "why": "Number 1 is base, 2 is ours, 3 is theirs. Some may be absent."
     },
     {
       "id": "card18",
       "topic": "conflicts",
-      "prompt": "Read the base version",
+      "prompt": "Read the conflict’s starting file",
       "answer": "git show :1:path",
-      "why": "Stage 1 is the common-base content where present."
+      "why": "Replace path with the actual file. A newly added file may have no base."
     },
     {
       "id": "card19",
       "topic": "conflicts",
-      "prompt": "Read the ours version",
+      "prompt": "Read the conflict side called ours",
       "answer": "git show :2:path",
-      "why": "During rebase this is the new-base/rebased-so-far side."
+      "why": "In rebase this is the new starting work plus changes already reapplied."
     },
     {
       "id": "card20",
       "topic": "conflicts",
-      "prompt": "Read the theirs version",
+      "prompt": "Read the conflict side called theirs",
       "answer": "git show :3:path",
-      "why": "During rebase this is the original commit being replayed."
+      "why": "In rebase this is the original commit being applied now."
     },
     {
       "id": "card21",
       "topic": "conflicts",
-      "prompt": "Continue a resolved merge",
+      "prompt": "Finish a merge after fixing its files",
       "answer": "git merge --continue",
-      "why": "Stage the intended result and test before continuing."
+      "why": "Add the resolved files, inspect, and test first."
     },
     {
       "id": "card22",
       "topic": "conflicts",
-      "prompt": "Abort a merge in progress",
+      "prompt": "Stop a merge in progress",
       "answer": "git merge --abort",
-      "why": "Unrelated dirty work can complicate exact restoration."
+      "why": "Unsaved unrelated work can make an exact return harder."
     },
     {
       "id": "card23",
       "topic": "rebase",
-      "prompt": "Replay a feature onto main",
+      "prompt": "Apply your changes after the fetched main",
       "answer": "git rebase origin/main",
-      "why": "Work on a clean branch and keep a recovery reference."
+      "why": "Use a clean branch and keep a backup name for the old commits."
     },
     {
       "id": "card24",
       "topic": "rebase",
-      "prompt": "See the current replayed patch",
+      "prompt": "Read the change rebase is applying now",
       "answer": "git rebase --show-current-patch",
-      "why": "Useful when a rebase stops at a conflict."
+      "why": "Useful when rebase pauses at a conflict."
     },
     {
       "id": "card25",
       "topic": "rebase",
-      "prompt": "Continue a resolved rebase step",
+      "prompt": "Continue a rebase after fixing files",
       "answer": "git rebase --continue",
-      "why": "Later commits may conflict again."
+      "why": "Add, inspect, and test. Another commit can conflict next."
     },
     {
       "id": "card26",
       "topic": "rebase",
-      "prompt": "Restore the pre-rebase branch state",
+      "prompt": "Stop rebase and return to its starting state",
       "answer": "git rebase --abort",
-      "why": "Different from --quit, which leaves the current state."
+      "why": "Different from --quit, which leaves the current files and commit position."
     },
     {
       "id": "card27",
       "topic": "history",
-      "prompt": "Compare old and new patch series",
+      "prompt": "Compare old and new lists of changes",
       "answer": "git range-diff OLD_BASE..old-tip NEW_BASE..new-tip",
-      "why": "Use correct boundaries; inspect unmatched and changed patches."
+      "why": "Replace the example names with checked IDs or branches. Read missing/changed entries."
     },
     {
       "id": "card28",
       "topic": "force-push",
-      "prompt": "Pin a lease to an expected remote tip",
+      "prompt": "Replace only the exact server position you checked",
       "answer": "git push --force-with-lease=refs/heads/feature:EXPECTED origin HEAD:refs/heads/feature",
-      "why": "Replace EXPECTED with the reviewed full ID. Server rules still apply."
+      "why": "EXPECTED must be the reviewed full ID. This still needs permission and agreement."
     },
     {
       "id": "card29",
       "topic": "force-push",
-      "prompt": "Push to an explicit branch destination",
+      "prompt": "Send your current commit to an exact server branch",
       "answer": "git push origin HEAD:refs/heads/feature",
-      "why": "Explicit destination reduces ambiguity; it does not validate content."
+      "why": "HEAD is the source. The name after the colon is the server destination."
     },
     {
       "id": "card30",
       "topic": "undo-recovery",
-      "prompt": "Find local reference movements",
+      "prompt": "Find where a local branch used to point",
       "answer": "git reflog --date=iso",
-      "why": "Local and expiring, not a server-wide durable backup."
+      "why": "A local movement list that can expire. It does not save every file edit."
     },
     {
       "id": "card31",
       "topic": "undo-recovery",
-      "prompt": "Protect a recovered committed tip",
+      "prompt": "Keep a found commit under a rescue name",
       "answer": "git branch rescue/work COMMIT",
-      "why": "Inspect the commit first; a branch does not save uncommitted files."
+      "why": "Inspect COMMIT first. A branch keeps commits, not uncommitted file text."
     },
     {
       "id": "card32",
       "topic": "undo-recovery",
-      "prompt": "Undo a public change with new history",
+      "prompt": "Undo a shared change with a new correction",
       "answer": "git revert COMMIT",
-      "why": "An inverse patch can conflict and needs tests."
+      "why": "Reverses that change in current files. It may conflict; test afterward."
     },
     {
       "id": "card33",
       "topic": "undo-recovery",
-      "prompt": "Move tip while retaining index and files",
+      "prompt": "Move a private branch, keeping staging and files",
       "answer": "git reset --soft TARGET",
-      "why": "Private-history operation; current branch/HEAD moves."
+      "why": "Check TARGET and keep the old commit under a backup name."
     },
     {
       "id": "card34",
       "topic": "undo-recovery",
-      "prompt": "Move tip and reset index, retain files",
+      "prompt": "Move a private branch, unstage changes, keep files",
       "answer": "git reset --mixed TARGET",
-      "why": "Changes become unstaged. Path-form reset has different semantics."
+      "why": "Staging becomes TARGET’s version. Your files stay. Reset with a file path behaves differently."
     },
     {
       "id": "card35",
       "topic": "undo-recovery",
-      "prompt": "Overwrite tracked state at a target",
+      "prompt": "Replace branch, staging, and tracked files",
       "answer": "git reset --hard TARGET",
-      "why": "Destructive; preserve important work and inspect the exact target."
+      "why": "Can discard work and remove untracked paths in the way. Keep wanted files first."
     },
     {
       "id": "card36",
       "topic": "undo-recovery",
-      "prompt": "Unstage a path",
+      "prompt": "Remove changes from the next commit, keep your file",
       "answer": "git restore --staged -- path",
-      "why": "Keeps working-file edits while restoring index content from HEAD."
+      "why": "Restores staging for that file from the current saved commit by default."
     },
     {
       "id": "card37",
       "topic": "undo-recovery",
-      "prompt": "Discard unstaged tracked edits",
+      "prompt": "Throw away edits not yet staged",
       "answer": "git restore -- path",
-      "why": "Overwrites the working file from the index. Save needed edits first."
+      "why": "Overwrites the file from staging. Save wanted edits elsewhere first."
     },
     {
       "id": "card38",
       "topic": "undo-recovery",
-      "prompt": "Stash including untracked files",
+      "prompt": "Save unfinished tracked and new files temporarily",
       "answer": "git stash push -u -m 'Explain WIP'",
-      "why": "Ignored files are not included by -u."
+      "why": "-u includes untracked files but not ignored files."
     },
     {
       "id": "card39",
       "topic": "undo-recovery",
-      "prompt": "Inspect a saved stash",
+      "prompt": "Read a temporary saved change",
       "answer": "git stash show -p 'stash@{0}'",
-      "why": "Confirm which entry it is before applying or dropping it."
+      "why": "Inspect before applying or dropping it. Number 0 means newest."
     },
     {
       "id": "card40",
       "topic": "history",
-      "prompt": "Follow a file through detected renames",
+      "prompt": "Read one file’s earlier history",
       "answer": "git log --follow -- path",
-      "why": "One path; rename following is heuristic."
+      "why": "Attempts to follow earlier names of one path."
     },
     {
       "id": "card41",
       "topic": "history",
-      "prompt": "Find a line’s last modifying commit",
+      "prompt": "Find the commit that last changed selected lines",
       "answer": "git blame -L 20,40 -- path",
-      "why": "Read the commit and surrounding context rather than assigning blame."
+      "why": "Read the commit and context. Formatting can affect who appears here."
     },
     {
       "id": "card42",
       "topic": "history",
-      "prompt": "Search for an occurrence-count change",
+      "prompt": "Find commits that changed the count of some text",
       "answer": "git log -S 'text' -- path",
-      "why": "Use -G for regex matches in added/removed patch lines."
+      "why": "Use -G for a pattern search in added or removed lines."
     },
     {
       "id": "card43",
       "topic": "history",
-      "prompt": "Automate a regression search",
+      "prompt": "Use a test to find the first bad commit",
       "answer": "git bisect run ./test-regression.sh",
-      "why": "0 is good; 125 skips untestable revisions. End with bisect reset."
+      "why": "Exit 0 means good; 125 means cannot test. Finish with git bisect reset."
     },
     {
       "id": "card44",
       "topic": "advanced",
-      "prompt": "Backport one reviewed change",
+      "prompt": "Copy one fix into the current branch",
       "answer": "git cherry-pick -x COMMIT",
-      "why": "New context normally creates a new ID; verify dependencies."
+      "why": "New context usually makes a new ID. Check whether earlier changes are needed."
     },
     {
       "id": "card45",
       "topic": "advanced",
-      "prompt": "Create a parallel checkout",
+      "prompt": "Open a second working folder",
       "answer": "git worktree add ../hotfix -b hotfix main",
-      "why": "Separate files/index; shared objects and refs."
+      "why": "Files, staging, and HEAD are separate. Commit storage and branch names are shared."
     },
     {
       "id": "card46",
       "topic": "advanced",
-      "prompt": "Create an annotated release tag",
+      "prompt": "Name a release commit with a message",
       "answer": "git tag -a v1.2.0 -m 'Release 1.2.0'",
-      "why": "Coordinate the version and push the intended tag explicitly."
+      "why": "Check the chosen commit/version. Push the intended tag explicitly."
     },
     {
       "id": "card47",
       "topic": "daily-workflow",
-      "prompt": "Find which ignore rule matched",
+      "prompt": "Find the ignore rule for a file",
       "answer": "git check-ignore -v -- path",
-      "why": "Ignore rules do not automatically untrack existing files."
+      "why": "Ignore rules do not stop tracking a file already added."
     },
     {
       "id": "card48",
       "topic": "foundations",
-      "prompt": "Find where a config value came from",
+      "prompt": "Find where your commit-email setting came from",
       "answer": "git config --show-origin --get user.email",
-      "why": "Repository-local settings may override global settings."
+      "why": "Local settings can override global ones. Email does not sign you into GitHub."
     }
   ],
   "exercises": [
